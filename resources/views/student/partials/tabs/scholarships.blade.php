@@ -69,44 +69,6 @@
                   @endif
               </div>
 
-
-              <!-- 🔽 Put this once at the bottom of the Blade (outside the loop) -->
-              <div id="unapplyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                  <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-                      <h2 class="text-lg font-semibold mb-4 text-gray-800">Confirm Unapply</h2>
-                      <p class="mb-6 text-gray-600">Are you sure you want to unapply from this scholarship?</p>
-
-                      <form method="POST" action="{{ route('student.unapply') }}">
-                          @csrf
-                          <input type="hidden" name="scholarship_id" id="unapplyScholarshipId">
-                          
-                          <div class="flex justify-end gap-3">
-                              <button type="button" 
-                                      onclick="closeUnapplyModal()" 
-                                      class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg">
-                                  Cancel
-                              </button>
-                              <button type="submit" 
-                                      class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
-                                  Yes, Unapply
-                              </button>
-                          </div>
-                      </form>
-                  </div>
-              </div>
-
-              <!-- JS for Modal -->
-              <script>
-                  function openUnapplyModal(scholarshipId) {
-                      document.getElementById('unapplyScholarshipId').value = scholarshipId;
-                      document.getElementById('unapplyModal').classList.remove('hidden');
-                  }
-
-                  function closeUnapplyModal() {
-                      document.getElementById('unapplyModal').classList.add('hidden');
-                  }
-              </script>
-
             </div>
           @endforeach
         </div>
@@ -140,6 +102,43 @@
       </div>
     </div>
   @endif
+
+  <!-- Unapply Modal -->
+  <div id="unapplyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+          <h2 class="text-lg font-semibold mb-4 text-gray-800">Confirm Unapply</h2>
+          <p class="mb-6 text-gray-600">Are you sure you want to unapply from this scholarship?</p>
+
+          <form method="POST" action="{{ route('student.unapply') }}">
+              @csrf
+              <input type="hidden" name="scholarship_id" id="unapplyScholarshipId">
+              
+              <div class="flex justify-end gap-3">
+                  <button type="button" 
+                          onclick="closeUnapplyModal()" 
+                          class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg">
+                      Cancel
+                  </button>
+                  <button type="submit" 
+                          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                      Yes, Unapply
+                  </button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- JS for Modal -->
+  <script>
+      function openUnapplyModal(scholarshipId) {
+          document.getElementById('unapplyScholarshipId').value = scholarshipId;
+          document.getElementById('unapplyModal').classList.remove('hidden');
+      }
+
+      function closeUnapplyModal() {
+          document.getElementById('unapplyModal').classList.add('hidden');
+      }
+  </script>
 
   <!-- Warning Modal -->
   <div x-show="openWarning" x-cloak

@@ -19,16 +19,28 @@ class SFAOController extends Controller
 
         $user = User::find(session('user_id'));
 
-        $students = DB::table('student_documents')
-            ->join('users', 'student_documents.user_id', '=', 'users.id')
+        // Get all students with their application status and document upload info
+        $students = User::where('role', 'student')
+            ->with(['applications.scholarship', 'form'])
+            ->leftJoin('student_documents', 'users.id', '=', 'student_documents.user_id')
             ->select(
                 'users.id as student_id',
                 'users.name',
                 'users.email',
-                DB::raw('MAX(student_documents.updated_at) as last_uploaded')
+                'users.created_at',
+                DB::raw('MAX(student_documents.updated_at) as last_uploaded'),
+                DB::raw('COUNT(DISTINCT student_documents.id) as documents_count')
             )
-            ->groupBy('users.id', 'users.name', 'users.email')
+            ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at')
             ->get();
+
+        // Add application status information to each student
+        $students->each(function($student) {
+            $student->has_applications = $student->applications->count() > 0;
+            $student->has_documents = $student->documents_count > 0;
+            $student->application_status = $student->applications->pluck('status')->unique()->toArray();
+            $student->applied_scholarships = $student->applications->pluck('scholarship.scholarship_name')->toArray();
+        });
 
         $applications = Application::with('user', 'scholarship')->get();
         $scholarships = Scholarship::all();
