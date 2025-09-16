@@ -43,8 +43,14 @@ class StudentController extends Controller
         }
 
         $applications = $user ? $user->appliedScholarships : collect();
+        
+        // Get detailed application tracking data
+        $applicationTracking = Application::where('user_id', $userId)
+            ->with('scholarship')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications'));
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking'));
     }
 
     // ----------------------------

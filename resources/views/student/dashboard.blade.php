@@ -107,6 +107,12 @@
         📄 Applications
       </button>
 
+      <button @click="tab = 'tracking'; sidebarOpen = false"
+              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
+              :class="tab === 'tracking' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        📊 Application Tracking
+      </button>
+
       <button @click="tab = 'announcements'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'announcements' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
@@ -161,6 +167,7 @@
     <!-- Tabs -->
     @include('student.partials.tabs.scholarships')
     @include('student.partials.tabs.applications')
+    @include('student.application_tracking')
     @include('student.partials.tabs.announcements')
     @include('student.partials.tabs.account')
   </main>

@@ -17,18 +17,19 @@ class UserFactory extends Factory
      */
     public function definition()
     {
-        // Random first and last name
-        $firstName = $this->faker->firstName();
-        $lastName  = $this->faker->lastName();
+        // Generate student number format: YY-XXXXX
+        $yearPrefix   = $this->faker->numberBetween(20, 25);   // e.g. 20–25 = 2020–2025 entry year
+        $studentId    = $this->faker->unique()->numberBetween(10000, 99999); // 5 digits
+        $studentEmail = sprintf("%02d-%05d@g.batstate-u.edu.ph", $yearPrefix, $studentId);
 
         return [
-            'name'              => "$firstName $lastName",
-            'email'             => strtolower($firstName . '.' . $lastName) . '@g.batstate-u.edu.ph',
+            'name'              => $this->faker->name(),
+            'email'             => $studentEmail,
             'email_verified_at' => now(),
             'password'          => bcrypt('password123'), // default password for all seeded users
             'remember_token'    => Str::random(10),
             'role'              => $this->faker->randomElement(['student', 'sfao', 'central']),
-            'branch_id'         => $this->faker->numberBetween(1, 3), // adjust based on how many branches you seeded
+            'branch_id'         => $this->faker->numberBetween(1, 11), // adjust to match your 11 seeded branches
         ];
     }
 

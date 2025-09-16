@@ -18,17 +18,28 @@ class UsersTableSeeder extends Seeder
             'role' => 'student',
         ])->create();
 
-        // Permanent SFAO Admin
-        User::updateOrCreate(
-            ['email' => 'sfaoadmin@g.batstate-u.edu.ph'],
-            [
-                'name' => 'SFAO Admin',
-                'password' => Hash::make('password123'), // change later
-                'role' => 'sfao',
-                'branch_id' => 1, // adjust depending on your branches table
-                'email_verified_at' => now(),
-            ]
-        );
+        // List of constituent campuses (branch_id => name)
+        $constituents = [
+            1 => 'Pablo Borbon',
+            2 => 'Alangilan',
+            3 => 'ARASOF-Nasugbu',
+            4 => 'JPLPC-Malvar',
+            5 => 'Lipa',
+        ];
+
+        // Create 1 SFAO Admin per constituent
+        foreach ($constituents as $branchId => $campusName) {
+            User::updateOrCreate(
+                ['email' => "sfaoadmin{$branchId}@g.batstate-u.edu.ph"],
+                [
+                    'name' => "SFAO Admin - {$campusName}",
+                    'password' => Hash::make('password123'), // change later
+                    'role' => 'sfao',
+                    'branch_id' => $branchId,
+                    'email_verified_at' => now(),
+                ]
+            );
+        }
 
         // Permanent Central Admin
         User::updateOrCreate(
@@ -37,7 +48,7 @@ class UsersTableSeeder extends Seeder
                 'name' => 'Central Admin',
                 'password' => Hash::make('password123'), // change later
                 'role' => 'central',
-                'branch_id' => 1,
+                'branch_id' => 1, // you may adjust which branch_id should own central admin
                 'email_verified_at' => now(),
             ]
         );
