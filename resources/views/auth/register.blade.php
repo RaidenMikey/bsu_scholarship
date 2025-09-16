@@ -54,16 +54,16 @@
   {{-- Role (Hidden - Default to Student) --}}
   <input type="hidden" name="role" value="student">
 
-  {{-- Branch Selection --}}
+  {{-- Campus Selection --}}
   <div class="mb-6">
-    <label for="branch_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Branch <span class="text-red-500">*</span>
+    <label for="campus_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Campus <span class="text-red-500">*</span>
     </label>
-    <select id="branch_id" name="branch_id" required
+    <select id="campus_id" name="campus_id" required
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors duration-200">
-      <option value="" disabled selected>Select a branch</option>
-      @foreach(\App\Models\Branch::all() as $branch)
-        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+      <option value="" disabled selected>Select a campus</option>
+      @foreach(\App\Models\Campus::all() as $campus)
+        <option value="{{ $campus->id }}">{{ $campus->name }}</option>
       @endforeach
     </select>
   </div>

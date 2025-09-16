@@ -18,7 +18,7 @@ class UsersTableSeeder extends Seeder
             'role' => 'student',
         ])->create();
 
-        // List of constituent campuses (branch_id => name)
+        // List of constituent campuses (campus_id => name)
         $constituents = [
             1 => 'Pablo Borbon',
             2 => 'Alangilan',
@@ -35,7 +35,7 @@ class UsersTableSeeder extends Seeder
                     'name' => "SFAO Admin - {$campusName}",
                     'password' => Hash::make('password123'), // change later
                     'role' => 'sfao',
-                    'branch_id' => $branchId,
+                    'campus_id' => $branchId,
                     'email_verified_at' => now(),
                 ]
             );
@@ -48,7 +48,7 @@ class UsersTableSeeder extends Seeder
                 'name' => 'Central Admin',
                 'password' => Hash::make('password123'), // change later
                 'role' => 'central',
-                'branch_id' => 1, // you may adjust which branch_id should own central admin
+                'campus_id' => 1, // you may adjust which campus_id should own central admin
                 'email_verified_at' => now(),
             ]
         );

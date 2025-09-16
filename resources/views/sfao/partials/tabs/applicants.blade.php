@@ -1,7 +1,12 @@
 <div x-show="tab === 'applicants'" x-transition x-cloak class="px-4 py-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">👥 All Students</h2>
-        <p class="text-gray-600 dark:text-gray-300">Complete list of students with their application and document status</p>
+        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">👥 Students Under Your Campus</h2>
+        <p class="text-gray-600 dark:text-gray-300">
+          Students from {{ $sfaoCampus->name }}
+          @if($sfaoCampus->extensionCampuses->count() > 0)
+            and its extension campuses: {{ $sfaoCampus->extensionCampuses->pluck('name')->join(', ') }}
+          @endif
+        </p>
     </div>
 
     <!-- Statistics Cards -->

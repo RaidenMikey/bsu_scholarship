@@ -9,18 +9,67 @@ class BranchSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('branches')->insert([
-            ['name' => 'Pablo Borbon', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Alangilan', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'ARASOF-Nasugbu', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'JPLPC-Malvar', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Lipa', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'San Juan', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Mabini', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Balayan', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Lemery', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Rosario', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Lobo', 'created_at' => now(), 'updated_at' => now()],
+        // Insert constituent campuses first
+        $pabloBorbon = DB::table('campuses')->insertGetId([
+            'name' => 'BatStateU Pablo Borbon (Main)',
+            'type' => 'constituent',
+            'parent_campus_id' => null,
+            'has_sfao_admin' => true,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $alangilan = DB::table('campuses')->insertGetId([
+            'name' => 'BatStateU Alangilan',
+            'type' => 'constituent',
+            'parent_campus_id' => null,
+            'has_sfao_admin' => true,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $arasof = DB::table('campuses')->insertGetId([
+            'name' => 'BatStateU ARASOF–Nasugbu (Apolinario R. Apacible School of Fisheries)',
+            'type' => 'constituent',
+            'parent_campus_id' => null,
+            'has_sfao_admin' => true,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $jplpc = DB::table('campuses')->insertGetId([
+            'name' => 'BatStateU JPLPC–Malvar (Jose P. Laurel Polytechnic College)',
+            'type' => 'constituent',
+            'parent_campus_id' => null,
+            'has_sfao_admin' => true,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $lipa = DB::table('campuses')->insertGetId([
+            'name' => 'BatStateU Lipa',
+            'type' => 'constituent',
+            'parent_campus_id' => null,
+            'has_sfao_admin' => true,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Insert extension campuses
+        DB::table('campuses')->insert([
+            // Pablo Borbon extensions
+            ['name' => 'BatStateU San Juan', 'type' => 'extension', 'parent_campus_id' => $pabloBorbon, 'has_sfao_admin' => false, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'BatStateU Mabini', 'type' => 'extension', 'parent_campus_id' => $pabloBorbon, 'has_sfao_admin' => false, 'created_at' => now(), 'updated_at' => now()],
+            
+            // ARASOF extensions
+            ['name' => 'BatStateU Balayan', 'type' => 'extension', 'parent_campus_id' => $arasof, 'has_sfao_admin' => false, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'BatStateU Lemery', 'type' => 'extension', 'parent_campus_id' => $arasof, 'has_sfao_admin' => false, 'created_at' => now(), 'updated_at' => now()],
+            
+            // JPLPC extensions
+            ['name' => 'BatStateU Rosario', 'type' => 'extension', 'parent_campus_id' => $jplpc, 'has_sfao_admin' => false, 'created_at' => now(), 'updated_at' => now()],
+            
+            // Lipa extensions
+            ['name' => 'BatStateU Lobo', 'type' => 'extension', 'parent_campus_id' => $lipa, 'has_sfao_admin' => false, 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

@@ -29,7 +29,7 @@ class UserFactory extends Factory
             'password'          => bcrypt('password123'), // default password for all seeded users
             'remember_token'    => Str::random(10),
             'role'              => $this->faker->randomElement(['student', 'sfao', 'central']),
-            'branch_id'         => $this->faker->numberBetween(1, 11), // adjust to match your 11 seeded branches
+            'campus_id'         => $this->faker->numberBetween(1, 11), // adjust to match your 11 seeded campuses
         ];
     }
 

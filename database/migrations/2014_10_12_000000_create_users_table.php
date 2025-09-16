@@ -22,10 +22,10 @@ return new class extends Migration
             $table->string('role')->default('student'); // student, admin, etc.
             $table->string('profile_picture')->nullable(); // optional profile picture
 
-            // 🔗 Each user belongs to one branch (nullable)
-            $table->foreignId('branch_id')
+            // 🔗 Each user belongs to one campus (nullable)
+            $table->foreignId('campus_id')
                 ->nullable()
-                ->constrained('branches')
+                ->constrained('campuses')
                 ->onDelete('set null');
 
             $table->rememberToken();

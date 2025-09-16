@@ -18,7 +18,7 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
         'password',
         'role',
         'profile_picture',
-        'branch_id', // ✅ branch assignment
+        'campus_id', // ✅ campus assignment
     ];
 
     protected $hidden = [
@@ -33,11 +33,11 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
     // ✅ Relationships
 
     /**
-     * User belongs to a branch
+     * User belongs to a campus
      */
-    public function branch()
+    public function campus()
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Campus::class);
     }
 
     /**

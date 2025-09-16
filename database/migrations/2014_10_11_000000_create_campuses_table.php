@@ -13,9 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('branches', function (Blueprint $table) {
+        Schema::create('campuses', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // e.g., Pablo Borbon, Alangilan, Nasugbu
+            $table->enum('type', ['constituent', 'extension'])->default('constituent');
+            $table->foreignId('parent_campus_id')->nullable()->constrained('campuses')->onDelete('cascade');
+            $table->boolean('has_sfao_admin')->default(false); // Only constituent campuses have SFAO admins
             $table->timestamps();
         });
     }
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('branches');
+        Schema::dropIfExists('campuses');
     }
 };

@@ -33,7 +33,7 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
-            'branch_id' => 'required|exists:branches,id',
+            'campus_id' => 'required|exists:campuses,id',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -46,8 +46,8 @@ class AuthController extends Controller
             return back()->withErrors(['Your email is not verified. Please check your inbox.']);
         }
 
-        if ($request->branch_id != $user->branch_id) {
-            return back()->withErrors(['The selected branch does not match your account.']);
+        if ($request->campus_id != $user->campus_id) {
+            return back()->withErrors(['The selected campus does not match your account.']);
         }
 
         session([
@@ -90,7 +90,7 @@ class AuthController extends Controller
             'email'     => ['required','email','unique:users,email','regex:/^[a-zA-Z0-9._%+-]+@g\.batstate-u\.edu\.ph$/'],
             'password'  => 'required|string|confirmed|min:6',
             'role'      => 'required|string',
-            'branch_id' => 'required|exists:branches,id',
+            'campus_id' => 'required|exists:campuses,id',
         ]);
 
         $user = User::create([
@@ -98,7 +98,7 @@ class AuthController extends Controller
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
             'role'      => $request->role,
-            'branch_id' => $request->branch_id,
+            'campus_id' => $request->campus_id,
         ]);
 
         $user->sendEmailVerificationNotification();

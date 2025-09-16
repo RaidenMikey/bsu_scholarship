@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Scholarship;
 use App\Models\Application;
+use App\Models\User;
 
 class ScholarshipController extends Controller
 {
@@ -169,9 +170,22 @@ class ScholarshipController extends Controller
      */
     public function sfaoIndex()
     {
-        $scholarships = Scholarship::withCount('applications')->get();
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
 
-        return view('sfao.scholarships', compact('scholarships'));
+        $user = User::with('campus')->find(session('user_id'));
+        $sfaoCampus = $user->campus;
+        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
+
+        // Get scholarships with application counts filtered by campus
+        $scholarships = Scholarship::withCount(['applications' => function($query) use ($campusIds) {
+            $query->whereHas('user', function($userQuery) use ($campusIds) {
+                $userQuery->whereIn('campus_id', $campusIds);
+            });
+        }])->get();
+
+        return view('sfao.scholarships', compact('scholarships', 'sfaoCampus'));
     }
 
     /**
@@ -179,8 +193,20 @@ class ScholarshipController extends Controller
      */
     public function sfaoShow($id)
     {
-        $scholarship = Scholarship::with(['applications.user'])->findOrFail($id);
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
 
-        return view('sfao.scholarship_show', compact('scholarship'));
+        $user = User::with('campus')->find(session('user_id'));
+        $sfaoCampus = $user->campus;
+        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
+
+        $scholarship = Scholarship::with(['applications' => function($query) use ($campusIds) {
+            $query->whereHas('user', function($userQuery) use ($campusIds) {
+                $userQuery->whereIn('campus_id', $campusIds);
+            });
+        }, 'applications.user'])->findOrFail($id);
+
+        return view('sfao.scholarship_show', compact('scholarship', 'sfaoCampus'));
     }
 }
