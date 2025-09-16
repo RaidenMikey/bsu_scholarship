@@ -83,7 +83,7 @@
             label="Birthdate" 
             type="date"
             id="birthdate"
-            :value="old('birthdate', optional($existingApplication->birthdate)->format('Y-m-d') ?? '')" 
+            :value="old('birthdate', optional($existingApplication)->birthdate?->format('Y-m-d') ?? '')" 
         />
         <x-student.ui.input 
             name="birthplace" 

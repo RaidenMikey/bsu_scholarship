@@ -137,7 +137,7 @@ header('Expires: 0'); // Proxies
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Birthdate</label>
             <input type="date" name="birthdate" id="birthdate"
-              value="{{ old('birthdate', optional($existingApplication->birthdate)->format('Y-m-d') ?? '') }}"
+              value="{{ old('birthdate', optional($existingApplication)->birthdate?->format('Y-m-d') ?? '') }}"
               class="w-full border border-red-500 px-3 py-2 rounded-md">
           </div>
 
@@ -404,7 +404,7 @@ header('Expires: 0'); // Proxies
       <!-- Download Button (separate form) -->
       <form method="POST" action="{{ url('/application-form/download') }}">
         @csrf
-        <input type="hidden" name="form_id" value="{{ $existingApplication->id }}">
+        <input type="hidden" name="form_id" value="{{ $existingApplication?->id ?? '' }}">
         <button type="submit"
           class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
           <!-- Download Icon -->
