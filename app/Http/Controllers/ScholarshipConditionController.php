@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\ScholarshipCondition;
+use App\Models\ScholarshipRequirement;
 
 class ScholarshipConditionController extends Controller
 {
@@ -17,9 +17,10 @@ class ScholarshipConditionController extends Controller
             'value'      => 'required|string|max:255',
         ]);
 
-        ScholarshipCondition::create([
+        ScholarshipRequirement::create([
             'scholarship_id' => $scholarshipId,
-            'field_name'     => $validated['field_name'],
+            'type'           => 'condition',
+            'name'           => $validated['field_name'],
             'value'          => $validated['value'],
         ]);
 
@@ -31,7 +32,7 @@ class ScholarshipConditionController extends Controller
      */
     public function destroy($id)
     {
-        $condition = ScholarshipCondition::findOrFail($id);
+        $condition = ScholarshipRequirement::where('type', 'condition')->findOrFail($id);
         $condition->delete();
 
         return redirect()->back()->with('success', 'Condition removed successfully.');

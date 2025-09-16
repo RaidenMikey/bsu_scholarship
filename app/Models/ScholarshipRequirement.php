@@ -11,8 +11,10 @@ class ScholarshipRequirement extends Model
 
     protected $fillable = [
         'scholarship_id',
+        'type',
         'name',
         'description',
+        'value',
         'is_mandatory',
     ];
 
@@ -20,5 +22,16 @@ class ScholarshipRequirement extends Model
     public function scholarship()
     {
         return $this->belongsTo(Scholarship::class);
+    }
+
+    // Scopes for filtering by type
+    public function scopeConditions($query)
+    {
+        return $query->where('type', 'condition');
+    }
+
+    public function scopeDocuments($query)
+    {
+        return $query->where('type', 'document');
     }
 }

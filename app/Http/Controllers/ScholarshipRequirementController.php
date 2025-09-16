@@ -12,12 +12,14 @@ class ScholarshipRequirementController extends Controller
     {
         $request->validate([
             'scholarship_id' => 'required|exists:scholarships,id',
+            'type'           => 'required|in:condition,document',
             'name'           => 'required|string|max:255',
             'description'    => 'nullable|string',
+            'value'          => 'nullable|string|max:255',
             'is_mandatory'   => 'required|boolean',
         ]);
 
-        ScholarshipRequirement::create($request->only(['scholarship_id', 'name', 'description', 'is_mandatory']));
+        ScholarshipRequirement::create($request->only(['scholarship_id', 'type', 'name', 'description', 'value', 'is_mandatory']));
 
         return back()->with('success', 'Requirement added successfully.');
     }
@@ -28,12 +30,14 @@ class ScholarshipRequirementController extends Controller
         $requirement = ScholarshipRequirement::findOrFail($id);
 
         $request->validate([
+            'type'         => 'required|in:condition,document',
             'name'         => 'required|string|max:255',
             'description'  => 'nullable|string',
+            'value'        => 'nullable|string|max:255',
             'is_mandatory' => 'required|boolean',
         ]);
 
-        $requirement->update($request->only(['name', 'description', 'is_mandatory']));
+        $requirement->update($request->only(['type', 'name', 'description', 'value', 'is_mandatory']));
 
         return back()->with('success', 'Requirement updated successfully.');
     }

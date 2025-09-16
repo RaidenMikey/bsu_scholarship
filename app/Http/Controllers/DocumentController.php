@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
-use App\Models\StudentDocument;
+use App\Models\SfaoRequirement;
 use App\Models\Application;
 
 class DocumentController extends Controller
@@ -58,7 +58,7 @@ class DocumentController extends Controller
         // Ensure scholarship_id is stored
         $filePaths['scholarship_id'] = $scholarship_id;
 
-        StudentDocument::updateOrCreate(
+        SfaoRequirement::updateOrCreate(
             ['user_id' => $userId, 'scholarship_id' => $scholarship_id],
             $filePaths
         );

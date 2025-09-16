@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Application;
 use App\Models\Scholarship;
-use App\Models\StudentDocument;
+use App\Models\SfaoRequirement;
 use Illuminate\Support\Facades\DB;
 
 class SFAOController extends Controller
@@ -27,15 +27,15 @@ class SFAOController extends Controller
         $students = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
             ->with(['applications.scholarship', 'form', 'campus'])
-            ->leftJoin('student_documents', 'users.id', '=', 'student_documents.user_id')
+            ->leftJoin('sfao_requirements', 'users.id', '=', 'sfao_requirements.user_id')
             ->select(
                 'users.id as student_id',
                 'users.name',
                 'users.email',
                 'users.created_at',
                 'users.campus_id',
-                DB::raw('MAX(student_documents.updated_at) as last_uploaded'),
-                DB::raw('COUNT(DISTINCT student_documents.id) as documents_count')
+                DB::raw('MAX(sfao_requirements.updated_at) as last_uploaded'),
+                DB::raw('COUNT(DISTINCT sfao_requirements.id) as documents_count')
             )
             ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at', 'users.campus_id')
             ->get();
@@ -73,15 +73,15 @@ class SFAOController extends Controller
         $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
 
         // Get students who have uploaded at least one document, only from this SFAO admin's jurisdiction
-        $students = DB::table('student_documents')
-            ->join('users', 'student_documents.user_id', '=', 'users.id')
+        $students = DB::table('sfao_requirements')
+            ->join('users', 'sfao_requirements.user_id', '=', 'users.id')
             ->whereIn('users.campus_id', $campusIds)
             ->select(
                 'users.id as student_id',
                 'users.name',
                 'users.email',
                 'users.campus_id',
-                DB::raw('MAX(student_documents.updated_at) as last_uploaded')
+                DB::raw('MAX(sfao_requirements.updated_at) as last_uploaded')
             )
             ->groupBy('users.id', 'users.name', 'users.email', 'users.campus_id')
             ->get();
@@ -99,7 +99,7 @@ class SFAOController extends Controller
         }
 
         $student = User::findOrFail($user_id);
-        $documents = StudentDocument::where('user_id', $user_id)->get();
+        $documents = SfaoRequirement::where('user_id', $user_id)->get();
 
         return view('sfao.partials.view-documents', compact('student', 'documents'));
     }

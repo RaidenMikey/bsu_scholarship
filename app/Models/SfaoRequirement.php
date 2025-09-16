@@ -3,11 +3,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StudentDocument extends Model
+class SfaoRequirement extends Model
 {
+    protected $table = 'sfao_requirements';
+
     protected $fillable = [
         'user_id',
-        'scholarship_id',   // NEW
+        'scholarship_id',
         'form_137',
         'grades',
         'certificate',

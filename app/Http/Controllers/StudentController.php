@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Form;
 use App\Models\Scholarship;
 use App\Models\Application;
-use App\Models\StudentDocument;
+use App\Models\SfaoRequirement;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class StudentController extends Controller
@@ -220,7 +220,7 @@ class StudentController extends Controller
             ->delete();
 
         // Find the student document row
-        $studentDocument = StudentDocument::where('user_id', $userId)
+        $studentDocument = SfaoRequirement::where('user_id', $userId)
             ->where('scholarship_id', $scholarshipId)
             ->first();
 

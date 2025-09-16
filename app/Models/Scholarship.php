@@ -33,15 +33,21 @@ class Scholarship extends Model
         return $this->belongsToMany(User::class, 'applications');
     }
 
-    // Conditions (e.g. gwa, disability, income, year_level)
-    public function conditions()
-    {
-        return $this->hasMany(ScholarshipCondition::class);
-    }
-
-    // Document requirements
+    // All requirements (both conditions and documents)
     public function requirements()
     {
         return $this->hasMany(ScholarshipRequirement::class);
+    }
+
+    // Conditions only (e.g. gwa, disability, income, year_level)
+    public function conditions()
+    {
+        return $this->hasMany(ScholarshipRequirement::class)->where('type', 'condition');
+    }
+
+    // Document requirements only
+    public function documentRequirements()
+    {
+        return $this->hasMany(ScholarshipRequirement::class)->where('type', 'document');
     }
 }

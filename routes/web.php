@@ -6,7 +6,6 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SFAOController;
 use App\Http\Controllers\CentralController;
 use App\Http\Controllers\ScholarshipController;
-use App\Http\Controllers\ScholarshipConditionController;
 use App\Http\Controllers\ScholarshipRequirementController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\DocumentController;
