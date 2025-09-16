@@ -28,14 +28,14 @@ class UsersTableSeeder extends Seeder
         ];
 
         // Create 1 SFAO Admin per constituent
-        foreach ($constituents as $branchId => $campusName) {
+        foreach ($constituents as $campusId => $campusName) {
             User::updateOrCreate(
-                ['email' => "sfaoadmin{$branchId}@g.batstate-u.edu.ph"],
+                ['email' => "sfaoadmin{$campusId}@g.batstate-u.edu.ph"],
                 [
                     'name' => "SFAO Admin - {$campusName}",
                     'password' => Hash::make('password123'), // change later
                     'role' => 'sfao',
-                    'campus_id' => $branchId,
+                    'campus_id' => $campusId,
                     'email_verified_at' => now(),
                 ]
             );

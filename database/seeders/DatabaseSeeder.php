@@ -13,9 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Call branch seeder first so branch_id exists before users
+        // Call campus seeder first so campus_id exists before users
         $this->call([
-            BranchSeeder::class,
+            CampusSeeder::class,
             UsersTableSeeder::class,
             FormsTableSeeder::class,
             ScholarshipsTableSeeder::class,
