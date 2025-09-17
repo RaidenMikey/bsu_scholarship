@@ -121,17 +121,30 @@ header('Expires: 0'); // Proxies
             <label class="block font-semibold text-gray-700 mb-1">Age</label>
             <input type="number" name="age" id="age"
               value="{{ old('age', $existingApplication->age ?? '') }}"
-              class="w-full border border-red-500 px-3 py-2 rounded-md" readonly>
+              class="w-full border border-red-500 px-3 py-2 rounded-md bg-gray-100" readonly
+              title="Age will be automatically calculated when birthdate is entered">
+            <small class="text-gray-500 text-xs">Age will be automatically calculated when birthdate is entered</small>
           </div>
 
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Sex</label>
-            <input type="text" name="sex" value="{{ old('sex', $existingApplication->sex ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <select name="sex" class="w-full border border-red-500 px-3 py-2 rounded-md">
+                <option value="">-- Select Sex --</option>
+                <option value="male" {{ old('sex', $existingApplication->sex ?? '') == 'male' ? 'selected' : '' }}>Male</option>
+                <option value="female" {{ old('sex', $existingApplication->sex ?? '') == 'female' ? 'selected' : '' }}>Female</option>
+            </select>
           </div>
 
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Civil Status</label>
-            <input type="text" name="civil_status" value="{{ old('civil_status', $existingApplication->civil_status ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <select name="civil_status" class="w-full border border-red-500 px-3 py-2 rounded-md">
+                <option value="">-- Select Civil Status --</option>
+                <option value="Single" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
+                <option value="Married" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
+                <option value="Widowed" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Widowed' ? 'selected' : '' }}>Widowed</option>
+                <option value="Divorced" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Divorced' ? 'selected' : '' }}>Divorced</option>
+                <option value="Separated" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Separated' ? 'selected' : '' }}>Separated</option>
+            </select>
           </div>
 
           <div>
@@ -148,7 +161,7 @@ header('Expires: 0'); // Proxies
 
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Disability</label>
-            <input type="text" name="disability" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
           </div>
 
           <div>
@@ -163,7 +176,12 @@ header('Expires: 0'); // Proxies
 
           <div>
             <label class="block font-semibold text-gray-700 mb-1">Birth Order</label>
-            <input type="text" name="birth_order" value="{{ old('birth_order', $existingApplication->birth_order ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <select name="birth_order" class="w-full border border-red-500 px-3 py-2 rounded-md">
+                <option value="">-- Select Birth Order --</option>
+                <option value="First Born" {{ old('birth_order', $existingApplication->birth_order ?? '') == 'First Born' ? 'selected' : '' }}>First Born</option>
+                <option value="Middle Born" {{ old('birth_order', $existingApplication->birth_order ?? '') == 'Middle Born' ? 'selected' : '' }}>Middle Born</option>
+                <option value="Last Born" {{ old('birth_order', $existingApplication->birth_order ?? '') == 'Last Born' ? 'selected' : '' }}>Last Born</option>
+            </select>
           </div>
 
           <div>
@@ -209,23 +227,42 @@ header('Expires: 0'); // Proxies
 
         <div class="mb-4">
           <label class="block mb-1 font-medium text-gray-700">Living Arrangement</label>
-          <input type="text" name="living_arrangement" placeholder="e.g., With parents, boarding house"
-            value="{{ old('living_arrangement', $existingApplication->living_arrangement ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
+          <select name="living_arrangement" class="w-full border border-red-500 rounded-md p-2" onchange="handleLivingArrangementChange(this)">
+              <option value="">-- Select Living Arrangement --</option>
+              <option value="Living with Parents" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Living with Parents' ? 'selected' : '' }}>Living with Parents</option>
+              <option value="Living with Relatives" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Living with Relatives' ? 'selected' : '' }}>Living with Relatives</option>
+              <option value="Owned House" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Owned House' ? 'selected' : '' }}>Owned House</option>
+              <option value="Boarding House" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Boarding House' ? 'selected' : '' }}>Boarding House</option>
+              <option value="Apartment" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
+              <option value="Others">Others (Please specify)</option>
+          </select>
+          <input type="text" name="living_arrangement_other" placeholder="Please specify" 
+            value="{{ old('living_arrangement_other', $existingApplication->living_arrangement_other ?? '') }}"
+            class="w-full border border-red-500 rounded-md p-2 mt-2 hidden" id="living_arrangement_other">
         </div>
 
         <div class="mb-4">
           <label class="block mb-1 font-medium text-gray-700">Mode of Transportation</label>
-          <input type="text" name="transportation" placeholder="e.g., Jeep, Tricycle"
-            value="{{ old('transportation', $existingApplication->transportation ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
+          <select name="transportation" class="w-full border border-red-500 rounded-md p-2" onchange="handleTransportationChange(this)">
+              <option value="">-- Select Transportation --</option>
+              <option value="Public Transportation" {{ old('transportation', $existingApplication->transportation ?? '') == 'Public Transportation' ? 'selected' : '' }}>Public Transportation</option>
+              <option value="Own Vehicle" {{ old('transportation', $existingApplication->transportation ?? '') == 'Own Vehicle' ? 'selected' : '' }}>Own Vehicle</option>
+              <option value="School Service" {{ old('transportation', $existingApplication->transportation ?? '') == 'School Service' ? 'selected' : '' }}>School Service</option>
+              <option value="Others">Others (Please specify)</option>
+          </select>
+          <input type="text" name="transportation_other" placeholder="Please specify" 
+            value="{{ old('transportation_other', $existingApplication->transportation_other ?? '') }}"
+            class="w-full border border-red-500 rounded-md p-2 mt-2 hidden" id="transportation_other">
         </div>
 
         <div class="mb-4">
           <label class="block mb-1 font-medium text-gray-700">Educational Level</label>
-          <input type="text" name="education_level" placeholder="e.g., Undergraduate"
-            value="{{ old('education_level', $existingApplication->education_level ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
+          <select name="education_level" class="w-full border border-red-500 rounded-md p-2">
+              <option value="">-- Select Educational Level --</option>
+              <option value="Undergraduate" {{ old('education_level', $existingApplication->education_level ?? '') == 'Undergraduate' ? 'selected' : '' }}>Undergraduate</option>
+              <option value="Graduate School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
+              <option value="Integrated / Laboratory School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Integrated / Laboratory School' ? 'selected' : '' }}>Integrated / Laboratory School</option>
+          </select>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -243,24 +280,26 @@ header('Expires: 0'); // Proxies
           </div>
 
           <div>
-            <label class="block mb-1 font-medium text-gray-700">College</label>
-            <input type="text" name="college"
-              value="{{ old('college', $existingApplication->college ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+            <label class="block mb-1 font-medium text-gray-700">College/Department</label>
+            <select name="college" class="w-full border border-red-500 rounded-md p-2">
+                <option value="">-- Select College/Department --</option>
+                <option value="CICS" {{ old('college', $existingApplication->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS (College of Information and Computing Sciences)</option>
+                <option value="CTE" {{ old('college', $existingApplication->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE (College of Teacher Education)</option>
+                <option value="CABEIHM" {{ old('college', $existingApplication->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM (College of Accountancy, Business, Economics and International Hospitality Management)</option>
+                <option value="CAS" {{ old('college', $existingApplication->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS (College of Arts and Sciences)</option>
+            </select>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Year Level</label>
+            <label class="block mb-1 font-medium text-gray-700">Grade/Year Level</label>
             <select name="year_level" class="w-full border border-red-500 rounded-md p-2">
-                <option value="">-- Select Year Level --</option>
-                @foreach (['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'] as $year)
-                    <option value="{{ $year }}" 
-                        {{ old('year_level', $existingApplication->year_level ?? '') == $year ? 'selected' : '' }}>
-                        {{ $year }}
-                    </option>
-                @endforeach
+                <option value="">-- Select Grade/Year Level --</option>
+                <option value="First Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'First Year' ? 'selected' : '' }}>First Year</option>
+                <option value="Second Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'Second Year' ? 'selected' : '' }}>Second Year</option>
+                <option value="Third Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'Third Year' ? 'selected' : '' }}>Third Year</option>
+                <option value="Fourth Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'Fourth Year' ? 'selected' : '' }}>Fourth Year</option>
             </select>
           </div>
           <div>
@@ -269,7 +308,8 @@ header('Expires: 0'); // Proxies
                 <option value="">-- Select Campus --</option>
                 @foreach (['BatStateU Alangilan', 'BatStateU Main', 'BatStateU Lipa', 'BatStateU Malvar', 'BatStateU Lemery', 'BatStateU San Juan', 'BatStateU Lobo', 'BatStateU Rosario', 'BatStateU Balayan', 'BatStateU Calaca', 'BatStateU Calatagan', 'BatStateU Mabini', 'BatStateU Nasugbu', 'BatStateU Tuy'] as $campus)
                     <option value="{{ $campus }}" 
-                        {{ old('campus', $existingApplication->campus ?? '') == $campus ? 'selected' : '' }}>
+                        {{ old('campus', $existingApplication->campus ?? '') == $campus ? 'selected' : '' }}
+                        {{ (auth()->user()->campus_id ?? '') == $campus ? 'selected' : '' }}>
                         {{ $campus }}
                     </option>
                 @endforeach
@@ -278,7 +318,7 @@ header('Expires: 0'); // Proxies
           <div>
             <label class="block mb-1 font-medium text-gray-700">GWA</label>
             <input type="number" name="gwa" step="0.01" min="1.00" max="5.00" 
-                   placeholder="e.g. 2.25"
+                   placeholder="0.00"
                    value="{{ old('gwa', $existingApplication->gwa ?? '') }}"
                    class="w-full border border-red-500 rounded-md p-2">
         </div>
@@ -287,13 +327,13 @@ header('Expires: 0'); // Proxies
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700">Honors Received</label>
-            <input type="text" name="honors"
+            <input type="text" name="honors" placeholder="If any"
               value="{{ old('honors', $existingApplication->honors ?? '') }}"
               class="w-full border border-red-500 rounded-md p-2">
           </div>
           <div>
             <label class="block mb-1 font-medium text-gray-700">Units Enrolled</label>
-            <input type="text" name="units_enrolled"
+            <input type="number" name="units_enrolled" min="1" max="30"
               value="{{ old('units_enrolled', $existingApplication->units_enrolled ?? '') }}"
               class="w-full border border-red-500 rounded-md p-2">
           </div>
@@ -310,21 +350,21 @@ header('Expires: 0'); // Proxies
           <label class="block mb-1 font-medium text-gray-700">Do you have existing scholarships?</label>
           <div class="flex items-center gap-6 mt-1">
             <label class="flex items-center gap-2">
-              <input type="radio" name="has_existing_scholarship" value="1"
+              <input type="radio" name="has_existing_scholarship" value="1" onchange="toggleScholarshipDetails()"
                 {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 1 ? 'checked' : '' }}>
               <span>Yes</span>
             </label>
             <label class="flex items-center gap-2">
-              <input type="radio" name="has_existing_scholarship" value="0"
+              <input type="radio" name="has_existing_scholarship" value="0" onchange="toggleScholarshipDetails()"
                 {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 0 ? 'checked' : '' }}>
               <span>No</span>
             </label>
           </div>
         </div>
 
-        <div class="mt-4">
+        <div class="mt-4" id="scholarship_details_container">
           <label class="block mb-1 font-medium text-gray-700">If yes, provide scholarship details</label>
-          <input type="text" name="existing_scholarship_details"
+          <input type="text" name="existing_scholarship_details" id="existing_scholarship_details"
             value="{{ old('existing_scholarship_details', $existingApplication->existing_scholarship_details ?? '') }}"
             class="w-full border border-red-500 rounded-md p-2">
         </div>
@@ -467,6 +507,67 @@ header('Expires: 0'); // Proxies
       const birthDate = new Date(birthdateInput.value);
       ageInput.value = calculateAge(birthDate);
     }
+
+    // Handle Living Arrangement "Others" option
+    function handleLivingArrangementChange(select) {
+      const otherInput = document.getElementById('living_arrangement_other');
+      if (select.value === 'Others') {
+        otherInput.classList.remove('hidden');
+        otherInput.required = true;
+      } else {
+        otherInput.classList.add('hidden');
+        otherInput.required = false;
+        otherInput.value = '';
+      }
+    }
+
+    // Handle Transportation "Others" option
+    function handleTransportationChange(select) {
+      const otherInput = document.getElementById('transportation_other');
+      if (select.value === 'Others') {
+        otherInput.classList.remove('hidden');
+        otherInput.required = true;
+      } else {
+        otherInput.classList.add('hidden');
+        otherInput.required = false;
+        otherInput.value = '';
+      }
+    }
+
+    // Handle existing scholarship checkbox
+    function toggleScholarshipDetails() {
+      const yesRadio = document.querySelector('input[name="has_existing_scholarship"][value="1"]');
+      const detailsContainer = document.getElementById('scholarship_details_container');
+      const detailsInput = document.getElementById('existing_scholarship_details');
+      
+      if (yesRadio.checked) {
+        detailsContainer.style.display = 'block';
+        detailsInput.disabled = false;
+        detailsInput.required = true;
+      } else {
+        detailsContainer.style.display = 'none';
+        detailsInput.disabled = true;
+        detailsInput.required = false;
+        detailsInput.value = '';
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      toggleScholarshipDetails();
+      
+      // Check if living arrangement is "Others"
+      const livingArrangementSelect = document.querySelector('select[name="living_arrangement"]');
+      if (livingArrangementSelect && livingArrangementSelect.value === 'Others') {
+        handleLivingArrangementChange(livingArrangementSelect);
+      }
+      
+      // Check if transportation is "Others"
+      const transportationSelect = document.querySelector('select[name="transportation"]');
+      if (transportationSelect && transportationSelect.value === 'Others') {
+        handleTransportationChange(transportationSelect);
+      }
+    });
   </script>
 </body>
 </html>

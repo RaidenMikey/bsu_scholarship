@@ -48,7 +48,9 @@ return new class extends Migration
 
             $table->decimal('monthly_allowance', 10, 2)->nullable();
             $table->string('living_arrangement')->nullable();
+            $table->string('living_arrangement_other')->nullable();
             $table->string('transportation')->nullable();
+            $table->string('transportation_other')->nullable();
 
 
             // ------------------- Academic Data -------------------

@@ -35,7 +35,9 @@ class FormController extends Controller
             'highschool_type'     => 'nullable|string',
             'monthly_allowance'   => 'nullable|string',
             'living_arrangement'  => 'nullable|string',
+            'living_arrangement_other' => 'nullable|string',
             'transportation'      => 'nullable|string',
+            'transportation_other' => 'nullable|string',
 
             // ------------------- Academic Data -------------------
             'education_level'              => 'nullable|string',

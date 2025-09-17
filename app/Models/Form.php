@@ -39,7 +39,9 @@ class Form extends Model
         'highschool_type',
         'monthly_allowance',
         'living_arrangement',
+        'living_arrangement_other',
         'transportation',
+        'transportation_other',
 
 
         // ------------------- Academic Data -------------------
