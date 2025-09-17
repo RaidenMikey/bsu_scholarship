@@ -12,7 +12,6 @@ return new class extends Migration {
             $table->id();
             $table->string('scholarship_name');
             $table->text('description');
-            $table->decimal('minimum_gwa', 4, 2)->nullable();
             $table->date('deadline');
             $table->integer('slots_available')->nullable();
             $table->decimal('grant_amount', 10, 2)->nullable(); // ₱99999999.99 max

@@ -13,7 +13,6 @@ class ScholarshipRequirement extends Model
         'scholarship_id',
         'type',
         'name',
-        'description',
         'value',
         'is_mandatory',
     ];

@@ -18,7 +18,6 @@ return new class extends Migration
             $table->unsignedBigInteger('scholarship_id');
             $table->enum('type', ['condition', 'document']); // indicates if it's a condition or document requirement
             $table->string('name'); // e.g. 'Barangay Clearance', 'Birth Certificate', 'gwa', 'income'
-            $table->text('description')->nullable(); // optional details
             $table->string('value')->nullable(); // for conditions: e.g. 2.50, Yes, 10000, 2
             $table->boolean('is_mandatory')->default(true);
 

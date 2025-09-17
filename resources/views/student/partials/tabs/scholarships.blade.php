@@ -20,7 +20,7 @@
     @if ($scholarships->count())
       <div class="bg-bsu-light dark:bg-gray-800 p-5 rounded-lg shadow-sm">
         <p class="text-gray-800 dark:text-gray-200 text-sm mb-4">
-          Scholarships matched to your GWA ({{ $gwa }}):
+          Scholarships matched to your profile:
         </p>
 
         <div class="space-y-5">
@@ -34,12 +34,42 @@
                 {{ $scholarship->scholarship_name }}
               </h3>
 
-              <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+              <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
                 {{ $scholarship->description }}
               </p>
 
+              <!-- Matching Criteria Display -->
+              @php
+                $matchingCriteria = $scholarship->getMatchingCriteria($form);
+              @endphp
+              
+              @if(count($matchingCriteria) > 0)
+                <div class="mb-4">
+                  <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Matching Criteria:</h4>
+                  <div class="flex flex-wrap gap-2">
+                    @foreach($matchingCriteria as $criteria)
+                      <div class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium
+                        {{ $criteria['matches'] 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
+                        <span class="font-semibold">{{ $criteria['display_name'] }}:</span>
+                        <span>{{ $criteria['student_value'] }}</span>
+                        @if($criteria['matches'])
+                          <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                          </svg>
+                        @else
+                          <svg class="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                          </svg>
+                        @endif
+                      </div>
+                    @endforeach
+                  </div>
+                </div>
+              @endif
+
               <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-12">
-                <p><strong>Required GWA:</strong> {{ $scholarship->minimum_gwa }}</p>
                 <p><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($scholarship->deadline)->format('M d, Y') }}</p>
                 <p><strong>Slots:</strong> {{ $scholarship->slots_available ?? 0 }}</p>
 
@@ -76,7 +106,7 @@
     @else
       <div class="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-lg shadow-sm">
         <p class="text-blue-800 font-medium">
-          No scholarships currently match your GWA ({{ $gwa }}).
+          No scholarships currently match your profile criteria.
         </p>
         <p class="mt-1 text-blue-700 text-sm">
           Keep improving to unlock more opportunities!

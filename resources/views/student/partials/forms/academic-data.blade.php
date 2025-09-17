@@ -64,15 +64,10 @@
             />
             <div>
                 <label class="block mb-1 font-medium text-gray-700">GWA</label>
-                <select name="gwa" class="w-full border border-red-500 rounded-md p-2">
-                    <option value="">-- Select GWA --</option>
-                    @foreach (['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00'] as $gwa)
-                        <option value="{{ $gwa }}" 
-                            {{ old('gwa', $existingApplication->gwa ?? '') == $gwa ? 'selected' : '' }}>
-                            {{ $gwa }}
-                        </option>
-                    @endforeach
-                </select>
+                <input type="number" name="gwa" step="0.01" min="1.00" max="5.00" 
+                       placeholder="e.g. 2.25"
+                       value="{{ old('gwa', $existingApplication->gwa ?? '') }}"
+                       class="w-full border border-red-500 rounded-md p-2">
             </div>
         </div>
 

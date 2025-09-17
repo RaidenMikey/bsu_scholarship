@@ -17,7 +17,7 @@
     </x-slot>
 
     <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-12">
-        <p><strong>Required GWA:</strong> {{ $scholarship->minimum_gwa }}</p>
+        <p><strong>Required GWA:</strong> {{ $scholarship->getGwaRequirement() ?? 'No requirement' }}</p>
         <p><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($scholarship->deadline)->format('M d, Y') }}</p>
         <p><strong>Slots:</strong> {{ $scholarship->slots_available ?? 0 }}</p>
 

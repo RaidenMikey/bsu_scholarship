@@ -72,7 +72,6 @@ class ScholarshipController extends Controller
                 $scholarship->requirements()->create([
                     'name' => $doc['name'],
                     'type' => 'document',
-                    'description' => $doc['description'] ?? null,
                     'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
             }
@@ -137,7 +136,6 @@ class ScholarshipController extends Controller
                 $scholarship->requirements()->create([
                     'name' => $doc['name'],
                     'type' => 'document',
-                    'description' => $doc['description'] ?? null,
                     'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
             }

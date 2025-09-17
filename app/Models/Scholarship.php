@@ -12,7 +12,6 @@ class Scholarship extends Model
     protected $fillable = [
         'scholarship_name',
         'description',
-        'minimum_gwa',
         'deadline',
         'slots_available',
         'grant_amount',
@@ -49,5 +48,228 @@ class Scholarship extends Model
     public function documentRequirements()
     {
         return $this->hasMany(ScholarshipRequirement::class)->where('type', 'document');
+    }
+
+    // Get GWA requirement from conditions
+    public function getGwaRequirement()
+    {
+        $gwaCondition = $this->conditions()->where('name', 'gwa')->first();
+        return $gwaCondition ? $gwaCondition->value : null;
+    }
+
+    // Check if student meets GWA requirement
+    public function meetsGwaRequirement($studentGwa)
+    {
+        $requiredGwa = $this->getGwaRequirement();
+        
+        // If no GWA requirement, student qualifies
+        if ($requiredGwa === null) {
+            return true;
+        }
+        
+        // If student has INC, they don't qualify (unless scholarship allows it)
+        if ($studentGwa === null || $studentGwa === 'INC') {
+            return false;
+        }
+        
+        // Compare GWA (lower is better)
+        return floatval($studentGwa) <= floatval($requiredGwa);
+    }
+
+    // Check if student meets all conditions
+    public function meetsAllConditions($formData)
+    {
+        $conditions = $this->conditions;
+        
+        foreach ($conditions as $condition) {
+            if (!$this->meetsCondition($condition, $formData)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    // Check if student meets a specific condition
+    public function meetsCondition($condition, $formData)
+    {
+        switch ($condition->name) {
+            case 'gwa':
+                return $this->meetsGwaRequirement($formData->gwa);
+                
+            case 'year_level':
+                return $this->meetsYearLevelRequirement($condition->value, $formData->year_level);
+                
+            case 'income':
+                return $this->meetsIncomeRequirement($condition->value, $formData->monthly_allowance);
+                
+            case 'disability':
+                return $this->meetsDisabilityRequirement($condition->value, $formData->disability);
+                
+            case 'program':
+                return $this->meetsProgramRequirement($condition->value, $formData->program);
+                
+            case 'campus':
+                return $this->meetsCampusRequirement($condition->value, $formData->campus);
+                
+            case 'age':
+                return $this->meetsAgeRequirement($condition->value, $formData->age);
+                
+            case 'sex':
+                return $this->meetsSexRequirement($condition->value, $formData->sex);
+                
+            default:
+                return true; // Unknown condition, allow
+        }
+    }
+
+    // Year level requirement matching
+    public function meetsYearLevelRequirement($requiredLevel, $studentLevel)
+    {
+        if ($requiredLevel === null || $studentLevel === null) {
+            return true;
+        }
+        
+        // Convert year levels to comparable format
+        $yearLevels = ['1st Year' => 1, '2nd Year' => 2, '3rd Year' => 3, '4th Year' => 4, '5th Year' => 5];
+        
+        $requiredNum = $yearLevels[$requiredLevel] ?? null;
+        $studentNum = $yearLevels[$studentLevel] ?? null;
+        
+        if ($requiredNum === null || $studentNum === null) {
+            return $requiredLevel === $studentLevel; // Exact match if not in standard format
+        }
+        
+        return $studentNum >= $requiredNum; // Student must be at or above required level
+    }
+
+    // Income requirement matching (maximum income)
+    public function meetsIncomeRequirement($maxIncome, $studentIncome)
+    {
+        if ($maxIncome === null || $studentIncome === null) {
+            return true;
+        }
+        
+        return floatval($studentIncome) <= floatval($maxIncome);
+    }
+
+    // Disability requirement matching
+    public function meetsDisabilityRequirement($requiredDisability, $studentDisability)
+    {
+        if ($requiredDisability === null) {
+            return true; // No disability requirement
+        }
+        
+        if ($requiredDisability === 'none' || $requiredDisability === 'no') {
+            return $studentDisability === null || $studentDisability === '';
+        }
+        
+        if ($requiredDisability === 'any' || $requiredDisability === 'yes') {
+            return $studentDisability !== null && $studentDisability !== '';
+        }
+        
+        return $requiredDisability === $studentDisability; // Exact match
+    }
+
+    // Program requirement matching
+    public function meetsProgramRequirement($requiredProgram, $studentProgram)
+    {
+        if ($requiredProgram === null || $studentProgram === null) {
+            return true;
+        }
+        
+        return strtolower($requiredProgram) === strtolower($studentProgram);
+    }
+
+    // Campus requirement matching
+    public function meetsCampusRequirement($requiredCampus, $studentCampus)
+    {
+        if ($requiredCampus === null || $studentCampus === null) {
+            return true;
+        }
+        
+        return strtolower($requiredCampus) === strtolower($studentCampus);
+    }
+
+    // Age requirement matching
+    public function meetsAgeRequirement($requiredAge, $studentAge)
+    {
+        if ($requiredAge === null || $studentAge === null) {
+            return true;
+        }
+        
+        return intval($studentAge) >= intval($requiredAge);
+    }
+
+    // Sex requirement matching
+    public function meetsSexRequirement($requiredSex, $studentSex)
+    {
+        if ($requiredSex === null || $studentSex === null) {
+            return true;
+        }
+        
+        return strtolower($requiredSex) === strtolower($studentSex);
+    }
+
+    // Get matching criteria for display
+    public function getMatchingCriteria($formData)
+    {
+        $matchingCriteria = [];
+        $conditions = $this->conditions;
+        
+        foreach ($conditions as $condition) {
+            $matches = $this->meetsCondition($condition, $formData);
+            $matchingCriteria[] = [
+                'name' => $condition->name,
+                'value' => $condition->value,
+                'matches' => $matches,
+                'display_name' => $this->getConditionDisplayName($condition->name),
+                'student_value' => $this->getStudentValue($condition->name, $formData)
+            ];
+        }
+        
+        return $matchingCriteria;
+    }
+
+    // Get display name for condition
+    private function getConditionDisplayName($conditionName)
+    {
+        $displayNames = [
+            'gwa' => 'GWA',
+            'year_level' => 'Year Level',
+            'income' => 'Monthly Income',
+            'disability' => 'Disability Status',
+            'program' => 'Program',
+            'campus' => 'Campus',
+            'age' => 'Age',
+            'sex' => 'Gender'
+        ];
+        
+        return $displayNames[$conditionName] ?? ucfirst(str_replace('_', ' ', $conditionName));
+    }
+
+    // Get student value for condition
+    private function getStudentValue($conditionName, $formData)
+    {
+        switch ($conditionName) {
+            case 'gwa':
+                return $formData->gwa ?? 'Not specified';
+            case 'year_level':
+                return $formData->year_level ?? 'Not specified';
+            case 'income':
+                return $formData->monthly_allowance ? '₱' . number_format($formData->monthly_allowance, 2) : 'Not specified';
+            case 'disability':
+                return $formData->disability ?? 'None';
+            case 'program':
+                return $formData->program ?? 'Not specified';
+            case 'campus':
+                return $formData->campus ?? 'Not specified';
+            case 'age':
+                return $formData->age ?? 'Not specified';
+            case 'sex':
+                return $formData->sex ?? 'Not specified';
+            default:
+                return 'Not specified';
+        }
     }
 }

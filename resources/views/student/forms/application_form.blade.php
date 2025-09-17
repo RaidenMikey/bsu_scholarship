@@ -189,9 +189,15 @@ header('Expires: 0'); // Proxies
 
         <div class="mb-4">
           <label class="block mb-1 font-medium text-gray-700">High School Type</label>
-          <input type="text" name="highschool_type" placeholder="Public or Private"
-            value="{{ old('highschool_type', $existingApplication->highschool_type ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
+          <select name="highschool_type" class="w-full border border-red-500 rounded-md p-2">
+              <option value="">-- Select High School Type --</option>
+              @foreach (['Public', 'Private'] as $type)
+                  <option value="{{ $type }}" 
+                      {{ old('highschool_type', $existingApplication->highschool_type ?? '') == $type ? 'selected' : '' }}>
+                      {{ $type }}
+                  </option>
+              @endforeach
+          </select>
         </div>
 
         <div class="mb-4">
@@ -225,9 +231,15 @@ header('Expires: 0'); // Proxies
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700">Program</label>
-            <input type="text" name="program"
-              value="{{ old('program', $existingApplication->program ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+            <select name="program" class="w-full border border-red-500 rounded-md p-2">
+                <option value="">-- Select Program --</option>
+                @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
+                    <option value="{{ $program }}" 
+                        {{ old('program', $existingApplication->program ?? '') == $program ? 'selected' : '' }}>
+                        {{ $program }}
+                    </option>
+                @endforeach
+            </select>
           </div>
 
           <div>
@@ -241,27 +253,34 @@ header('Expires: 0'); // Proxies
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700">Year Level</label>
-            <input type="text" name="year_level"
-              value="{{ old('year_level', $existingApplication->year_level ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
-          </div>
-          <div>
-            <label class="block mb-1 font-medium text-gray-700">Campus</label>
-            <input type="text" name="campus"
-              value="{{ old('campus', $existingApplication->campus ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
-          </div>
-          <div>
-            <label class="block mb-1 font-medium text-gray-700">GWA</label>
-            <select name="gwa" class="w-full border border-red-500 rounded-md p-2">
-                <option value="">-- Select GWA --</option>
-                @foreach (['1.00','1.25','1.50','1.75','2.00','2.25','2.50','2.75','3.00','5.00'] as $gwa)
-                    <option value="{{ $gwa }}" 
-                        {{ old('gwa', $existingApplication->gwa ?? '') == $gwa ? 'selected' : '' }}>
-                        {{ $gwa }}
+            <select name="year_level" class="w-full border border-red-500 rounded-md p-2">
+                <option value="">-- Select Year Level --</option>
+                @foreach (['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'] as $year)
+                    <option value="{{ $year }}" 
+                        {{ old('year_level', $existingApplication->year_level ?? '') == $year ? 'selected' : '' }}>
+                        {{ $year }}
                     </option>
                 @endforeach
             </select>
+          </div>
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Campus</label>
+            <select name="campus" class="w-full border border-red-500 rounded-md p-2">
+                <option value="">-- Select Campus --</option>
+                @foreach (['BatStateU Alangilan', 'BatStateU Main', 'BatStateU Lipa', 'BatStateU Malvar', 'BatStateU Lemery', 'BatStateU San Juan', 'BatStateU Lobo', 'BatStateU Rosario', 'BatStateU Balayan', 'BatStateU Calaca', 'BatStateU Calatagan', 'BatStateU Mabini', 'BatStateU Nasugbu', 'BatStateU Tuy'] as $campus)
+                    <option value="{{ $campus }}" 
+                        {{ old('campus', $existingApplication->campus ?? '') == $campus ? 'selected' : '' }}>
+                        {{ $campus }}
+                    </option>
+                @endforeach
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">GWA</label>
+            <input type="number" name="gwa" step="0.01" min="1.00" max="5.00" 
+                   placeholder="e.g. 2.25"
+                   value="{{ old('gwa', $existingApplication->gwa ?? '') }}"
+                   class="w-full border border-red-500 rounded-md p-2">
         </div>
         </div>
 

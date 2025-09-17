@@ -67,6 +67,10 @@
                         <option value="year_level">Year Level</option>
                         <option value="income">Maximum Income</option>
                         <option value="disability">Disability</option>
+                        <option value="program">Program</option>
+                        <option value="campus">Campus</option>
+                        <option value="age">Minimum Age</option>
+                        <option value="sex">Gender</option>
                     </select>
 
                     <template x-if="cond.type === 'gwa'">
@@ -98,6 +102,88 @@
                                 class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
                             <option value="yes">Yes</option>
                             <option value="no">No</option>
+                        </select>
+                    </template>
+
+                    <template x-if="cond.type === 'program'">
+                        <select x-model="cond.value" :name="'conditions['+index+'][value]'" 
+                                class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
+                            <option value="">-- Select Program --</option>
+                            <option value="BS Computer Science">BS Computer Science</option>
+                            <option value="BS Information Technology">BS Information Technology</option>
+                            <option value="BS Computer Engineering">BS Computer Engineering</option>
+                            <option value="BS Electronics Engineering">BS Electronics Engineering</option>
+                            <option value="BS Civil Engineering">BS Civil Engineering</option>
+                            <option value="BS Mechanical Engineering">BS Mechanical Engineering</option>
+                            <option value="BS Electrical Engineering">BS Electrical Engineering</option>
+                            <option value="BS Industrial Engineering">BS Industrial Engineering</option>
+                            <option value="BS Accountancy">BS Accountancy</option>
+                            <option value="BS Business Administration">BS Business Administration</option>
+                            <option value="BS Tourism Management">BS Tourism Management</option>
+                            <option value="BS Hospitality Management">BS Hospitality Management</option>
+                            <option value="BS Psychology">BS Psychology</option>
+                            <option value="BS Education">BS Education</option>
+                            <option value="BS Nursing">BS Nursing</option>
+                            <option value="BS Medical Technology">BS Medical Technology</option>
+                            <option value="BS Pharmacy">BS Pharmacy</option>
+                            <option value="BS Biology">BS Biology</option>
+                            <option value="BS Chemistry">BS Chemistry</option>
+                            <option value="BS Mathematics">BS Mathematics</option>
+                            <option value="BS Physics">BS Physics</option>
+                            <option value="BS Environmental Science">BS Environmental Science</option>
+                            <option value="BS Agriculture">BS Agriculture</option>
+                            <option value="BS Fisheries">BS Fisheries</option>
+                            <option value="BS Forestry">BS Forestry</option>
+                            <option value="BS Architecture">BS Architecture</option>
+                            <option value="BS Interior Design">BS Interior Design</option>
+                            <option value="BS Fine Arts">BS Fine Arts</option>
+                            <option value="BS Communication">BS Communication</option>
+                            <option value="BS Social Work">BS Social Work</option>
+                            <option value="BS Criminology">BS Criminology</option>
+                            <option value="BS Political Science">BS Political Science</option>
+                            <option value="BS History">BS History</option>
+                            <option value="BS Literature">BS Literature</option>
+                            <option value="BS Philosophy">BS Philosophy</option>
+                            <option value="BS Economics">BS Economics</option>
+                            <option value="BS Sociology">BS Sociology</option>
+                            <option value="BS Anthropology">BS Anthropology</option>
+                        </select>
+                    </template>
+
+                    <template x-if="cond.type === 'campus'">
+                        <select x-model="cond.value" :name="'conditions['+index+'][value]'" 
+                                class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
+                            <option value="">-- Select Campus --</option>
+                            <option value="BatStateU Alangilan">BatStateU Alangilan</option>
+                            <option value="BatStateU Main">BatStateU Main</option>
+                            <option value="BatStateU Lipa">BatStateU Lipa</option>
+                            <option value="BatStateU Malvar">BatStateU Malvar</option>
+                            <option value="BatStateU Lemery">BatStateU Lemery</option>
+                            <option value="BatStateU San Juan">BatStateU San Juan</option>
+                            <option value="BatStateU Lobo">BatStateU Lobo</option>
+                            <option value="BatStateU Rosario">BatStateU Rosario</option>
+                            <option value="BatStateU Balayan">BatStateU Balayan</option>
+                            <option value="BatStateU Calaca">BatStateU Calaca</option>
+                            <option value="BatStateU Calatagan">BatStateU Calatagan</option>
+                            <option value="BatStateU Mabini">BatStateU Mabini</option>
+                            <option value="BatStateU Nasugbu">BatStateU Nasugbu</option>
+                            <option value="BatStateU Tuy">BatStateU Tuy</option>
+                        </select>
+                    </template>
+
+                    <template x-if="cond.type === 'age'">
+                        <input type="number" x-model="cond.value" 
+                               :name="'conditions['+index+'][value]'" 
+                               placeholder="e.g. 18"
+                               class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
+                    </template>
+
+                    <template x-if="cond.type === 'sex'">
+                        <select x-model="cond.value" :name="'conditions['+index+'][value]'" 
+                                class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
+                            <option value="">-- Select Gender --</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
                         </select>
                     </template>
 

@@ -229,7 +229,7 @@
                                 <div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                                     <p><span class="font-medium">Grant Amount:</span> ₱{{ number_format($application->scholarship->grant_amount, 2) }}</p>
                                     <p><span class="font-medium">Deadline:</span> {{ \Carbon\Carbon::parse($application->scholarship->deadline)->format('M d, Y') }}</p>
-                                    <p><span class="font-medium">Minimum GWA:</span> {{ $application->scholarship->minimum_gwa ?? 'Not specified' }}</p>
+                                    <p><span class="font-medium">Minimum GWA:</span> {{ $application->scholarship->getGwaRequirement() ?? 'Not specified' }}</p>
                                 </div>
                             </div>
                             

@@ -30,11 +30,17 @@ class StudentController extends Controller
         $gwa = $form ? floatval($form->gwa) : null;
 
         $scholarships = collect();
-        if ($hasApplication && $gwa !== null) {
-            $scholarships = Scholarship::where('minimum_gwa', '>=', $gwa)
-                ->where('is_active', true)
+        if ($hasApplication) {
+            // Get all active scholarships and filter by all conditions
+            $allScholarships = Scholarship::where('is_active', true)
+                ->with('conditions')
                 ->orderBy('deadline')
                 ->get();
+
+            // Filter scholarships based on all requirements
+            $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
+                return $scholarship->meetsAllConditions($form);
+            });
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
             foreach ($scholarships as $scholarship) {
@@ -50,7 +56,7 @@ class StudentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking'));
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form'));
     }
 
     // ----------------------------
@@ -131,15 +137,17 @@ class StudentController extends Controller
 
         $scholarships = collect();
 
-        if ($gwa !== null) {
-            $gwaFloat = floatval($gwa);
-
-            // Show scholarships where required GWA >= student's GWA
-            $scholarships = Scholarship::whereNotNull('minimum_gwa')
-                ->where('minimum_gwa', '>=', $gwaFloat)
-                ->where('is_active', true)
+        if ($form) {
+            // Get all active scholarships and filter by all conditions
+            $allScholarships = Scholarship::where('is_active', true)
+                ->with('conditions')
                 ->orderBy('deadline')
                 ->get();
+
+            // Filter scholarships based on all requirements
+            $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
+                return $scholarship->meetsAllConditions($form);
+            });
         }
 
         // Mark applied scholarships
@@ -148,7 +156,7 @@ class StudentController extends Controller
             $scholarship->applied = in_array($scholarship->id, $appliedIds);
         }
 
-        return view('student.partials.tabs.scholarships', compact('scholarships', 'gwa'));
+        return view('student.partials.tabs.scholarships', compact('scholarships', 'gwa', 'form'));
     }
 
     // ----------------------------
