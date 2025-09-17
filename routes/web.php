@@ -8,7 +8,7 @@ use App\Http\Controllers\CentralController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\ScholarshipRequirementController;
 use App\Http\Controllers\FormController;
-use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\SFAODocumentController;
 use App\Models\Form;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -40,7 +40,7 @@ Route::post('/email/verification-notification', [AuthController::class, 'resendV
 // --------------------------------------------------
 
 // Profile Picture Upload
-Route::post('/upload-profile-picture/{role}', [DocumentController::class, 'uploadProfilePicture'])
+Route::post('/upload-profile-picture/{role}', [SFAODocumentController::class, 'uploadProfilePicture'])
     ->whereIn('role', ['student', 'sfao', 'central']);
 
 // --------------------------------------------------
@@ -65,8 +65,8 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     Route::post('/unapply', [StudentController::class, 'unapply'])->name('unapply');
     
     // Document Uploads
-    Route::get('/upload-documents/{scholarship_id}', [DocumentController::class, 'showUploadForm'])->name('upload-documents');
-    Route::post('/upload-documents/{scholarship_id}', [DocumentController::class, 'uploadDocuments'])->name('upload-documents.submit');
+    Route::get('/upload-documents/{scholarship_id}', [SFAODocumentController::class, 'showUploadForm'])->name('upload-documents');
+    Route::post('/upload-documents/{scholarship_id}', [SFAODocumentController::class, 'uploadDocuments'])->name('upload-documents.submit');
     
     // Print Application
     Route::get('/print-application', [StudentController::class, 'printApplication']);

@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\SfaoRequirement;
 use App\Models\Application;
 
-class DocumentController extends Controller
+class SFAODocumentController extends Controller
 {
     /**
      * Show document upload form

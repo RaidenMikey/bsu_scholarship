@@ -59,8 +59,9 @@ class ScholarshipController extends Controller
         if ($request->has('conditions')) {
             foreach ($request->conditions as $cond) {
                 $scholarship->conditions()->create([
-                    'field_name' => $cond['type'],
-                    'value'      => $cond['value'],
+                    'name' => $cond['type'],
+                    'value' => $cond['value'],
+                    'type' => 'condition',
                 ]);
             }
         }
@@ -69,9 +70,10 @@ class ScholarshipController extends Controller
         if ($request->has('documents')) {
             foreach ($request->documents as $doc) {
                 $scholarship->requirements()->create([
-                    'name'      => $doc['name'],
-                    'type'      => $doc['type'],
-                    'mandatory' => $doc['mandatory'],
+                    'name' => $doc['name'],
+                    'type' => 'document',
+                    'description' => $doc['description'] ?? null,
+                    'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
             }
         }
@@ -121,8 +123,9 @@ class ScholarshipController extends Controller
         if ($request->has('conditions')) {
             foreach ($request->conditions as $cond) {
                 $scholarship->conditions()->create([
-                    'field_name' => $cond['type'],
-                    'value'      => $cond['value'],
+                    'name' => $cond['type'],
+                    'value' => $cond['value'],
+                    'type' => 'condition',
                 ]);
             }
         }
@@ -132,9 +135,10 @@ class ScholarshipController extends Controller
         if ($request->has('documents')) {
             foreach ($request->documents as $doc) {
                 $scholarship->requirements()->create([
-                    'name'      => $doc['name'],
-                    'type'      => $doc['type'],
-                    'mandatory' => $doc['mandatory'],
+                    'name' => $doc['name'],
+                    'type' => 'document',
+                    'description' => $doc['description'] ?? null,
+                    'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
             }
         }
