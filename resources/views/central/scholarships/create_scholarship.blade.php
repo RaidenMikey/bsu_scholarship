@@ -44,6 +44,23 @@
             @method('PUT')
         @endif
 
+        <!-- Scholarship Type -->
+        <label class="block text-sm font-medium text-gray-700 mb-2">Scholarship Type</label>
+        <div class="flex space-x-6 mb-4">
+            <div class="flex items-center">
+                <input type="radio" id="scholarship_type_internal" name="scholarship_type" value="internal"
+                       {{ old('scholarship_type', $scholarship->scholarship_type ?? 'internal') === 'internal' ? 'checked' : '' }}
+                       class="h-4 w-4 text-red-700 focus:ring-red-700 border-gray-300">
+                <label for="scholarship_type_internal" class="ml-2 block text-sm text-gray-700">Internal</label>
+            </div>
+            <div class="flex items-center">
+                <input type="radio" id="scholarship_type_external" name="scholarship_type" value="external"
+                       {{ old('scholarship_type', $scholarship->scholarship_type ?? 'internal') === 'external' ? 'checked' : '' }}
+                       class="h-4 w-4 text-red-700 focus:ring-red-700 border-gray-300">
+                <label for="scholarship_type_external" class="ml-2 block text-sm text-gray-700">External</label>
+            </div>
+        </div>
+
         <!-- Scholarship Name -->
         <label for="scholarship_name" class="block text-sm font-medium text-gray-700">Scholarship Name</label>
         <input type="text" id="scholarship_name" name="scholarship_name"

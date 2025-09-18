@@ -38,6 +38,7 @@ class ScholarshipController extends Controller
     {
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
+            'scholarship_type' => 'required|in:internal,external',
             'description'      => 'required|string',
             'submission_deadline' => 'required|date|after:today',
             'application_start_date' => 'nullable|date|before:submission_deadline',
@@ -50,6 +51,7 @@ class ScholarshipController extends Controller
 
         $scholarship = Scholarship::create([
             'scholarship_name' => $request->scholarship_name,
+            'scholarship_type' => $request->scholarship_type,
             'description'      => $request->description,
             'submission_deadline' => $request->submission_deadline,
             'application_start_date' => $request->application_start_date,
@@ -105,6 +107,7 @@ class ScholarshipController extends Controller
     {
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
+            'scholarship_type' => 'required|in:internal,external',
             'description'      => 'required|string',
             'submission_deadline' => 'required|date|after:today',
             'application_start_date' => 'nullable|date|before:submission_deadline',
@@ -119,6 +122,7 @@ class ScholarshipController extends Controller
 
         $scholarship->update([
             'scholarship_name' => $request->scholarship_name,
+            'scholarship_type' => $request->scholarship_type,
             'description'      => $request->description,
             'submission_deadline' => $request->submission_deadline,
             'application_start_date' => $request->application_start_date,

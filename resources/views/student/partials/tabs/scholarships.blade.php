@@ -77,6 +77,9 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusBadge['color'] }}">
                   {{ $statusBadge['text'] }}
                 </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scholarship->getScholarshipTypeBadgeColor() }}">
+                  {{ ucfirst($scholarship->scholarship_type) }}
+                </span>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
                   {{ ucfirst($scholarship->priority_level) }} Priority
                 </span>
