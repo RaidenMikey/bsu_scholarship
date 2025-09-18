@@ -32,9 +32,9 @@ class StudentController extends Controller
         $scholarships = collect();
         if ($hasApplication) {
             // Get all active scholarships and filter by all conditions
-            $allScholarships = Scholarship::where('is_active', true)
+            $allScholarships = Scholarship::acceptingApplications()
                 ->with('conditions')
-                ->orderBy('deadline')
+                ->orderBy('submission_deadline')
                 ->get();
 
             // Filter scholarships based on all requirements
@@ -139,9 +139,9 @@ class StudentController extends Controller
 
         if ($form) {
             // Get all active scholarships and filter by all conditions
-            $allScholarships = Scholarship::where('is_active', true)
+            $allScholarships = Scholarship::acceptingApplications()
                 ->with('conditions')
-                ->orderBy('deadline')
+                ->orderBy('submission_deadline')
                 ->get();
 
             // Filter scholarships based on all requirements

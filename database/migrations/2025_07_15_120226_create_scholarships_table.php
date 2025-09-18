@@ -12,11 +12,14 @@ return new class extends Migration {
             $table->id();
             $table->string('scholarship_name');
             $table->text('description');
-            $table->date('deadline');
+            $table->date('submission_deadline'); // Changed from deadline
+            $table->date('application_start_date')->nullable(); // When applications can start
             $table->integer('slots_available')->nullable();
             $table->decimal('grant_amount', 10, 2)->nullable(); // ₱99999999.99 max
             $table->boolean('renewal_allowed')->default(false); // whether renewal is allowed
             $table->boolean('is_active')->default(true);
+            $table->enum('priority_level', ['high', 'medium', 'low'])->default('medium'); // Scholarship priority
+            $table->text('eligibility_notes')->nullable(); // Additional eligibility information
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

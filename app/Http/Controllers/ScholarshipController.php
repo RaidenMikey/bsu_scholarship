@@ -39,19 +39,25 @@ class ScholarshipController extends Controller
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
             'description'      => 'required|string',
-            'deadline'         => 'required|date',
-            'slots_available'  => 'nullable|integer',
+            'submission_deadline' => 'required|date|after:today',
+            'application_start_date' => 'nullable|date|before:submission_deadline',
+            'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
             'renewal_allowed'  => 'nullable|boolean',
+            'priority_level'   => 'required|in:high,medium,low',
+            'eligibility_notes' => 'nullable|string',
         ]);
 
         $scholarship = Scholarship::create([
             'scholarship_name' => $request->scholarship_name,
             'description'      => $request->description,
-            'deadline'         => $request->deadline,
+            'submission_deadline' => $request->submission_deadline,
+            'application_start_date' => $request->application_start_date,
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
             'renewal_allowed'  => $request->boolean('renewal_allowed'),
+            'priority_level'   => $request->priority_level,
+            'eligibility_notes' => $request->eligibility_notes,
             'created_by'       => session('user_id'),
         ]);
 
@@ -100,10 +106,13 @@ class ScholarshipController extends Controller
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
             'description'      => 'required|string',
-            'deadline'         => 'required|date',
-            'slots_available'  => 'nullable|integer',
+            'submission_deadline' => 'required|date|after:today',
+            'application_start_date' => 'nullable|date|before:submission_deadline',
+            'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
             'renewal_allowed'  => 'nullable|boolean',
+            'priority_level'   => 'required|in:high,medium,low',
+            'eligibility_notes' => 'nullable|string',
         ]);
 
         $scholarship = Scholarship::findOrFail($id);
@@ -111,10 +120,13 @@ class ScholarshipController extends Controller
         $scholarship->update([
             'scholarship_name' => $request->scholarship_name,
             'description'      => $request->description,
-            'deadline'         => $request->deadline,
+            'submission_deadline' => $request->submission_deadline,
+            'application_start_date' => $request->application_start_date,
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
             'renewal_allowed'  => $request->boolean('renewal_allowed'),
+            'priority_level'   => $request->priority_level,
+            'eligibility_notes' => $request->eligibility_notes,
         ]);
 
         // Refresh conditions

@@ -44,24 +44,88 @@
            data-scholarship-id="{{ $scholarship->id }}">
         
         <div>
-          <h3 class="text-xl font-bold text-bsu-red dark:text-white mb-4">
-            {{ $scholarship->scholarship_name }}
-          </h3>
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold text-bsu-red dark:text-white">
+              {{ $scholarship->scholarship_name }}
+            </h3>
+            @php
+              $statusBadge = $scholarship->getStatusBadge();
+            @endphp
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $statusBadge['color'] }}">
+              {{ $statusBadge['text'] }}
+            </span>
+          </div>
+          
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+            {{ Str::limit($scholarship->description, 100) }}
+          </p>
+
+          <!-- Priority and Renewal Badges -->
+          <div class="flex flex-wrap gap-1 mb-3">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
+              {{ ucfirst($scholarship->priority_level) }}
+            </span>
+            @if($scholarship->renewal_allowed)
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                🔄 Renewable
+              </span>
+            @endif
+          </div>
+
+          <!-- Key Information -->
+          <div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+            <div class="flex justify-between">
+              <span>Deadline:</span>
+              <span class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : '' }}">
+                {{ $scholarship->submission_deadline->format('M d, Y') }}
+                @if($scholarship->getDaysUntilDeadline() > 0)
+                  <span class="text-xs">({{ $scholarship->getDaysUntilDeadline() }}d left)</span>
+                @elseif($scholarship->getDaysUntilDeadline() == 0)
+                  <span class="text-xs text-red-600">(Today!)</span>
+                @else
+                  <span class="text-xs text-red-600">(Expired)</span>
+                @endif
+              </span>
+            </div>
+            
+            @if($scholarship->application_start_date)
+              <div class="flex justify-between">
+                <span>Opens:</span>
+                <span class="{{ now()->gte($scholarship->application_start_date) ? 'text-green-600 font-semibold' : 'text-gray-600' }}">
+                  {{ $scholarship->application_start_date->format('M d, Y') }}
+                </span>
+              </div>
+            @endif
+            
+            @if($scholarship->grant_amount)
+              <div class="flex justify-between">
+                <span>Amount:</span>
+                <span class="font-semibold text-green-600">₱{{ number_format($scholarship->grant_amount, 0) }}</span>
+              </div>
+            @endif
+            
+            <div class="flex justify-between">
+              <span>Status:</span>
+              <span class="font-semibold {{ $scholarship->isAcceptingApplications() ? 'text-green-600' : 'text-red-600' }}">
+                {{ $scholarship->isAcceptingApplications() ? 'Open' : 'Closed' }}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div class="mt-auto">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Slots: {{ $scholarship->slots_available ?? 'Unlimited' }}
+              Applications: {{ $scholarship->applications_count }}
             </span>
-            <span class="text-sm font-medium text-bsu-red dark:text-red-400">
-              {{ $scholarship->applications_count }} / {{ $scholarship->slots_available ?? '∞' }} Applied
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Slots: {{ $scholarship->slots_available ?? '∞' }}
             </span>
           </div>
           
           <!-- Progress Bar -->
           @if($scholarship->slots_available)
-            <div class="mt-3">
+            <div class="mb-2">
               <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div class="bg-bsu-red h-2 rounded-full transition-all duration-300 progress-bar" 
                      data-width="{{ $scholarship->fill_percentage }}"></div>
@@ -71,6 +135,17 @@
               </p>
             </div>
           @endif
+
+          <!-- Days Remaining -->
+          <div class="text-center">
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              @if($scholarship->getDaysUntilDeadline() > 0)
+                {{ $scholarship->getDaysUntilDeadline() }} days left
+              @else
+                Deadline passed
+              @endif
+            </span>
+          </div>
         </div>
       </div>
     @empty

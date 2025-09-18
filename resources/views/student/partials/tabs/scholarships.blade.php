@@ -25,7 +25,7 @@
 
         <div class="space-y-5">
           @foreach ($scholarships as $scholarship)
-            <div class="relative rounded-lg shadow border-2 p-5 transition
+            <div class="relative rounded-lg shadow border-2 p-5 transition flex flex-col
                         {{ $scholarship->applied 
                           ? 'bg-gray-200 dark:bg-gray-800 border-gray-400' 
                           : 'bg-white dark:bg-gray-900 border-bsu-red hover:bg-bsu-light dark:hover:bg-gray-800' }}">
@@ -69,30 +69,117 @@
                 </div>
               @endif
 
-              <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-12">
-                <p><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($scholarship->deadline)->format('M d, Y') }}</p>
-                <p><strong>Slots:</strong> {{ $scholarship->slots_available ?? 0 }}</p>
-
-                @if($scholarship->grant_amount)
-                  <p><strong>Grant Amount:</strong> ₱{{ number_format($scholarship->grant_amount, 2) }}</p>
+              <!-- Scholarship Status and Priority -->
+              <div class="mb-4 flex flex-wrap gap-2">
+                @php
+                  $statusBadge = $scholarship->getStatusBadge();
+                @endphp
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusBadge['color'] }}">
+                  {{ $statusBadge['text'] }}
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
+                  {{ ucfirst($scholarship->priority_level) }} Priority
+                </span>
+                @if($scholarship->renewal_allowed)
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    🔄 Renewable
+                  </span>
                 @endif
-
-                <p><strong>Renewal Allowed:</strong> {{ $scholarship->renewal_allowed ? 'Yes' : 'No' }}</p>
               </div>
 
+              <!-- Scholarship Details -->
+              <div class="text-sm text-gray-600 dark:text-gray-400 space-y-2 mb-4">
+                <div class="flex justify-between items-center">
+                  <span><strong>Submission Deadline:</strong></span>
+                  <span class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-600' }}">
+                    {{ $scholarship->submission_deadline->format('M d, Y') }}
+                    @if($scholarship->getDaysUntilDeadline() > 0)
+                      <span class="text-xs">({{ $scholarship->getDaysUntilDeadline() }} days left)</span>
+                    @elseif($scholarship->getDaysUntilDeadline() == 0)
+                      <span class="text-xs text-red-600">(Today!)</span>
+                    @else
+                      <span class="text-xs text-red-600">(Expired)</span>
+                    @endif
+                  </span>
+                </div>
+
+                @if($scholarship->application_start_date)
+                  <div class="flex justify-between items-center">
+                    <span><strong>Application Opens:</strong></span>
+                    <span class="{{ now()->gte($scholarship->application_start_date) ? 'text-green-600 font-semibold' : 'text-gray-600' }}">
+                      {{ $scholarship->application_start_date->format('M d, Y') }}
+                      @if(now()->lt($scholarship->application_start_date))
+                        <span class="text-xs">({{ now()->diffInDays($scholarship->application_start_date) }} days to go)</span>
+                      @else
+                        <span class="text-xs text-green-600">(Open)</span>
+                      @endif
+                    </span>
+                  </div>
+                @endif
+
+                <div class="flex justify-between items-center">
+                  <span><strong>Available Slots:</strong></span>
+                  <span class="{{ $scholarship->isFull() ? 'text-red-600' : 'text-gray-600' }}">
+                    @if($scholarship->slots_available === null)
+                      <span class="text-green-600 font-semibold">Unlimited</span>
+                    @else
+                      {{ $scholarship->slots_available - $scholarship->getApplicationCount() }} / {{ $scholarship->slots_available }}
+                      @if($scholarship->isFull())
+                        <span class="text-xs text-red-600">(Full)</span>
+                      @endif
+                    @endif
+                  </span>
+                </div>
+
+                @if($scholarship->grant_amount)
+                  <div class="flex justify-between items-center">
+                    <span><strong>Grant Amount:</strong></span>
+                    <span class="font-semibold text-green-600">₱{{ number_format($scholarship->grant_amount, 2) }}</span>
+                  </div>
+                @endif
+
+                <!-- Application Statistics -->
+                <div class="flex justify-between items-center">
+                  <span><strong>Total Applications:</strong></span>
+                  <span class="font-semibold">{{ $scholarship->getApplicationCount() }}</span>
+                </div>
+
+                @if($scholarship->eligibility_notes)
+                  <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p class="text-xs text-blue-800 dark:text-blue-200">
+                      <strong>Additional Notes:</strong> {{ $scholarship->eligibility_notes }}
+                    </p>
+                  </div>
+                @endif
+              </div>
+
+              <!-- Progress Bar for Slots -->
+              @if($scholarship->slots_available)
+                <div class="mb-4">
+                  <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <span>Applications</span>
+                    <span>{{ $scholarship->getApplicationCount() }} / {{ $scholarship->slots_available }}</span>
+                  </div>
+                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="bg-bsu-red h-2 rounded-full transition-all duration-300" 
+                         style="width: {{ $scholarship->getFillPercentage() }}%"></div>
+                  </div>
+                </div>
+              @endif
+
               <!-- Apply / Applied / Unapply Buttons -->
-              <div class="absolute bottom-4 left-4">
+              <div class="mt-auto pt-4 flex justify-start">
                   @if($scholarship->applied)
                       <!-- Unapply Button (opens modal) -->
                       <button type="button" 
                               onclick="openUnapplyModal('{{ $scholarship->id }}')"
-                              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow">
+                              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow transition-colors">
                           ❌ Unapply
                       </button>
                   @else
                       <form method="GET" action="{{ route('student.upload-documents', ['scholarship_id' => $scholarship->id]) }}">
                           <button type="submit" 
-                                  class="px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow">
+                                  class="px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow transition-colors">
                               🎓 Apply
                           </button>
                       </form>

@@ -230,23 +230,47 @@
             </button>
         </div>
 
-        <!-- Deadline -->
-        <label for="deadline" class="block text-sm font-medium text-gray-700 mt-4">Deadline</label>
-        <input type="date" id="deadline" name="deadline"
-               value="{{ old('deadline', isset($scholarship->deadline) ? \Carbon\Carbon::parse($scholarship->deadline)->format('Y-m-d') : '') }}" required
+        <!-- Priority Level -->
+        <label for="priority_level" class="block text-sm font-medium text-gray-700 mt-4">Priority Level</label>
+        <select id="priority_level" name="priority_level" required
+                class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
+            <option value="">Select Priority Level</option>
+            <option value="high" {{ old('priority_level', $scholarship->priority_level ?? '') == 'high' ? 'selected' : '' }}>High Priority</option>
+            <option value="medium" {{ old('priority_level', $scholarship->priority_level ?? '') == 'medium' ? 'selected' : '' }}>Medium Priority</option>
+            <option value="low" {{ old('priority_level', $scholarship->priority_level ?? '') == 'low' ? 'selected' : '' }}>Low Priority</option>
+        </select>
+
+        <!-- Application Start Date -->
+        <label for="application_start_date" class="block text-sm font-medium text-gray-700 mt-2">Application Start Date (Optional)</label>
+        <input type="date" id="application_start_date" name="application_start_date"
+               value="{{ old('application_start_date', isset($scholarship->application_start_date) ? \Carbon\Carbon::parse($scholarship->application_start_date)->format('Y-m-d') : '') }}"
+               class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
+        <p class="text-xs text-gray-500 mt-1">Leave empty to allow immediate applications</p>
+
+        <!-- Submission Deadline -->
+        <label for="submission_deadline" class="block text-sm font-medium text-gray-700 mt-2">Submission Deadline</label>
+        <input type="date" id="submission_deadline" name="submission_deadline"
+               value="{{ old('submission_deadline', isset($scholarship->submission_deadline) ? \Carbon\Carbon::parse($scholarship->submission_deadline)->format('Y-m-d') : '') }}" required
                class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
 
         <!-- Slots Available -->
         <label for="slots_available" class="block text-sm font-medium text-gray-700 mt-2">Slots Available</label>
-        <input type="number" id="slots_available" name="slots_available"
+        <input type="number" id="slots_available" name="slots_available" min="0"
                value="{{ old('slots_available', $scholarship->slots_available ?? '') }}"
                class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
+        <p class="text-xs text-gray-500 mt-1">Leave empty for unlimited slots</p>
 
         <!-- Grant Amount -->
         <label for="grant_amount" class="block text-sm font-medium text-gray-700 mt-2">Grant Amount (₱)</label>
-        <input type="number" step="0.01" id="grant_amount" name="grant_amount"
+        <input type="number" step="0.01" id="grant_amount" name="grant_amount" min="0"
                value="{{ old('grant_amount', $scholarship->grant_amount ?? '') }}"
                class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
+
+        <!-- Eligibility Notes -->
+        <label for="eligibility_notes" class="block text-sm font-medium text-gray-700 mt-2">Additional Eligibility Notes (Optional)</label>
+        <textarea id="eligibility_notes" name="eligibility_notes" rows="3"
+                  class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">{{ old('eligibility_notes', $scholarship->eligibility_notes ?? '') }}</textarea>
+        <p class="text-xs text-gray-500 mt-1">Additional information about eligibility requirements</p>
 
         <!-- Renewal Allowed -->
         <div class="flex items-center mt-2">

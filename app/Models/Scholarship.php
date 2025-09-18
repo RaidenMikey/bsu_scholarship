@@ -12,12 +12,23 @@ class Scholarship extends Model
     protected $fillable = [
         'scholarship_name',
         'description',
-        'deadline',
+        'submission_deadline',
+        'application_start_date',
         'slots_available',
         'grant_amount',
         'renewal_allowed',
         'is_active',
+        'priority_level',
+        'eligibility_notes',
         'created_by',
+    ];
+
+    protected $casts = [
+        'submission_deadline' => 'date',
+        'application_start_date' => 'date',
+        'grant_amount' => 'decimal:2',
+        'renewal_allowed' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // A scholarship can have many applications
@@ -271,5 +282,136 @@ class Scholarship extends Model
             default:
                 return 'Not specified';
         }
+    }
+
+    // Check if scholarship is currently accepting applications
+    public function isAcceptingApplications()
+    {
+        $now = now();
+        
+        // Check if scholarship is active
+        if (!$this->is_active) {
+            return false;
+        }
+        
+        // Check if application period has started
+        if ($this->application_start_date && $now->lt($this->application_start_date)) {
+            return false;
+        }
+        
+        // Check if submission deadline has passed
+        if ($now->gt($this->submission_deadline)) {
+            return false;
+        }
+        
+        // Check if slots are available
+        if ($this->slots_available !== null && $this->slots_available <= 0) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Get days remaining until deadline
+    public function getDaysUntilDeadline()
+    {
+        $deadline = $this->submission_deadline;
+        $now = now();
+        
+        if ($now->gt($deadline)) {
+            return 0; // Deadline has passed
+        }
+        
+        return $now->diffInDays($deadline);
+    }
+
+    // Get application count
+    public function getApplicationCount()
+    {
+        return $this->applications()->count();
+    }
+
+    // Get approved application count
+    public function getApprovedCount()
+    {
+        return $this->applications()->where('status', 'approved')->count();
+    }
+
+    // Get fill percentage
+    public function getFillPercentage()
+    {
+        if ($this->slots_available === null || $this->slots_available <= 0) {
+            return 0;
+        }
+        
+        $applicationsCount = $this->getApplicationCount();
+        return min(($applicationsCount / $this->slots_available) * 100, 100);
+    }
+
+    // Check if scholarship is full
+    public function isFull()
+    {
+        if ($this->slots_available === null) {
+            return false; // Unlimited slots
+        }
+        
+        return $this->getApplicationCount() >= $this->slots_available;
+    }
+
+    // Get priority badge color
+    public function getPriorityBadgeColor()
+    {
+        return match($this->priority_level) {
+            'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        };
+    }
+
+    // Get status badge
+    public function getStatusBadge()
+    {
+        if (!$this->is_active) {
+            return ['text' => 'Inactive', 'color' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'];
+        }
+        
+        if (!$this->isAcceptingApplications()) {
+            return ['text' => 'Closed', 'color' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'];
+        }
+        
+        if ($this->isFull()) {
+            return ['text' => 'Full', 'color' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'];
+        }
+        
+        return ['text' => 'Open', 'color' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'];
+    }
+
+    // Scope for active scholarships
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    // Scope for scholarships accepting applications
+    public function scopeAcceptingApplications($query)
+    {
+        $now = now();
+        return $query->where('is_active', true)
+                    ->where(function($q) use ($now) {
+                        $q->whereNull('application_start_date')
+                          ->orWhere('application_start_date', '<=', $now);
+                    })
+                    ->where('submission_deadline', '>=', $now)
+                    ->where(function($q) {
+                        $q->whereNull('slots_available')
+                          ->orWhere('slots_available', '>', 0);
+                    });
+    }
+
+    // Scope for high priority scholarships
+    public function scopeHighPriority($query)
+    {
+        return $query->where('priority_level', 'high');
     }
 }
