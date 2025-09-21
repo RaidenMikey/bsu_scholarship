@@ -18,6 +18,7 @@ class Scholarship extends Model
         'slots_available',
         'grant_amount',
         'renewal_allowed',
+        'grant_type',
         'is_active',
         'priority_level',
         'eligibility_notes',
@@ -424,5 +425,89 @@ class Scholarship extends Model
     public function scopeHighPriority($query)
     {
         return $query->where('priority_level', 'high');
+    }
+
+    // Grant Type Methods
+    /**
+     * Check if scholarship is one-time (closes after first grant)
+     */
+    public function isOneTime()
+    {
+        return $this->grant_type === 'one_time';
+    }
+
+    /**
+     * Check if scholarship is recurring (multiple grants allowed)
+     */
+    public function isRecurring()
+    {
+        return $this->grant_type === 'recurring';
+    }
+
+    /**
+     * Check if scholarship is discontinued
+     */
+    public function isDiscontinued()
+    {
+        return $this->grant_type === 'discontinued';
+    }
+
+    /**
+     * Get grant type display name
+     */
+    public function getGrantTypeDisplayName()
+    {
+        return match($this->grant_type) {
+            'one_time' => 'One-time Grant',
+            'recurring' => 'Recurring Grants',
+            'discontinued' => 'Discontinued',
+            default => 'Unknown'
+        };
+    }
+
+    /**
+     * Get grant type badge color
+     */
+    public function getGrantTypeBadgeColor()
+    {
+        return match($this->grant_type) {
+            'one_time' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'recurring' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'discontinued' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+        };
+    }
+
+    /**
+     * Check if scholarship allows new applications based on grant type
+     */
+    public function allowsNewApplications()
+    {
+        // Discontinued scholarships don't allow new applications
+        if ($this->isDiscontinued()) {
+            return false;
+        }
+
+        // One-time scholarships don't allow new applications if any grants have been claimed
+        if ($this->isOneTime()) {
+            $claimedCount = $this->applications()->where('status', 'claimed')->count();
+            return $claimedCount === 0;
+        }
+
+        // Recurring scholarships allow new applications if they're active and accepting
+        return $this->isAcceptingApplications();
+    }
+
+    /**
+     * Get grant type description
+     */
+    public function getGrantTypeDescription()
+    {
+        return match($this->grant_type) {
+            'one_time' => 'Single grant only. Closes after first claim.',
+            'recurring' => 'Multiple grants allowed. Semester-based or as announced.',
+            'discontinued' => 'Scholarship has been cancelled or discontinued.',
+            default => 'Unknown grant type.'
+        };
     }
 }

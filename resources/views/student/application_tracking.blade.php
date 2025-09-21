@@ -92,7 +92,7 @@
                                         {{ $application->scholarship->scholarship_name }}
                                     </h3>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        Applied on {{ $application->created_at->format('M d, Y') }}
+                                        Applied on {{ $application->created_at?->format('M d, Y') }}
                                     </p>
                                 </div>
                             </div>
@@ -121,7 +121,7 @@
                                         <p class="text-xs font-medium text-gray-900 dark:text-white">Application</p>
                                         <p class="text-xs text-gray-500 dark:text-gray-400">Submitted</p>
                                         @if($application->created_at)
-                                            <p class="text-xs text-green-600 dark:text-green-400">{{ $application->created_at->format('M d') }}</p>
+                                            <p class="text-xs text-green-600 dark:text-green-400">{{ $application->created_at?->format('M d') }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -227,8 +227,8 @@
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                                 <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Scholarship Details</h4>
                                 <div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                                    <p><span class="font-medium">Grant Amount:</span> ₱{{ number_format($application->scholarship->grant_amount, 2) }}</p>
-                                    <p><span class="font-medium">Deadline:</span> {{ \Carbon\Carbon::parse($application->scholarship->deadline)->format('M d, Y') }}</p>
+                                    <p><span class="font-medium">Grant Amount:</span> ₱{{ number_format((float) $application->scholarship->grant_amount, 2) }}</p>
+                                    <p><span class="font-medium">Deadline:</span> {{ \Carbon\Carbon::parse($application->scholarship->deadline)?->format('M d, Y') }}</p>
                                     <p><span class="font-medium">Minimum GWA:</span> {{ $application->scholarship->getGwaRequirement() ?? 'Not specified' }}</p>
                                 </div>
                             </div>
@@ -245,7 +245,7 @@
                                             {{ ucfirst($application->status) }}
                                         </span>
                                     </p>
-                                    <p><span class="font-medium">Last Updated:</span> {{ $application->updated_at->format('M d, Y h:i A') }}</p>
+                                    <p><span class="font-medium">Last Updated:</span> {{ $application->updated_at?->format('M d, Y h:i A') }}</p>
                                 </div>
                             </div>
                         </div>

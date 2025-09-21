@@ -86,7 +86,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-xl font-bold text-white">{{ $application->scholarship->scholarship_name }}</h3>
-                                <p class="text-red-100 text-sm">Applied: {{ $application->created_at->format('M d, Y') }}</p>
+                                <p class="text-red-100 text-sm">Applied: {{ $application->created_at?->format('M d, Y') }}</p>
                             </div>
                             <div class="text-right">
                                 <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full
@@ -116,7 +116,7 @@
                                     <div class="ml-4">
                                         <h5 class="text-sm font-medium text-gray-900 dark:text-white">Application Submitted</h5>
                                         <p class="text-sm text-gray-500 dark:text-gray-400">Your application has been submitted successfully</p>
-                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $application->created_at->format('M d, Y h:i A') }}</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $application->created_at?->format('M d, Y h:i A') }}</p>
                                     </div>
                                 </div>
 
@@ -140,7 +140,7 @@
                                         <h5 class="text-sm font-medium text-gray-900 dark:text-white">Documents Uploaded</h5>
                                         @if($application->has_documents)
                                             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $application->documents_count }} documents uploaded</p>
-                                            <p class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->last_document_upload ? $application->last_document_upload->format('M d, Y h:i A') : 'N/A' }}</p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->last_document_upload ? $application->last_document_upload?->format('M d, Y h:i A') : 'N/A' }}</p>
                                         @else
                                             <p class="text-sm text-red-500 dark:text-red-400">Documents not uploaded yet</p>
                                             <a href="{{ route('student.upload-documents', $application->scholarship_id) }}" 
@@ -183,7 +183,7 @@
                                             <p class="text-sm text-gray-500 dark:text-gray-400">Waiting for document upload</p>
                                         @endif
                                         @if($application->updated_at && $application->updated_at != $application->created_at)
-                                            <p class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->updated_at->format('M d, Y h:i A') }}</p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->updated_at?->format('M d, Y h:i A') }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -224,13 +224,13 @@
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Grant Amount:</span>
                                         <span class="font-medium text-gray-900 dark:text-white">
-                                            {{ $application->scholarship->grant_amount ? '₱' . number_format($application->scholarship->grant_amount, 2) : 'N/A' }}
+                                            {{ $application->scholarship->grant_amount ? '₱' . number_format((float) $application->scholarship->grant_amount, 2) : 'N/A' }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Deadline:</span>
                                         <span class="font-medium text-gray-900 dark:text-white">
-                                            {{ $application->scholarship->deadline ? \Carbon\Carbon::parse($application->scholarship->deadline)->format('M d, Y') : 'N/A' }}
+                                            {{ $application->scholarship->deadline ? \Carbon\Carbon::parse($application->scholarship->deadline)?->format('M d, Y') : 'N/A' }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">

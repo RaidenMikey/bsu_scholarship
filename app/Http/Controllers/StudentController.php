@@ -31,14 +31,20 @@ class StudentController extends Controller
 
         $scholarships = collect();
         if ($hasApplication) {
-            // Get all active scholarships and filter by all conditions
-            $allScholarships = Scholarship::acceptingApplications()
+            // Get all scholarships that allow new applications and filter by all conditions
+            $allScholarships = Scholarship::where('is_active', true)
                 ->with('conditions')
                 ->orderBy('submission_deadline')
                 ->get();
 
-            // Filter scholarships based on all requirements
+            // Filter scholarships based on grant type and all requirements
             $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
+                // Check if scholarship allows new applications based on grant type
+                if (!$scholarship->allowsNewApplications()) {
+                    return false;
+                }
+                
+                // Check if student meets all conditions
                 return $scholarship->meetsAllConditions($form);
             });
 
@@ -138,14 +144,20 @@ class StudentController extends Controller
         $scholarships = collect();
 
         if ($form) {
-            // Get all active scholarships and filter by all conditions
-            $allScholarships = Scholarship::acceptingApplications()
+            // Get all scholarships that allow new applications and filter by all conditions
+            $allScholarships = Scholarship::where('is_active', true)
                 ->with('conditions')
                 ->orderBy('submission_deadline')
                 ->get();
 
-            // Filter scholarships based on all requirements
+            // Filter scholarships based on grant type and all requirements
             $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
+                // Check if scholarship allows new applications based on grant type
+                if (!$scholarship->allowsNewApplications()) {
+                    return false;
+                }
+                
+                // Check if student meets all conditions
                 return $scholarship->meetsAllConditions($form);
             });
         }
@@ -196,13 +208,23 @@ class StudentController extends Controller
             $application->update(['status' => 'pending']);
             return back()->with('success', 'Your application has been updated.');
         } else {
-            // Otherwise create new
+            // Determine if this is a new or continuing application
+            $hasClaimedGrant = Application::hasClaimedGrant(session('user_id'), $request->scholarship_id);
+            $applicationType = $hasClaimedGrant ? 'continuing' : 'new';
+            
+            // Create new application
             Application::create([
                 'user_id'        => session('user_id'),
                 'scholarship_id' => $request->scholarship_id,
+                'type'           => $applicationType,
                 'status'         => 'pending',
             ]);
-            return back()->with('success', 'You have successfully applied for the scholarship.');
+            
+            $message = $hasClaimedGrant 
+                ? 'You have successfully applied for scholarship renewal.'
+                : 'You have successfully applied for the scholarship.';
+                
+            return back()->with('success', $message);
         }
     }
 

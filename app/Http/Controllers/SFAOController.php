@@ -46,6 +46,19 @@ class SFAOController extends Controller
             $student->has_documents = $student->documents_count > 0;
             $student->application_status = $student->applications->pluck('status')->unique()->toArray();
             $student->applied_scholarships = $student->applications->pluck('scholarship.scholarship_name')->toArray();
+            $student->applications_with_types = $student->applications->map(function($app) {
+                return [
+                    'id' => $app->id,
+                    'scholarship_name' => $app->scholarship->scholarship_name,
+                    'status' => $app->status,
+                    'type' => $app->type,
+                    'type_display' => $app->getApplicantTypeDisplayName(),
+                    'type_badge_color' => $app->getApplicantTypeBadgeColor(),
+                    'grant_count' => $app->grant_count,
+                    'grant_count_display' => $app->getGrantCountDisplay(),
+                    'grant_count_badge_color' => $app->getGrantCountBadgeColor()
+                ];
+            });
         });
 
         // Get applications only from students under this SFAO admin's jurisdiction
@@ -114,7 +127,7 @@ class SFAOController extends Controller
         }
 
         $application = Application::findOrFail($id);
-        $application->status = 'Approved';
+        $application->status = 'approved';
         $application->save();
 
         return back()->with('success', 'Application approved.');
@@ -130,10 +143,36 @@ class SFAOController extends Controller
         }
 
         $application = Application::findOrFail($id);
-        $application->status = 'Rejected';
+        $application->status = 'rejected';
         $application->save();
 
         return back()->with('success', 'Application rejected.');
+    }
+
+    /**
+     * Mark application as claimed (grant received)
+     */
+    public function claimGrant($id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $application = Application::findOrFail($id);
+        
+        // Only allow claiming if application is approved
+        if ($application->status !== 'approved') {
+            return back()->with('error', 'Only approved applications can be marked as claimed.');
+        }
+        
+        // Calculate the grant count for this specific scholarship
+        $grantCount = Application::getNextGrantCount($application->user_id, $application->scholarship_id);
+        
+        $application->status = 'claimed';
+        $application->grant_count = $grantCount;
+        $application->save();
+
+        return back()->with('success', "Grant has been marked as claimed ({$grantCount}th grant). Student is now eligible for renewals.");
     }
 
 }

@@ -85,6 +85,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Application Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Documents</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Applied Scholarships</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Applicant Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Grant Count</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -139,7 +141,7 @@
                                         </div>
                                         @if($student->last_uploaded)
                                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {{ \Carbon\Carbon::parse($student->last_uploaded)->format('M d, Y') }}
+                                                {{ \Carbon\Carbon::parse($student->last_uploaded)?->format('M d, Y') }}
                                             </div>
                                         @endif
                                     @else
@@ -157,6 +159,32 @@
                                             @foreach($student->applied_scholarships as $scholarship)
                                                 <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
                                                     {{ $scholarship }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($student->has_applications && isset($student->applications_with_types))
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($student->applications_with_types as $app)
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $app['type_badge_color'] }}">
+                                                    {{ $app['type_display'] }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($student->has_applications && isset($student->applications_with_types))
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($student->applications_with_types as $app)
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $app['grant_count_badge_color'] }}">
+                                                    {{ $app['grant_count_display'] }}
                                                 </span>
                                             @endforeach
                                         </div>

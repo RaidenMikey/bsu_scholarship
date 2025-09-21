@@ -5,16 +5,14 @@
 
   // Redirect to login if session has ended or role mismatch
   if (!Session::has('user_id') || session('role') !== 'sfao') {
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
   }
 
   $user = User::find(session('user_id'));
 
   if (!$user) {
     Session::flush();
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
   }
 @endphp
 

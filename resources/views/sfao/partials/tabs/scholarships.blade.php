@@ -68,6 +68,9 @@
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
               {{ ucfirst($scholarship->priority_level) }}
             </span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getGrantTypeBadgeColor() }}">
+              {{ $scholarship->getGrantTypeDisplayName() }}
+            </span>
             @if($scholarship->renewal_allowed)
               <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 🔄 Renewable
@@ -80,7 +83,7 @@
             <div class="flex justify-between">
               <span>Deadline:</span>
               <span class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : '' }}">
-                {{ $scholarship->submission_deadline->format('M d, Y') }}
+                {{ $scholarship->submission_deadline?->format('M d, Y') }}
                 @if($scholarship->getDaysUntilDeadline() > 0)
                   <span class="text-xs">({{ $scholarship->getDaysUntilDeadline() }}d left)</span>
                 @elseif($scholarship->getDaysUntilDeadline() == 0)
@@ -95,15 +98,15 @@
               <div class="flex justify-between">
                 <span>Opens:</span>
                 <span class="{{ now()->gte($scholarship->application_start_date) ? 'text-green-600 font-semibold' : 'text-gray-600' }}">
-                  {{ $scholarship->application_start_date->format('M d, Y') }}
+                  {{ $scholarship->application_start_date?->format('M d, Y') }}
                 </span>
-              </div>
+              </div> 
             @endif
             
             @if($scholarship->grant_amount)
               <div class="flex justify-between">
                 <span>Amount:</span>
-                <span class="font-semibold text-green-600">₱{{ number_format($scholarship->grant_amount, 0) }}</span>
+                <span class="font-semibold text-green-600">₱{{ number_format((float) $scholarship->grant_amount, 0) }}</span>
               </div>
             @endif
             
@@ -134,7 +137,7 @@
                      data-width="{{ $scholarship->fill_percentage }}"></div>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {{ number_format($scholarship->fill_percentage, 1) }}% filled
+                {{ number_format((float) $scholarship->fill_percentage, 1) }}% filled
               </p>
             </div>
           @endif

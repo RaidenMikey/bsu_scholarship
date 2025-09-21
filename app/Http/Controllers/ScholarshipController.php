@@ -45,6 +45,7 @@ class ScholarshipController extends Controller
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
             'renewal_allowed'  => 'nullable|boolean',
+            'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'priority_level'   => 'required|in:high,medium,low',
             'eligibility_notes' => 'nullable|string',
         ]);
@@ -58,6 +59,7 @@ class ScholarshipController extends Controller
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
             'renewal_allowed'  => $request->boolean('renewal_allowed'),
+            'grant_type'       => $request->grant_type,
             'priority_level'   => $request->priority_level,
             'eligibility_notes' => $request->eligibility_notes,
             'created_by'       => session('user_id'),
@@ -114,6 +116,7 @@ class ScholarshipController extends Controller
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
             'renewal_allowed'  => 'nullable|boolean',
+            'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'priority_level'   => 'required|in:high,medium,low',
             'eligibility_notes' => 'nullable|string',
         ]);
@@ -129,6 +132,7 @@ class ScholarshipController extends Controller
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
             'renewal_allowed'  => $request->boolean('renewal_allowed'),
+            'grant_type'       => $request->grant_type,
             'priority_level'   => $request->priority_level,
             'eligibility_notes' => $request->eligibility_notes,
         ]);

@@ -5,8 +5,7 @@ use App\Models\User;
 
 // Check if user is logged in
 if (!Session::has('user_id')) {
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
 }
 
 // Get logged-in user
@@ -15,8 +14,7 @@ $user = User::find(session('user_id'));
 // If user not found, clear session and redirect
 if (!$user) {
     Session::flush();
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
 }
 
 // Prevent browser caching to block back button after logout

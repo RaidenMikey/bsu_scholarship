@@ -13,6 +13,9 @@
                             <th class="px-4 py-3 text-left">Name</th>
                             <th class="px-4 py-3 text-left">Email</th>
                             <th class="px-4 py-3 text-left">Scholarship</th>
+                            <th class="px-4 py-3 text-left">Applicant Type</th>
+                            <th class="px-4 py-3 text-left">Grant Count</th>
+                            <th class="px-4 py-3 text-left">Status</th>
                             <th class="px-4 py-3 text-left">Applied At</th>
                         </tr>
                     </thead>
@@ -26,7 +29,26 @@
                             <td class="px-4 py-2">{{ $application->user->name ?? '-' }}</td>
                             <td class="px-4 py-2">{{ $application->user->email ?? '-' }}</td>
                             <td class="px-4 py-2">{{ $application->scholarship->scholarship_name ?? '-' }}</td>
-                            <td class="px-4 py-2">{{ $application->created_at->format('M d, Y') }}</td>
+                            <td class="px-4 py-2">
+                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $application->getApplicantTypeBadgeColor() }}">
+                                    {{ $application->getApplicantTypeDisplayName() }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $application->getGrantCountBadgeColor() }}">
+                                    {{ $application->getGrantCountDisplay() }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    {{ $application->status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                                       ($application->status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                                       ($application->status === 'claimed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200')) }}">
+                                    {{ ucfirst($application->status) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-2">{{ $application->created_at?->format('M d, Y') }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -54,6 +76,16 @@
                     <p><strong>Name:</strong> <span x-text="selectedApp.user.name"></span></p>
                     <p><strong>Email:</strong> <span x-text="selectedApp.user.email"></span></p>
                     <p><strong>Scholarship:</strong> <span x-text="selectedApp.scholarship.scholarship_name"></span></p>
+                    <p><strong>Applicant Type:</strong> 
+                        <span x-text="selectedApp.type === 'new' ? 'New Applicant' : 'Continuing Applicant'" 
+                              :class="selectedApp.type === 'new' ? 'text-blue-600 font-semibold' : 'text-green-600 font-semibold'">
+                        </span>
+                    </p>
+                    <p><strong>Grant Count:</strong> 
+                        <span x-text="selectedApp.grant_count <= 0 ? 'No grants received' : (selectedApp.grant_count === 1 ? '1st grant' : selectedApp.grant_count + 'th grant')" 
+                              :class="selectedApp.grant_count <= 0 ? 'text-gray-600' : 'text-orange-600 font-semibold'">
+                        </span>
+                    </p>
                     <p><strong>Status:</strong> <span x-text="selectedApp.status"></span></p>
                     <p><strong>Applied At:</strong> <span x-text="new Date(selectedApp.created_at).toLocaleDateString()"></span></p>
                 </div>
@@ -66,16 +98,22 @@
                 >
                     View Application Form
                 </button>
-                <form method="POST" :action="'/applications/' + selectedApp.id + '/accept'" class="w-2/3">
+                <form method="POST" :action="'/central/applications/' + selectedApp.id + '/approve'" class="w-2/3">
                     @csrf
                     <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        Accept
+                        Approve
                     </button>
                 </form>
-                <form method="POST" :action="'/applications/' + selectedApp.id + '/reject'" class="w-2/3">
+                <form method="POST" :action="'/central/applications/' + selectedApp.id + '/reject'" class="w-2/3">
                     @csrf
                     <button type="submit" class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                         Reject
+                    </button>
+                </form>
+                <form method="POST" :action="'/central/applications/' + selectedApp.id + '/claim'" class="w-2/3">
+                    @csrf
+                    <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Mark as Claimed
                     </button>
                 </form>
             </div>

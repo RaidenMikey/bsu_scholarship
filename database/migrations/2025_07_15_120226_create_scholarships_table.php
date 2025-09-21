@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->integer('slots_available')->nullable();
             $table->decimal('grant_amount', 10, 2)->nullable(); // ₱99999999.99 max
             $table->boolean('renewal_allowed')->default(false); // whether renewal is allowed
+            $table->enum('grant_type', ['one_time', 'recurring', 'discontinued'])->default('recurring'); // Grant distribution type
             $table->boolean('is_active')->default(true);
             $table->enum('priority_level', ['high', 'medium', 'low'])->default('medium'); // Scholarship priority
             $table->text('eligibility_notes')->nullable(); // Additional eligibility information

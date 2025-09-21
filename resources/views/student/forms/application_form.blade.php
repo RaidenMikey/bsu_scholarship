@@ -5,8 +5,7 @@ use App\Models\User;
 
 // Check if user is logged in
 if (!Session::has('user_id')) {
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
 }
 
 // Get logged-in user
@@ -15,14 +14,8 @@ $user = User::find(session('user_id'));
 // If user not found, clear session and redirect
 if (!$user) {
     Session::flush();
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
 }
-
-// Prevent browser caching to block back button after logout
-header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1
-header('Pragma: no-cache'); // HTTP 1.0
-header('Expires: 0'); // Proxies
 @endphp
 
 <!DOCTYPE html>
@@ -296,10 +289,10 @@ header('Expires: 0'); // Proxies
             <label class="block mb-1 font-medium text-gray-700">Grade/Year Level</label>
             <select name="year_level" class="w-full border border-red-500 rounded-md p-2">
                 <option value="">-- Select Grade/Year Level --</option>
-                <option value="First Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'First Year' ? 'selected' : '' }}>First Year</option>
-                <option value="Second Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'Second Year' ? 'selected' : '' }}>Second Year</option>
-                <option value="Third Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'Third Year' ? 'selected' : '' }}>Third Year</option>
-                <option value="Fourth Year" {{ old('year_level', $existingApplication->year_level ?? '') == 'Fourth Year' ? 'selected' : '' }}>Fourth Year</option>
+                <option value="1st Year" {{ old('year_level', $existingApplication->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
+                <option value="2nd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
+                <option value="3rd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
+                <option value="4th Year" {{ old('year_level', $existingApplication->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
             </select>
           </div>
           <div>

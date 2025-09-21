@@ -4,16 +4,14 @@
   use App\Models\User;
 
   if (!Session::has('user_id')) {
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
   }
 
   $user = User::find(session('user_id'));
 
   if (!$user) {
     Session::flush();
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
   }
 @endphp
 
@@ -100,6 +98,12 @@
         👥 Applicants
       </button>
 
+      <button @click="tab = 'staff'; sidebarOpen = false"
+              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
+              :class="tab === 'staff' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        👨‍💼 Manage Staff
+      </button>
+
       <button @click="tab = 'settings'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'settings' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
@@ -148,6 +152,7 @@
     <!-- Tabs -->
     @include('central.partials.tabs.scholarships')
     @include('central.partials.tabs.applicants', ['applications' => $applications])
+    @include('central.partials.tabs.staff')
     @include('central.partials.tabs.settings')
 
   </main>

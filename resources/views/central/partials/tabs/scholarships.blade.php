@@ -76,7 +76,7 @@
                     <div class="flex justify-between items-center text-sm">
                         <span class="text-gray-600 dark:text-gray-400"><strong>Submission Deadline:</strong></span>
                         <span class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-600' }}">
-                          {{ $scholarship->submission_deadline->format('M d, Y') }}
+                          {{ $scholarship->submission_deadline?->format('M d, Y') }}
                           @if($scholarship->getDaysUntilDeadline() > 0)
                             <span class="text-xs">({{ $scholarship->getDaysUntilDeadline() }}d left)</span>
                           @elseif($scholarship->getDaysUntilDeadline() == 0)
@@ -91,7 +91,7 @@
                       <div class="flex justify-between items-center text-sm">
                         <span class="text-gray-600 dark:text-gray-400"><strong>Application Opens:</strong></span>
                         <span class="{{ now()->gte($scholarship->application_start_date) ? 'text-green-600 font-semibold' : 'text-gray-600' }}">
-                          {{ $scholarship->application_start_date->format('M d, Y') }}
+                          {{ $scholarship->application_start_date?->format('M d, Y') }}
                           @if(now()->lt($scholarship->application_start_date))
                             <span class="text-xs">({{ now()->diffInDays($scholarship->application_start_date) }}d to go)</span>
                           @else
@@ -114,7 +114,7 @@
                     @if ($scholarship->grant_amount)
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-gray-600 dark:text-gray-400"><strong>Grant Amount:</strong></span>
-                            <span class="font-semibold text-green-600">₱{{ number_format($scholarship->grant_amount, 0) }}</span>
+                            <span class="font-semibold text-green-600">₱{{ number_format((float) $scholarship->grant_amount, 0) }}</span>
                         </div>
                     @endif
 

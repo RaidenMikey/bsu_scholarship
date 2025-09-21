@@ -87,6 +87,7 @@ Route::middleware(['web'])->prefix('sfao')->name('sfao.')->group(function () {
     // Application Management
     Route::post('/applications/{id}/approve', [SFAOController::class, 'approveApplication'])->name('applications.approve');
     Route::post('/applications/{id}/reject', [SFAOController::class, 'rejectApplication'])->name('applications.reject');
+    Route::post('/applications/{id}/claim', [SFAOController::class, 'claimGrant'])->name('applications.claim');
 
     // Scholarships Management
     Route::post('/scholarships/store', [ScholarshipController::class, 'store'])->name('scholarships.store');
@@ -118,7 +119,24 @@ Route::middleware(['web', 'checkUserExists:central'])
 
         // View Form
         Route::get('/form/{id}', [FormController::class, 'show'])->name('form.view');
+        
+        // Application Management
+        Route::post('/applications/{id}/approve', [CentralController::class, 'approveApplication'])->name('applications.approve');
+        Route::post('/applications/{id}/reject', [CentralController::class, 'rejectApplication'])->name('applications.reject');
+        Route::post('/applications/{id}/claim', [CentralController::class, 'claimGrant'])->name('applications.claim');
+        
+        // Staff Management
+        Route::post('/staff/invite', [CentralController::class, 'inviteStaff'])->name('staff.invite');
+        Route::post('/staff/invitations/{id}/cancel', [CentralController::class, 'cancelInvitation'])->name('staff.invitations.cancel');
     });
+
+// --------------------------------------------------
+// INVITATION ROUTES (Public)
+// --------------------------------------------------
+
+// Invitation acceptance routes (public access)
+Route::get('/invitation/{token}', [App\Http\Controllers\InvitationController::class, 'show'])->name('invitation.show');
+Route::post('/invitation/{token}/accept', [App\Http\Controllers\InvitationController::class, 'accept'])->name('invitation.accept');
 
 // --------------------------------------------------
 // TEST ROUTES (Forms)

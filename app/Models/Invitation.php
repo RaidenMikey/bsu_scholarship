@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
+class Invitation extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'email',
+        'name',
+        'token',
+        'campus_id',
+        'invited_by',
+        'status',
+        'expires_at',
+        'accepted_at',
+    ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'accepted_at' => 'datetime',
+    ];
+
+    /**
+     * Generate a unique token for the invitation
+     */
+    public static function generateToken()
+    {
+        do {
+            $token = Str::random(64);
+        } while (self::where('token', $token)->exists());
+
+        return $token;
+    }
+
+    /**
+     * Create a new invitation
+     */
+    public static function createInvitation($email, $name, $campusId, $invitedBy)
+    {
+        return self::create([
+            'email' => $email,
+            'name' => $name,
+            'token' => self::generateToken(),
+            'campus_id' => $campusId,
+            'invited_by' => $invitedBy,
+            'expires_at' => Carbon::now()->addDays(7), // 7 days expiry
+        ]);
+    }
+
+    /**
+     * Check if invitation is expired
+     */
+    public function isExpired()
+    {
+        return $this->expires_at->isPast();
+    }
+
+    /**
+     * Check if invitation is valid (not expired and pending)
+     */
+    public function isValid()
+    {
+        return $this->status === 'pending' && !$this->isExpired();
+    }
+
+    /**
+     * Accept the invitation
+     */
+    public function accept()
+    {
+        $this->update([
+            'status' => 'accepted',
+            'accepted_at' => Carbon::now(),
+        ]);
+    }
+
+    /**
+     * Mark invitation as expired
+     */
+    public function markAsExpired()
+    {
+        $this->update(['status' => 'expired']);
+    }
+
+    /**
+     * Get the campus for this invitation
+     */
+    public function campus()
+    {
+        return $this->belongsTo(Campus::class);
+    }
+
+    /**
+     * Get the user who sent this invitation
+     */
+    public function inviter()
+    {
+        return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    /**
+     * Scope for pending invitations
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope for expired invitations
+     */
+    public function scopeExpired($query)
+    {
+        return $query->where('expires_at', '<', Carbon::now());
+    }
+
+    /**
+     * Scope for valid invitations
+     */
+    public function scopeValid($query)
+    {
+        return $query->where('status', 'pending')
+                    ->where('expires_at', '>', Carbon::now());
+    }
+}

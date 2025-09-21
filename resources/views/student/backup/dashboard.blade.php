@@ -5,8 +5,7 @@
 
   // Redirect to login if session has ended
   if (!Session::has('user_id')) {
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
   }
 
   $user = User::find(session('user_id'));
@@ -14,8 +13,7 @@
   // If no user found, flush session and redirect
   if (!$user) {
     Session::flush();
-    header('Location: ' . route('login'));
-    exit;
+    return redirect()->route('login');
   }
 @endphp
 

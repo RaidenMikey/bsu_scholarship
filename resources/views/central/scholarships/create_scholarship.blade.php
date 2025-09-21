@@ -15,7 +15,7 @@
     // ✅ Precompute conditions
     $conditionsData = old('conditions', isset($scholarship)
         ? $scholarship->conditions->map(function($c){
-            return ['type' => $c->type, 'value' => $c->value];
+            return ['type' => $c->name, 'value' => $c->value];
         })->toArray()
         : []
     );
@@ -23,7 +23,7 @@
     // ✅ Precompute documents
     $documentsData = old('documents', isset($scholarship)
         ? $scholarship->requirements->map(function($r){
-            return ['name' => $r->name, 'type' => $r->type, 'mandatory' => $r->mandatory];
+            return ['name' => $r->name, 'type' => $r->type, 'mandatory' => $r->is_mandatory];
         })->toArray()
         : []
     );
@@ -100,10 +100,10 @@
                     <template x-if="cond.type === 'year_level'">
                         <select x-model="cond.value" :name="'conditions['+index+'][value]'" 
                                 class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
-                            <option value="1">1st Year</option>
-                            <option value="2">2nd Year</option>
-                            <option value="3">3rd Year</option>
-                            <option value="4">4th Year</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
                         </select>
                     </template>
 
@@ -296,6 +296,21 @@
                    class="h-4 w-4 text-red-700 focus:ring-red-700 border-gray-300 rounded">
             <label for="renewal_allowed" class="ml-2 block text-sm text-gray-700">Allow Renewal</label>
         </div>
+
+        <!-- Grant Type -->
+        <label for="grant_type" class="block text-sm font-medium text-gray-700 mt-4">Grant Type</label>
+        <select id="grant_type" name="grant_type" required
+                class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
+            <option value="">Select Grant Type</option>
+            <option value="one_time" {{ old('grant_type', $scholarship->grant_type ?? '') == 'one_time' ? 'selected' : '' }}>One-time Grant</option>
+            <option value="recurring" {{ old('grant_type', $scholarship->grant_type ?? '') == 'recurring' ? 'selected' : '' }}>Recurring Grants</option>
+            <option value="discontinued" {{ old('grant_type', $scholarship->grant_type ?? '') == 'discontinued' ? 'selected' : '' }}>Discontinued</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">
+            <strong>One-time:</strong> Single grant only, closes after first claim<br>
+            <strong>Recurring:</strong> Multiple grants allowed (semester-based or as announced)<br>
+            <strong>Discontinued:</strong> Scholarship has been cancelled or discontinued
+        </p>
 
         <!-- Actions -->
         <div class="mt-6 flex justify-between">

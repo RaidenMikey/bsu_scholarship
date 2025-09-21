@@ -18,8 +18,11 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('scholarship_id')->constrained()->onDelete('cascade');
 
-            // New vs Renewal
-            $table->enum('type', ['new', 'renewal'])->default('new');
+            // New vs Continuing
+            $table->enum('type', ['new', 'continuing'])->default('new');
+
+            // Grant count for this specific scholarship
+            $table->integer('grant_count')->default(0);
 
             // Application lifecycle
             $table->enum('status', ['pending', 'approved', 'rejected', 'claimed'])->default('pending');
