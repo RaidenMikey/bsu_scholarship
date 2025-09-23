@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\User;
@@ -201,7 +202,7 @@ class UserManagementController extends Controller
     /**
      * Student dashboard
      */
-    public function studentDashboard()
+    public function studentDashboard(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'student') {
             return redirect('/login')->with('session_expired', true);
@@ -219,7 +220,6 @@ class UserManagementController extends Controller
             // Get all scholarships that allow new applications and filter by all conditions
             $allScholarships = Scholarship::where('is_active', true)
                 ->with('conditions')
-                ->orderBy('submission_deadline')
                 ->get();
 
             // Filter scholarships based on grant type and all requirements
@@ -232,6 +232,12 @@ class UserManagementController extends Controller
                 // Check if student meets all conditions
                 return $scholarship->meetsAllConditions($form);
             });
+
+            // Apply sorting
+            $sortBy = $request->get('sort_by', 'submission_deadline');
+            $sortOrder = $request->get('sort_order', 'asc');
+            
+            $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
             foreach ($scholarships as $scholarship) {
@@ -285,7 +291,7 @@ class UserManagementController extends Controller
     /**
      * Show scholarships for student
      */
-    public function scholarships()
+    public function scholarships(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'student') {
             return redirect('/login')->with('session_expired', true);
@@ -301,7 +307,6 @@ class UserManagementController extends Controller
             // Get all scholarships that allow new applications and filter by all conditions
             $allScholarships = Scholarship::where('is_active', true)
                 ->with('conditions')
-                ->orderBy('submission_deadline')
                 ->get();
 
             // Filter scholarships based on grant type and all requirements
@@ -314,6 +319,12 @@ class UserManagementController extends Controller
                 // Check if student meets all conditions
                 return $scholarship->meetsAllConditions($form);
             });
+
+            // Apply sorting
+            $sortBy = $request->get('sort_by', 'submission_deadline');
+            $sortOrder = $request->get('sort_order', 'asc');
+            
+            $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
         }
 
         // Mark applied scholarships
@@ -323,6 +334,38 @@ class UserManagementController extends Controller
         }
 
         return view('student.partials.tabs.scholarships', compact('scholarships', 'gwa', 'form'));
+    }
+
+    /**
+     * Sort scholarships based on various criteria
+     */
+    private function sortScholarships($scholarships, $sortBy, $sortOrder)
+    {
+        return $scholarships->sortBy(function ($scholarship) use ($sortBy) {
+            switch ($sortBy) {
+                case 'name':
+                    return $scholarship->scholarship_name;
+                case 'created_at':
+                    return $scholarship->created_at;
+                case 'submission_deadline':
+                    return $scholarship->submission_deadline;
+                case 'grant_amount':
+                    return $scholarship->grant_amount ?? 0;
+                case 'priority_level':
+                    $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
+                    return $priorityOrder[$scholarship->priority_level] ?? 4;
+                case 'scholarship_type':
+                    return $scholarship->scholarship_type;
+                case 'grant_type':
+                    return $scholarship->grant_type;
+                case 'slots_available':
+                    return $scholarship->slots_available ?? 999999;
+                case 'gwa_requirement':
+                    return $scholarship->getGwaRequirement() ?? 999;
+                default:
+                    return $scholarship->submission_deadline;
+            }
+        }, SORT_REGULAR, $sortOrder === 'desc');
     }
 
     // =====================================================
@@ -470,15 +513,15 @@ class UserManagementController extends Controller
             // Send account created email with verification link
             try {
                 Mail::to($user->email)->send(new \App\Mail\SFAOAccountCreatedMail($user));
-                \Log::info("SFAO account created and email sent to: {$user->email}");
+                Log::info("SFAO account created and email sent to: {$user->email}");
             } catch (\Exception $mailException) {
-                \Log::error("Failed to send email to {$user->email}: " . $mailException->getMessage());
+                Log::error("Failed to send email to {$user->email}: " . $mailException->getMessage());
                 // Continue even if email fails - user account is created
             }
 
             return back()->with('success', "SFAO account created for {$request->name} ({$request->email}). Verification email sent - they need to verify their email and set up their password.");
         } catch (\Exception $e) {
-            \Log::error("Failed to create SFAO account: " . $e->getMessage());
+            Log::error("Failed to create SFAO account: " . $e->getMessage());
             return back()->with('error', 'Failed to create SFAO account. Please try again.');
         }
     }

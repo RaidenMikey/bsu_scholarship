@@ -155,7 +155,7 @@ class ApplicationManagementController extends Controller
     /**
      * SFAO Dashboard
      */
-    public function sfaoDashboard()
+    public function sfaoDashboard(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'sfao') {
             return redirect('/login')->with('session_expired', true);
@@ -212,7 +212,17 @@ class ApplicationManagementController extends Controller
             })
             ->get();
             
-        $scholarships = Scholarship::all();
+        $scholarships = Scholarship::withCount(['applications' => function($query) use ($campusIds) {
+            $query->whereHas('user', function($userQuery) use ($campusIds) {
+                $userQuery->whereIn('campus_id', $campusIds);
+            });
+        }])->get();
+
+        // Apply sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
         return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus'));
     }
@@ -412,7 +422,7 @@ class ApplicationManagementController extends Controller
     /**
      * Central Dashboard
      */
-    public function centralDashboard()
+    public function centralDashboard(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'central') {
             return redirect('/login')->with('session_expired', true);
@@ -422,9 +432,49 @@ class ApplicationManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $scholarships = Scholarship::orderBy('created_at', 'desc')->get();
+        $scholarships = Scholarship::with(['conditions', 'requirements'])->get();
+        
+        // Apply sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
         return view('central.dashboard', compact('applications', 'scholarships'));
+    }
+
+    /**
+     * Sort scholarships based on various criteria
+     */
+    private function sortScholarships($scholarships, $sortBy, $sortOrder)
+    {
+        return $scholarships->sortBy(function ($scholarship) use ($sortBy) {
+            switch ($sortBy) {
+                case 'name':
+                    return $scholarship->scholarship_name;
+                case 'created_at':
+                    return $scholarship->created_at;
+                case 'submission_deadline':
+                    return $scholarship->submission_deadline;
+                case 'grant_amount':
+                    return $scholarship->grant_amount ?? 0;
+                case 'priority_level':
+                    $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
+                    return $priorityOrder[$scholarship->priority_level] ?? 4;
+                case 'scholarship_type':
+                    return $scholarship->scholarship_type;
+                case 'grant_type':
+                    return $scholarship->grant_type;
+                case 'slots_available':
+                    return $scholarship->slots_available ?? 999999;
+                case 'gwa_requirement':
+                    return $scholarship->getGwaRequirement() ?? 999;
+                case 'applications_count':
+                    return $scholarship->applications_count ?? 0;
+                default:
+                    return $scholarship->created_at;
+            }
+        }, SORT_REGULAR, $sortOrder === 'desc');
     }
 
     /**

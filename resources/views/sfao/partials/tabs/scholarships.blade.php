@@ -1,16 +1,4 @@
 @php
-  use App\Models\Scholarship;
-  
-  // Get campus IDs for this SFAO admin
-  $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
-  
-  // Get scholarships with campus-specific application counts
-  $scholarships = Scholarship::withCount(['applications' => function($query) use ($campusIds) {
-    $query->whereHas('user', function($userQuery) use ($campusIds) {
-      $userQuery->whereIn('campus_id', $campusIds);
-    });
-  }])->get();
-  
   // Calculate percentages for progress bars based on campus-specific applications
   $scholarships->each(function($scholarship) {
     if($scholarship->slots_available && $scholarship->slots_available > 0) {
@@ -36,6 +24,14 @@
       @endif
     </p>
   </div>
+
+  <!-- Sorting Controls -->
+  <x-sorting-controls 
+    :currentSort="request('sort_by', 'created_at')" 
+    :currentOrder="request('sort_order', 'desc')"
+    :baseUrl="route('sfao.dashboard')"
+    role="sfao"
+  />
 
   <!-- Scholarships Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

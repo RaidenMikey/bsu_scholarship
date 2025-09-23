@@ -18,6 +18,14 @@
     </h1>
 
     @if ($scholarships->count())
+      <!-- Sorting Controls -->
+      <x-sorting-controls 
+        :currentSort="request('sort_by', 'submission_deadline')" 
+        :currentOrder="request('sort_order', 'asc')"
+        :baseUrl="route('student.scholarships')"
+        role="student"
+      />
+
       <div class="bg-bsu-light dark:bg-gray-800 p-5 rounded-lg shadow-sm">
         <p class="text-gray-800 dark:text-gray-200 text-sm mb-4">
           Scholarships matched to your profile:

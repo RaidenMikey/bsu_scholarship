@@ -31,13 +31,20 @@ class ScholarshipManagementController extends Controller
     /**
      * List all scholarships with their conditions & requirements (Central)
      */
-    public function centralIndex()
+    public function centralIndex(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'central') {
             return redirect('/login')->with('session_expired', true);
         }
 
         $scholarships = Scholarship::with(['conditions', 'requirements'])->get();
+        
+        // Apply sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
+        
         return view('central.scholarships.index', compact('scholarships'));
     }
 
@@ -226,7 +233,7 @@ class ScholarshipManagementController extends Controller
     /**
      * List all scholarships with applicant counts (SFAO)
      */
-    public function sfaoIndex()
+    public function sfaoIndex(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'sfao') {
             return redirect('/login')->with('session_expired', true);
@@ -242,6 +249,12 @@ class ScholarshipManagementController extends Controller
                 $userQuery->whereIn('campus_id', $campusIds);
             });
         }])->get();
+
+        // Apply sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
         return view('sfao.scholarships', compact('scholarships', 'sfaoCampus'));
     }
@@ -266,6 +279,40 @@ class ScholarshipManagementController extends Controller
         }, 'applications.user'])->findOrFail($id);
 
         return view('sfao.scholarship_show', compact('scholarship', 'sfaoCampus'));
+    }
+
+    /**
+     * Sort scholarships based on various criteria
+     */
+    private function sortScholarships($scholarships, $sortBy, $sortOrder)
+    {
+        return $scholarships->sortBy(function ($scholarship) use ($sortBy) {
+            switch ($sortBy) {
+                case 'name':
+                    return $scholarship->scholarship_name;
+                case 'created_at':
+                    return $scholarship->created_at;
+                case 'submission_deadline':
+                    return $scholarship->submission_deadline;
+                case 'grant_amount':
+                    return $scholarship->grant_amount ?? 0;
+                case 'priority_level':
+                    $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
+                    return $priorityOrder[$scholarship->priority_level] ?? 4;
+                case 'scholarship_type':
+                    return $scholarship->scholarship_type;
+                case 'grant_type':
+                    return $scholarship->grant_type;
+                case 'slots_available':
+                    return $scholarship->slots_available ?? 999999;
+                case 'gwa_requirement':
+                    return $scholarship->getGwaRequirement() ?? 999;
+                case 'applications_count':
+                    return $scholarship->applications_count ?? 0;
+                default:
+                    return $scholarship->created_at;
+            }
+        }, SORT_REGULAR, $sortOrder === 'desc');
     }
 
     // =====================================================

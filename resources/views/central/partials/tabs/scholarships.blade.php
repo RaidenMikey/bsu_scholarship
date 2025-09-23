@@ -2,29 +2,13 @@
 
 <div x-show="tab === 'scholarships'" x-transition x-cloak>
 
-    <!-- Controls -->
-    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 space-y-4 md:space-y-0">
-        <!-- Sort -->
-        <div>
-            <label for="sort" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Sort By:</label>
-            <select id="sort"
-                class="ml-2 border rounded-lg px-3 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring focus:ring-bsu-red">
-                <option value="name">Scholarship Name</option>
-                <option value="deadline">Deadline</option>
-            </select>
-        </div>
-
-        <!-- Filter -->
-        <div>
-            <label for="filter" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter:</label>
-            <select id="filter"
-                class="ml-2 border rounded-lg px-3 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring focus:ring-bsu-red">
-                <option value="all">All</option>
-                <option value="active">Active Scholarships</option>
-                <option value="closed">Closed Scholarships</option>
-            </select>
-        </div>
-    </div>
+    <!-- Sorting Controls -->
+    <x-sorting-controls 
+      :currentSort="request('sort_by', 'created_at')" 
+      :currentOrder="request('sort_order', 'desc')"
+      :baseUrl="route('central.dashboard')"
+      role="central"
+    />
 
     <!-- Scholarships Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

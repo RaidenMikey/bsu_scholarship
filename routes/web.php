@@ -72,7 +72,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
 // SFAO ROUTES
 // --------------------------------------------------
 
-Route::middleware(['web'])->prefix('sfao')->name('sfao.')->group(function () {
+Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.')->group(function () {
 
     // Dashboard
     Route::get('/', [ApplicationManagementController::class, 'sfaoDashboard'])->name('dashboard');
