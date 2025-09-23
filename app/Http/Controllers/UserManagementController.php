@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Campus;
-use App\Models\Invitation;
 use App\Models\SfaoRequirement;
 use App\Models\Application;
 use App\Models\Form;
@@ -156,6 +156,19 @@ class UserManagementController extends Controller
 
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
+        }
+
+        // For SFAO users, redirect to password setup
+        if ($user->role === 'sfao') {
+            // Log the user in temporarily for password setup
+            session([
+                'user_id' => $user->id,
+                'role' => 'sfao',
+                'name' => $user->name,
+                'campus_id' => $user->campus_id,
+            ]);
+            
+            return redirect('/sfao/password-setup')->with('success', 'Email verified! Please set up your password to complete your account setup.');
         }
 
         return redirect('/login')->with('verified', true);
@@ -429,7 +442,7 @@ class UserManagementController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email|unique:invitations,email',
+            'email' => 'required|email|max:255|unique:users,email',
             'campus_id' => 'required|exists:campuses,id',
         ]);
 
@@ -443,125 +456,86 @@ class UserManagementController extends Controller
             return back()->with('error', 'A user with this email already exists.');
         }
 
-        // Check if there's already a pending invitation
-        $existingInvitation = Invitation::where('email', $request->email)
-            ->where('status', 'pending')
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if ($existingInvitation) {
-            return back()->with('error', 'An invitation has already been sent to this email address.');
-        }
-
         try {
-            // Create invitation
-            $invitation = Invitation::createInvitation(
-                $request->email,
-                $request->name,
-                $request->campus_id,
-                session('user_id')
-            );
+            // Create SFAO user account with unverified email
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make(Str::random(16)), // Temporary password
+                'role' => 'sfao',
+                'campus_id' => $request->campus_id,
+                'email_verified_at' => null, // Not verified yet
+            ]);
 
-            // Send invitation email
-            Mail::to($request->email)->send(new \App\Mail\SFAOInvitationMail($invitation));
+            // Send account created email with verification link
+            try {
+                Mail::to($user->email)->send(new \App\Mail\SFAOAccountCreatedMail($user));
+                \Log::info("SFAO account created and email sent to: {$user->email}");
+            } catch (\Exception $mailException) {
+                \Log::error("Failed to send email to {$user->email}: " . $mailException->getMessage());
+                // Continue even if email fails - user account is created
+            }
 
-            return back()->with('success', "Invitation sent successfully to {$request->name} ({$request->email}). They have 7 days to accept the invitation.");
+            return back()->with('success', "SFAO account created for {$request->name} ({$request->email}). Verification email sent - they need to verify their email and set up their password.");
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to send invitation. Please try again.');
+            \Log::error("Failed to create SFAO account: " . $e->getMessage());
+            return back()->with('error', 'Failed to create SFAO account. Please try again.');
         }
     }
 
+    // =====================================================
+    // SFAO PASSWORD SETUP METHODS
+    // =====================================================
+
+
     /**
-     * Cancel a pending invitation
+     * Show SFAO password setup form after email verification
      */
-    public function cancelInvitation($id)
+    public function showSFAOPasswordSetup()
     {
-        if (!session()->has('user_id') || session('role') !== 'central') {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
             return redirect('/login')->with('session_expired', true);
         }
 
-        $invitation = Invitation::findOrFail($id);
+        $user = User::find(session('user_id'));
         
-        if ($invitation->status !== 'pending') {
-            return back()->with('error', 'Cannot cancel this invitation.');
+        // Check if user has verified email and needs to set up password
+        if (!$user->hasVerifiedEmail()) {
+            return redirect('/email/verify')->with('error', 'Please verify your email first.');
         }
 
-        $invitation->markAsExpired();
-        
-        return back()->with('success', 'Invitation cancelled successfully.');
-    }
-
-    // =====================================================
-    // INVITATION ACCEPTANCE METHODS
-    // =====================================================
-
-    /**
-     * Show the invitation acceptance form
-     */
-    public function showInvitation($token)
-    {
-        $invitation = Invitation::where('token', $token)->first();
-
-        if (!$invitation) {
-            return redirect('/login')->with('error', 'Invalid invitation link.');
-        }
-
-        if (!$invitation->isValid()) {
-            return redirect('/login')->with('error', 'This invitation has expired or is no longer valid.');
-        }
-
-        return view('auth.accept-invitation', compact('invitation'));
+        return view('auth.sfao-password-setup', compact('user'));
     }
 
     /**
-     * Accept the invitation and create user account
+     * Handle SFAO password setup after email verification
      */
-    public function acceptInvitation(Request $request, $token)
+    public function setupSFAOPassword(Request $request)
     {
-        $invitation = Invitation::where('token', $token)->first();
-
-        if (!$invitation) {
-            return redirect('/login')->with('error', 'Invalid invitation link.');
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
         }
 
-        if (!$invitation->isValid()) {
-            return redirect('/login')->with('error', 'This invitation has expired or is no longer valid.');
+        $user = User::find(session('user_id'));
+
+        if (!$user->hasVerifiedEmail()) {
+            return redirect('/email/verify')->with('error', 'Please verify your email first.');
         }
 
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
         try {
-            // Create the user account
-            $user = User::create([
-                'name' => $invitation->name,
-                'email' => $invitation->email,
+            // Update the user's password
+            $user->update([
                 'password' => Hash::make($request->password),
-                'role' => 'sfao',
-                'campus_id' => $invitation->campus_id,
-                'email_verified_at' => now(),
             ]);
 
-            // Mark invitation as accepted
-            $invitation->accept();
-
-            // Log the user in
-            session([
-                'user_id' => $user->id,
-                'role' => 'sfao',
-                'name' => $user->name,
-                'campus_id' => $user->campus_id,
-            ]);
-
-            return redirect('/sfao/dashboard')->with('success', 'Welcome! Your account has been created successfully.');
+            return redirect('/sfao')->with('success', 'Account setup completed successfully!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to create account. Please try again.');
+            return back()->with('error', 'Failed to set up password. Please try again.');
         }
     }
 

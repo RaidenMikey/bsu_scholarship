@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Invitation;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,20 +10,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SFAOInvitationMail extends Mailable
+class SFAOAccountCreatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $invitation;
+    public $user;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(Invitation $invitation)
+    public function __construct(User $user)
     {
-        $this->invitation = $invitation;
+        $this->user = $user;
     }
 
     /**
@@ -34,7 +34,7 @@ class SFAOInvitationMail extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'SFAO Admin Invitation - BSU Scholarship System',
+            subject: 'SFAO Admin Account Created - BSU Scholarship System',
         );
     }
 
@@ -46,7 +46,7 @@ class SFAOInvitationMail extends Mailable
     public function content()
     {
         return new Content(
-            view: 'emails.sfao-invitation',
+            view: 'emails.sfao-account-created',
         );
     }
 

@@ -123,16 +123,16 @@ Route::middleware(['web', 'checkUserExists:central'])
         
         // Staff Management
         Route::post('/staff/invite', [UserManagementController::class, 'inviteStaff'])->name('staff.invite');
-        Route::post('/staff/invitations/{id}/cancel', [UserManagementController::class, 'cancelInvitation'])->name('staff.invitations.cancel');
     });
 
+
 // --------------------------------------------------
-// INVITATION ROUTES (Public)
+// SFAO PASSWORD SETUP ROUTES
 // --------------------------------------------------
 
-// Invitation acceptance routes (public access)
-Route::get('/invitation/{token}', [UserManagementController::class, 'showInvitation'])->name('invitation.show');
-Route::post('/invitation/{token}/accept', [UserManagementController::class, 'acceptInvitation'])->name('invitation.accept');
+// SFAO password setup after email verification
+Route::get('/sfao/password-setup', [UserManagementController::class, 'showSFAOPasswordSetup'])->name('sfao.password.setup');
+Route::post('/sfao/password-setup', [UserManagementController::class, 'setupSFAOPassword'])->name('sfao.password.setup');
 
 // --------------------------------------------------
 // TEST ROUTES (Forms)

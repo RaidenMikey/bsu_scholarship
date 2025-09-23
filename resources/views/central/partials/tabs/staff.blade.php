@@ -3,9 +3,9 @@
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">👨‍💼 Manage Staff</h2>
     
-    <!-- Invite New SFAO Admin -->
+    <!-- Create New SFAO Admin -->
     <div class="mb-8">
-      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Invite New SFAO Admin</h3>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Create New SFAO Admin</h3>
       
       <form method="POST" action="{{ route('central.staff.invite') }}" class="space-y-4">
         @csrf
@@ -68,8 +68,8 @@
           <button type="submit" 
                   class="bg-bsu-red text-white px-6 py-2 rounded-lg hover:bg-bsu-redDark 
                          transition duration-200 flex items-center space-x-2">
-            <span>📧</span>
-            <span>Send Invitation</span>
+            <span>👤</span>
+            <span>Create Account & Send Verification</span>
           </button>
         </div>
       </form>
@@ -149,9 +149,9 @@
       </div>
     </div>
 
-    <!-- Pending Invitations -->
+    <!-- Unverified SFAO Accounts -->
     <div>
-      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Pending Invitations</h3>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Pending Verification</h3>
       
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white dark:bg-gray-700 rounded-lg shadow">
@@ -167,93 +167,52 @@
                 Campus
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Sent
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Expires
+                Created
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Status
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Actions
-              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-            @forelse(\App\Models\Invitation::with(['campus', 'inviter'])->get() as $invitation)
+            @forelse(\App\Models\User::where('role', 'sfao')->whereNull('email_verified_at')->with('campus')->get() as $user)
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-8 w-8">
-                      <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+                      <div class="h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center">
                         <span class="text-white text-sm font-medium">
-                          {{ strtoupper(substr($invitation->name, 0, 1)) }}
+                          {{ strtoupper(substr($user->name, 0, 1)) }}
                         </span>
                       </div>
                     </div>
                     <div class="ml-3">
                       <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ $invitation->name }}
+                        {{ $user->name }}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $invitation->email }}
+                  {{ $user->email }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $invitation->campus->name }}
+                  {{ $user->campus->name ?? 'Not Assigned' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $invitation->created_at->format('M d, Y') }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $invitation->expires_at->format('M d, Y') }}
+                  {{ $user->created_at->format('M d, Y') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  @if($invitation->status === 'pending')
-                    @if($invitation->isExpired())
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                   bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                        Expired
-                      </span>
-                    @else
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                   bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        Pending
-                      </span>
-                    @endif
-                  @elseif($invitation->status === 'accepted')
-                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                      Accepted
-                    </span>
-                  @else
-                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                      {{ ucfirst($invitation->status) }}
-                    </span>
-                  @endif
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  @if($invitation->status === 'pending' && !$invitation->isExpired())
-                    <form method="POST" action="{{ route('central.staff.invitations.cancel', $invitation->id) }}" class="inline">
-                      @csrf
-                      <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                              onclick="return confirm('Are you sure you want to cancel this invitation?')">
-                        Cancel
-                      </button>
-                    </form>
-                  @else
-                    <span class="text-gray-400 dark:text-gray-500">-</span>
-                  @endif
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                               bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                    Awaiting Verification
+                  </span>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                  No pending invitations.
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  All SFAO accounts are verified.
                 </td>
               </tr>
             @endforelse
