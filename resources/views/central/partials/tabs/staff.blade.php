@@ -101,7 +101,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-            @forelse(\App\Models\User::where('role', 'sfao')->with('campus')->get() as $staff)
+            @forelse(\App\Models\User::where('role', 'sfao')->whereNotNull('email_verified_at')->with('campus')->get() as $staff)
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -149,9 +149,9 @@
       </div>
     </div>
 
-    <!-- Unverified SFAO Accounts -->
+    <!-- Invitation Status -->
     <div>
-      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Pending Verification</h3>
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Invitation Status</h3>
       
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white dark:bg-gray-700 rounded-lg shadow">
@@ -167,52 +167,69 @@
                 Campus
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Created
+                Invited
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Status
               </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Verified
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-            @forelse(\App\Models\User::where('role', 'sfao')->whereNull('email_verified_at')->with('campus')->get() as $user)
+            @forelse(\App\Models\Invitation::with(['campus', 'inviter'])->orderBy('created_at', 'desc')->get() as $invitation)
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-8 w-8">
-                      <div class="h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center">
+                      <div class="h-8 w-8 rounded-full 
+                        @if($invitation->status === 'active') bg-green-400
+                        @elseif($invitation->status === 'pending') bg-yellow-400
+                        @else bg-red-400
+                        @endif flex items-center justify-center">
                         <span class="text-white text-sm font-medium">
-                          {{ strtoupper(substr($user->name, 0, 1)) }}
+                          {{ strtoupper(substr($invitation->name, 0, 1)) }}
                         </span>
                       </div>
                     </div>
                     <div class="ml-3">
                       <div class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ $user->name }}
+                        {{ $invitation->name }}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $user->email }}
+                  {{ $invitation->email }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $user->campus->name ?? 'Not Assigned' }}
+                  {{ $invitation->campus->name ?? 'Not Assigned' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {{ $user->created_at->format('M d, Y') }}
+                  {{ $invitation->created_at->format('M d, Y') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                               bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                    Awaiting Verification
+                    @if($invitation->status === 'active') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                    @elseif($invitation->status === 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                    @else bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                    @endif">
+                    {{ ucfirst($invitation->status) }}
                   </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  @if($invitation->accepted_at)
+                    {{ $invitation->accepted_at->format('M d, Y H:i') }}
+                  @else
+                    <span class="text-gray-400">Not verified</span>
+                  @endif
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                  All SFAO accounts are verified.
+                <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  No invitations found.
                 </td>
               </tr>
             @endforelse

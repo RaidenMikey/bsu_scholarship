@@ -71,14 +71,22 @@ class Invitation extends Model
     }
 
     /**
-     * Accept the invitation
+     * Accept the invitation (mark as active when email is verified)
      */
     public function accept()
     {
         $this->update([
-            'status' => 'accepted',
+            'status' => 'active',
             'accepted_at' => Carbon::now(),
         ]);
+    }
+
+    /**
+     * Mark invitation as deactive (if user account is deactivated)
+     */
+    public function markAsDeactive()
+    {
+        $this->update(['status' => 'deactive']);
     }
 
     /**
@@ -86,7 +94,7 @@ class Invitation extends Model
      */
     public function markAsExpired()
     {
-        $this->update(['status' => 'expired']);
+        $this->update(['status' => 'deactive']);
     }
 
     /**
@@ -111,6 +119,22 @@ class Invitation extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope for active invitations
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope for deactive invitations
+     */
+    public function scopeDeactive($query)
+    {
+        return $query->where('status', 'deactive');
     }
 
     /**

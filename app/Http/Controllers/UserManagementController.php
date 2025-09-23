@@ -15,6 +15,7 @@ use App\Models\SfaoRequirement;
 use App\Models\Application;
 use App\Models\Form;
 use App\Models\Scholarship;
+use App\Models\Invitation;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 /**
@@ -159,8 +160,14 @@ class UserManagementController extends Controller
             $user->markEmailAsVerified();
         }
 
-        // For SFAO users, redirect to password setup
+        // For SFAO users, update invitation status and redirect to password setup
         if ($user->role === 'sfao') {
+            // Update invitation status to active
+            $invitation = Invitation::where('email', $user->email)->first();
+            if ($invitation) {
+                $invitation->accept(); // This sets status to 'active' and accepted_at to now
+            }
+            
             // Log the user in temporarily for password setup
             session([
                 'user_id' => $user->id,
@@ -500,6 +507,14 @@ class UserManagementController extends Controller
         }
 
         try {
+            // Create invitation record first
+            $invitation = Invitation::createInvitation(
+                $request->email,
+                $request->name,
+                $request->campus_id,
+                session('user_id')
+            );
+
             // Create SFAO user account with unverified email
             $user = User::create([
                 'name' => $request->name,
