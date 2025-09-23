@@ -443,6 +443,195 @@ if (!$user) {
           <input type="text" name="mother_employment_status" value="{{ old('mother_employment_status', $existingApplication->mother_employment_status ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
         </div>
       </section>
+
+      <!-- Additional Family Information Section -->
+      <section class="mt-8">
+        <h2 class="text-xl font-semibold text-bsu-red mb-6">Additional Family Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-medium mb-1">Number of Family Members</label>
+            <input type="number" name="family_members_count" value="{{ old('family_members_count', $existingApplication->family_members_count ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Number of Siblings</label>
+            <input type="number" name="siblings_count" value="{{ old('siblings_count', $existingApplication->siblings_count ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Family Form</label>
+            <input type="text" name="family_form" placeholder="e.g., Living together, Separated, Annulled" value="{{ old('family_form', $existingApplication->family_form ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+          </div>
+        </div>
+      </section>
+
+      <!-- Income Information Section -->
+      <section class="mt-8">
+        <h2 class="text-xl font-semibold text-bsu-red mb-6">Income Information</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block font-medium mb-1">Monthly Family Income Bracket</label>
+            <select name="monthly_family_income_bracket" class="w-full border border-red-500 rounded-md px-3 py-2">
+              <option value="">Select Income Bracket</option>
+              <option value="<10957" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '<10957' ? 'selected' : '' }}>Below ₱10,957</option>
+              <option value="10957-21194" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '10957-21194' ? 'selected' : '' }}>₱10,957 - ₱21,194</option>
+              <option value="21195-42290" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '21195-42290' ? 'selected' : '' }}>₱21,195 - ₱42,290</option>
+              <option value="42291-84480" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '42291-84480' ? 'selected' : '' }}>₱42,291 - ₱84,480</option>
+              <option value="84481-140800" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '84481-140800' ? 'selected' : '' }}>₱84,481 - ₱140,800</option>
+              <option value="140801-211200" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '140801-211200' ? 'selected' : '' }}>₱140,801 - ₱211,200</option>
+              <option value=">211200" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '>211200' ? 'selected' : '' }}>Above ₱211,200</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium mb-1">Other Income Sources</label>
+            <textarea name="other_income_sources" rows="3" placeholder="e.g., Relatives - ₱5,000, Government Assistance - ₱2,000" class="w-full border border-red-500 rounded-md px-3 py-2">{{ old('other_income_sources', $existingApplication->other_income_sources ?? '') }}</textarea>
+            <p class="text-sm text-gray-500 mt-1">List other sources of income and amounts (if any)</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- House Profile & Utilities Section -->
+      <section class="mt-8">
+        <h2 class="text-xl font-semibold text-bsu-red mb-6">House Profile & Utilities</h2>
+        <div class="space-y-6">
+          <!-- Vehicle Ownership -->
+          <div>
+            <label class="block font-medium mb-1">Vehicle Ownership</label>
+            <textarea name="vehicle_ownership" rows="2" placeholder="e.g., Car - 1, Motorcycle - 2, Bicycle - 1" class="w-full border border-red-500 rounded-md px-3 py-2">{{ old('vehicle_ownership', $existingApplication->vehicle_ownership ?? '') }}</textarea>
+          </div>
+
+          <!-- Appliances -->
+          <div>
+            <label class="block font-medium mb-1">Appliances</label>
+            <textarea name="appliances" rows="3" placeholder="e.g., TV - 2, Refrigerator - 1, Washing Machine - 1, Air Conditioner - 1" class="w-full border border-red-500 rounded-md px-3 py-2">{{ old('appliances', $existingApplication->appliances ?? '') }}</textarea>
+          </div>
+
+          <!-- House Information -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block font-medium mb-1">House Ownership</label>
+              <select name="house_ownership" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">Select Ownership</option>
+                <option value="owned" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'owned' ? 'selected' : '' }}>Owned</option>
+                <option value="rented" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'rented' ? 'selected' : '' }}>Rented</option>
+                <option value="government" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'government' ? 'selected' : '' }}>Government Housing</option>
+                <option value="inherited" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'inherited' ? 'selected' : '' }}>Inherited</option>
+                <option value="other" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'other' ? 'selected' : '' }}>Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-medium mb-1">House Material</label>
+              <select name="house_material" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">Select Material</option>
+                <option value="concrete" {{ old('house_material', $existingApplication->house_material ?? '') == 'concrete' ? 'selected' : '' }}>Concrete</option>
+                <option value="half-concrete" {{ old('house_material', $existingApplication->house_material ?? '') == 'half-concrete' ? 'selected' : '' }}>Half Concrete</option>
+                <option value="wood" {{ old('house_material', $existingApplication->house_material ?? '') == 'wood' ? 'selected' : '' }}>Wood</option>
+                <option value="bamboo" {{ old('house_material', $existingApplication->house_material ?? '') == 'bamboo' ? 'selected' : '' }}>Bamboo</option>
+                <option value="mixed" {{ old('house_material', $existingApplication->house_material ?? '') == 'mixed' ? 'selected' : '' }}>Mixed Materials</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-medium mb-1">House Type</label>
+              <select name="house_type" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">Select Type</option>
+                <option value="single" {{ old('house_type', $existingApplication->house_type ?? '') == 'single' ? 'selected' : '' }}>Single</option>
+                <option value="duplex" {{ old('house_type', $existingApplication->house_type ?? '') == 'duplex' ? 'selected' : '' }}>Duplex</option>
+                <option value="multi-unit" {{ old('house_type', $existingApplication->house_type ?? '') == 'multi-unit' ? 'selected' : '' }}>Multi-unit</option>
+                <option value="apartment" {{ old('house_type', $existingApplication->house_type ?? '') == 'apartment' ? 'selected' : '' }}>Apartment</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Utilities -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium mb-1">Cooking Utilities</label>
+              <select name="cooking_utilities" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">Select Cooking Utility</option>
+                <option value="lpg" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'lpg' ? 'selected' : '' }}>LPG</option>
+                <option value="wood" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'wood' ? 'selected' : '' }}>Wood</option>
+                <option value="kerosene" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'kerosene' ? 'selected' : '' }}>Kerosene</option>
+                <option value="electric" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'electric' ? 'selected' : '' }}>Electric</option>
+                <option value="charcoal" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'charcoal' ? 'selected' : '' }}>Charcoal</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-medium mb-1">Water Source</label>
+              <select name="water_source" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">Select Water Source</option>
+                <option value="piped" {{ old('water_source', $existingApplication->water_source ?? '') == 'piped' ? 'selected' : '' }}>Piped Water</option>
+                <option value="well" {{ old('water_source', $existingApplication->water_source ?? '') == 'well' ? 'selected' : '' }}>Well</option>
+                <option value="spring" {{ old('water_source', $existingApplication->water_source ?? '') == 'spring' ? 'selected' : '' }}>Spring</option>
+                <option value="rainwater" {{ old('water_source', $existingApplication->water_source ?? '') == 'rainwater' ? 'selected' : '' }}>Rainwater</option>
+                <option value="bottled" {{ old('water_source', $existingApplication->water_source ?? '') == 'bottled' ? 'selected' : '' }}>Bottled Water</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-1">Electricity Source</label>
+            <select name="electricity_source" class="w-full border border-red-500 rounded-md px-3 py-2">
+              <option value="">Select Electricity Source</option>
+              <option value="grid" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'grid' ? 'selected' : '' }}>Grid Connection</option>
+              <option value="solar" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'solar' ? 'selected' : '' }}>Solar Power</option>
+              <option value="generator" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'generator' ? 'selected' : '' }}>Generator</option>
+              <option value="battery" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'battery' ? 'selected' : '' }}>Battery</option>
+              <option value="none" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'none' ? 'selected' : '' }}>No Electricity</option>
+            </select>
+          </div>
+
+          <!-- Monthly Bills -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block font-medium mb-1">Monthly Electric Bill (₱)</label>
+              <input type="number" name="monthly_bills_electric" step="0.01" value="{{ old('monthly_bills_electric', $existingApplication->monthly_bills_electric ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+            <div>
+              <label class="block font-medium mb-1">Monthly Telephone Bill (₱)</label>
+              <input type="number" name="monthly_bills_telephone" step="0.01" value="{{ old('monthly_bills_telephone', $existingApplication->monthly_bills_telephone ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+            <div>
+              <label class="block font-medium mb-1">Monthly Internet Bill (₱)</label>
+              <input type="number" name="monthly_bills_internet" step="0.01" value="{{ old('monthly_bills_internet', $existingApplication->monthly_bills_internet ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Certification Section -->
+      <section class="mt-8">
+        <h2 class="text-xl font-semibold text-bsu-red mb-6">Certification</h2>
+        <div class="space-y-4">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p class="text-sm text-yellow-800">
+              <strong>Note:</strong> By submitting this form, you certify that all information provided is true and accurate. 
+              Any false information may result in disqualification from scholarship consideration.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium mb-1">Student Signature</label>
+              <input type="text" name="student_signature" placeholder="Type your full name as digital signature" value="{{ old('student_signature', $existingApplication->student_signature ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+              <p class="text-sm text-gray-500 mt-1">Type your full name as your digital signature</p>
+            </div>
+
+            <div>
+              <label class="block font-medium mb-1">Date Signed</label>
+              <input type="date" name="date_signed" value="{{ old('date_signed', optional($existingApplication)->date_signed?->format('Y-m-d') ?? date('Y-m-d')) }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 class="font-semibold text-blue-800 mb-2">Declaration</h4>
+            <p class="text-sm text-blue-700">
+              I hereby declare that the information provided in this application form is true, complete, and accurate to the best of my knowledge. 
+              I understand that any false information may result in the rejection of my application or termination of any scholarship granted.
+            </p>
+          </div>
+        </div>
+      </section>
     </form>
     
     <!-- Buttons container -->

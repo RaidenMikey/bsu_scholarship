@@ -76,6 +76,32 @@ class FormController extends Controller
             'mother_company'           => 'nullable|string',
             'mother_company_address'   => 'nullable|string',
             'mother_employment_status' => 'nullable|string',
+
+            // ------------------- Additional Family Information -------------------
+            'family_members_count' => 'nullable|integer',
+            'siblings_count' => 'nullable|integer',
+            'family_form' => 'nullable|string',
+
+            // ------------------- Income Information -------------------
+            'monthly_family_income_bracket' => 'nullable|string',
+            'other_income_sources' => 'nullable|string',
+
+            // ------------------- House Profile & Utilities -------------------
+            'vehicle_ownership' => 'nullable|string',
+            'appliances' => 'nullable|string',
+            'house_ownership' => 'nullable|string',
+            'house_material' => 'nullable|string',
+            'house_type' => 'nullable|string',
+            'cooking_utilities' => 'nullable|string',
+            'water_source' => 'nullable|string',
+            'electricity_source' => 'nullable|string',
+            'monthly_bills_electric' => 'nullable|numeric',
+            'monthly_bills_telephone' => 'nullable|numeric',
+            'monthly_bills_internet' => 'nullable|numeric',
+
+            // ------------------- Certification -------------------
+            'student_signature' => 'nullable|string',
+            'date_signed' => 'nullable|date',
         ]);
 
         // ✅ Ensure empty string → NULL for GWA

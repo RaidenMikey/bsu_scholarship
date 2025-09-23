@@ -81,12 +81,44 @@ class Form extends Model
         'mother_company',
         'mother_company_address',
         'mother_employment_status',
+
+        // ------------------- Additional Family Information -------------------
+        'family_members_count',
+        'siblings_count',
+        'family_form',
+
+        // ------------------- Income Information -------------------
+        'monthly_family_income_bracket',
+        'other_income_sources',
+
+        // ------------------- House Profile & Utilities -------------------
+        'vehicle_ownership',
+        'appliances',
+        'house_ownership',
+        'house_material',
+        'house_type',
+        'cooking_utilities',
+        'water_source',
+        'electricity_source',
+        'monthly_bills_electric',
+        'monthly_bills_telephone',
+        'monthly_bills_internet',
+
+        // ------------------- Certification -------------------
+        'student_signature',
+        'date_signed',
     ];
 
     protected $casts = [
         'has_existing_scholarship' => 'boolean',
-        'gwa'                      => 'float',
-        'birthdate'                => 'date',
+        'father_living' => 'boolean',
+        'mother_living' => 'boolean',
+        'gwa' => 'float',
+        'birthdate' => 'date',
+        'date_signed' => 'date',
+        'monthly_bills_electric' => 'decimal:2',
+        'monthly_bills_telephone' => 'decimal:2',
+        'monthly_bills_internet' => 'decimal:2',
     ];
 
     /**
