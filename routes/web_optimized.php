@@ -49,7 +49,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     Route::get('/', [UserManagementController::class, 'studentDashboard'])->name('dashboard');
     
     // Scholarships
-    Route::get('/scholarships', [UserManagementController::class, 'scholarships'])->name('scholarships');
+    Route::get('/scholarships', [ScholarshipManagementController::class, 'getStudentScholarships'])->name('scholarships');
     
     // Application Form
     Route::get('/form', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form');
@@ -75,7 +75,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
 Route::middleware(['web'])->prefix('sfao')->name('sfao.')->group(function () {
 
     // Dashboard
-    Route::get('/', [ApplicationManagementController::class, 'sfaoDashboard'])->name('dashboard');
+    Route::get('/', [ApplicationManagementController::class, 'sfaoApplicants'])->name('dashboard');
     
     // Applicants
     Route::get('/applicants/{user_id}/documents', [ApplicationManagementController::class, 'viewDocuments'])->name('viewDocuments');
@@ -102,7 +102,7 @@ Route::middleware(['web', 'checkUserExists:central'])
     ->group(function () {
 
         // Dashboard
-        Route::get('/', [ApplicationManagementController::class, 'centralDashboard'])->name('dashboard');
+        Route::get('/', [ApplicationManagementController::class, 'getCentralApplications'])->name('dashboard');
 
         // Scholarships
         Route::prefix('scholarships')->name('scholarships.')->group(function () {

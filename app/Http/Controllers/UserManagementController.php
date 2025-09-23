@@ -1,0 +1,629 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use App\Models\User;
+use App\Models\Campus;
+use App\Models\Invitation;
+use App\Models\SfaoRequirement;
+use App\Models\Application;
+use App\Models\Form;
+use App\Models\Scholarship;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+/**
+ * =====================================================
+ * USER MANAGEMENT CONTROLLER
+ * =====================================================
+ * 
+ * This controller handles all user-related functionality
+ * including authentication, profile management, document
+ * uploads, and user administration.
+ * 
+ * Combined functionality from:
+ * - AuthController
+ * - StudentController (user-specific methods)
+ * - SFAODocumentController
+ * - CentralController (staff management)
+ * - InvitationController
+ */
+class UserManagementController extends Controller
+{
+    // =====================================================
+    // AUTHENTICATION METHODS
+    // =====================================================
+
+    /**
+     * Show login form
+     */
+    public function showLogin()
+    {
+        if (session()->has('user_id')) {
+            return redirect(match (session('role')) {
+                'student' => route('student.dashboard'),
+                'sfao'    => '/sfao',
+                'central' => '/central',
+                default   => '/'
+            });
+        }
+        return view('auth.auth');
+    }
+
+    /**
+     * Handle login request
+     */
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+            'campus_id' => 'required|exists:campuses,id',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['Invalid credentials']);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            return back()->withErrors(['Your email is not verified. Please check your inbox.']);
+        }
+
+        if ($request->campus_id != $user->campus_id) {
+            return back()->withErrors(['The selected campus does not match your account.']);
+        }
+
+        session([
+            'user_id' => $user->id,
+            'role' => $user->role,
+        ]);
+
+        return redirect(match ($user->role) {
+            'student' => '/student',
+            'sfao'    => '/sfao',
+            'central' => '/central',
+            default   => '/'
+        });
+    }
+
+    /**
+     * Handle logout
+     */
+    public function logout()
+    {
+        session()->flush();
+        return redirect('/login')->with('logged_out', true);
+    }
+
+    /**
+     * Show registration form
+     */
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    /**
+     * Handle registration
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name'      => 'required|string|max:255',
+            'email'     => ['required','email','unique:users,email','regex:/^[a-zA-Z0-9._%+-]+@g\.batstate-u\.edu\.ph$/'],
+            'password'  => 'required|string|confirmed|min:6',
+            'role'      => 'required|string',
+            'campus_id' => 'required|exists:campuses,id',
+        ]);
+
+        $user = User::create([
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'role'      => $request->role,
+            'campus_id' => $request->campus_id,
+        ]);
+
+        $user->sendEmailVerificationNotification();
+
+        return redirect('/login')->with('status', 'Account created! Please verify your email before logging in.');
+    }
+
+    /**
+     * Show email verification notice
+     */
+    public function showVerificationNotice()
+    {
+        return view('auth.verify-email');
+    }
+
+    /**
+     * Handle email verification
+     */
+    public function verifyEmail($id, $hash, Request $request)
+    {
+        $user = User::findOrFail($id);
+
+        if (!\Illuminate\Support\Facades\URL::hasValidSignature($request)) {
+            abort(403);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        return redirect('/login')->with('verified', true);
+    }
+
+    /**
+     * Resend verification email
+     */
+    public function resendVerification(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['Email not found.']);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return back()->with('message', 'Your email is already verified.');
+        }
+
+        $user->sendEmailVerificationNotification();
+        return back()->with('message', 'Verification email sent!');
+    }
+
+    // =====================================================
+    // STUDENT DASHBOARD METHODS
+    // =====================================================
+
+    /**
+     * Student dashboard
+     */
+    public function studentDashboard()
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $userId = session('user_id');
+        $user = User::with('appliedScholarships')->find($userId);
+        $form = Form::where('user_id', $userId)->first();
+
+        $hasApplication = $form !== null;
+        $gwa = $form ? floatval($form->gwa) : null;
+
+        $scholarships = collect();
+        if ($hasApplication) {
+            // Get all scholarships that allow new applications and filter by all conditions
+            $allScholarships = Scholarship::where('is_active', true)
+                ->with('conditions')
+                ->orderBy('submission_deadline')
+                ->get();
+
+            // Filter scholarships based on grant type and all requirements
+            $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
+                // Check if scholarship allows new applications based on grant type
+                if (!$scholarship->allowsNewApplications()) {
+                    return false;
+                }
+                
+                // Check if student meets all conditions
+                return $scholarship->meetsAllConditions($form);
+            });
+
+            $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
+            foreach ($scholarships as $scholarship) {
+                $scholarship->applied = in_array($scholarship->id, $appliedIds);
+            }
+        }
+
+        $applications = $user ? $user->appliedScholarships : collect();
+        
+        // Get detailed application tracking data
+        $applicationTracking = Application::where('user_id', $userId)
+            ->with('scholarship')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form'));
+    }
+
+    /**
+     * Show application form
+     */
+    public function showApplicationForm()
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $existingApplication = Form::where('user_id', session('user_id'))->first();
+        $existingLevels = $existingApplication ? json_decode($existingApplication->level, true) : [];
+
+        return view('student.forms.application_form', compact('existingApplication', 'existingLevels'));
+    }
+
+    /**
+     * Print application
+     */
+    public function printApplication()
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $user = User::find(session('user_id'));
+        $application = Application::where('user_id', $user->id)->first();
+
+        $pdf = Pdf::loadView('student.forms.application_form_pdf', compact('user', 'application'))
+                  ->setPaper('A4', 'portrait');
+        return $pdf->stream('application_form.pdf');
+    }
+
+    /**
+     * Show scholarships for student
+     */
+    public function scholarships()
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $user = User::with('appliedScholarships')->find(session('user_id'));
+        $form = Form::where('user_id', $user->id)->first();
+        $gwa = $form?->gwa;
+
+        $scholarships = collect();
+
+        if ($form) {
+            // Get all scholarships that allow new applications and filter by all conditions
+            $allScholarships = Scholarship::where('is_active', true)
+                ->with('conditions')
+                ->orderBy('submission_deadline')
+                ->get();
+
+            // Filter scholarships based on grant type and all requirements
+            $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
+                // Check if scholarship allows new applications based on grant type
+                if (!$scholarship->allowsNewApplications()) {
+                    return false;
+                }
+                
+                // Check if student meets all conditions
+                return $scholarship->meetsAllConditions($form);
+            });
+        }
+
+        // Mark applied scholarships
+        $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
+        foreach ($scholarships as $scholarship) {
+            $scholarship->applied = in_array($scholarship->id, $appliedIds);
+        }
+
+        return view('student.partials.tabs.scholarships', compact('scholarships', 'gwa', 'form'));
+    }
+
+    // =====================================================
+    // DOCUMENT MANAGEMENT METHODS
+    // =====================================================
+
+    /**
+     * Show document upload form
+     */
+    public function showUploadForm($scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $scholarship = Scholarship::findOrFail($scholarship_id);
+        return view('student.upload-documents', compact('scholarship'));
+    }
+
+    /**
+     * Handle document uploads
+     */
+    public function uploadDocuments(Request $request, $scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'form_137'         => 'required|file|mimes:pdf,jpg,png|max:10240',
+            'grades'           => 'required|file|mimes:pdf,jpg,png|max:10240',
+            'certificate'      => 'nullable|file|mimes:pdf,jpg,png|max:10240',
+            'application_form' => 'required|file|mimes:pdf,jpg,png|max:10240',
+        ]);
+
+        $userId = session('user_id');
+
+        $files = [
+            'form_137'         => $request->file('form_137'),
+            'grades'           => $request->file('grades'),
+            'certificate'      => $request->file('certificate'),
+            'application_form' => $request->file('application_form'),
+        ];
+
+        $filePaths = [];
+        foreach ($files as $key => $file) {
+            if ($file) {
+                $filePaths[$key] = $file->store("documents/{$userId}", 'public');
+            }
+        }
+
+        // Ensure scholarship_id is stored
+        $filePaths['scholarship_id'] = $scholarship_id;
+
+        SfaoRequirement::updateOrCreate(
+            ['user_id' => $userId, 'scholarship_id' => $scholarship_id],
+            $filePaths
+        );
+
+        // Mark student as applied
+        Application::updateOrCreate(
+            [
+                'user_id'        => $userId,
+                'scholarship_id' => $scholarship_id,
+            ],
+            [
+                'status' => 'pending',
+            ]
+        );
+
+        return redirect()
+            ->route('student.dashboard')
+            ->with('success', 'Documents uploaded successfully and you are now applied to this scholarship.');
+    }
+
+    /**
+     * Upload profile picture
+     */
+    public function uploadProfilePicture(Request $request, $role)
+    {
+        if (!session()->has('user_id') || session('role') !== $role) {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = User::find(session('user_id'));
+
+        if ($user->profile_picture && Storage::exists('public/profile_pictures/' . $user->profile_picture)) {
+            Storage::delete('public/profile_pictures/' . $user->profile_picture);
+        }
+
+        $file = $request->file('profile_picture');
+        $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('public/profile_pictures', $filename);
+
+        $user->profile_picture = $filename;
+        $user->save();
+
+        return back()->with('success', 'Profile picture updated.');
+    }
+
+    // =====================================================
+    // STAFF MANAGEMENT METHODS (CENTRAL)
+    // =====================================================
+
+    /**
+     * Send invitation to new SFAO admin
+     */
+    public function inviteStaff(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email|unique:invitations,email',
+            'campus_id' => 'required|exists:campuses,id',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        // Check if user already exists
+        $existingUser = User::where('email', $request->email)->first();
+        if ($existingUser) {
+            return back()->with('error', 'A user with this email already exists.');
+        }
+
+        // Check if there's already a pending invitation
+        $existingInvitation = Invitation::where('email', $request->email)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if ($existingInvitation) {
+            return back()->with('error', 'An invitation has already been sent to this email address.');
+        }
+
+        try {
+            // Create invitation
+            $invitation = Invitation::createInvitation(
+                $request->email,
+                $request->name,
+                $request->campus_id,
+                session('user_id')
+            );
+
+            // Send invitation email
+            Mail::to($request->email)->send(new \App\Mail\SFAOInvitationMail($invitation));
+
+            return back()->with('success', "Invitation sent successfully to {$request->name} ({$request->email}). They have 7 days to accept the invitation.");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send invitation. Please try again.');
+        }
+    }
+
+    /**
+     * Cancel a pending invitation
+     */
+    public function cancelInvitation($id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $invitation = Invitation::findOrFail($id);
+        
+        if ($invitation->status !== 'pending') {
+            return back()->with('error', 'Cannot cancel this invitation.');
+        }
+
+        $invitation->markAsExpired();
+        
+        return back()->with('success', 'Invitation cancelled successfully.');
+    }
+
+    // =====================================================
+    // INVITATION ACCEPTANCE METHODS
+    // =====================================================
+
+    /**
+     * Show the invitation acceptance form
+     */
+    public function showInvitation($token)
+    {
+        $invitation = Invitation::where('token', $token)->first();
+
+        if (!$invitation) {
+            return redirect('/login')->with('error', 'Invalid invitation link.');
+        }
+
+        if (!$invitation->isValid()) {
+            return redirect('/login')->with('error', 'This invitation has expired or is no longer valid.');
+        }
+
+        return view('auth.accept-invitation', compact('invitation'));
+    }
+
+    /**
+     * Accept the invitation and create user account
+     */
+    public function acceptInvitation(Request $request, $token)
+    {
+        $invitation = Invitation::where('token', $token)->first();
+
+        if (!$invitation) {
+            return redirect('/login')->with('error', 'Invalid invitation link.');
+        }
+
+        if (!$invitation->isValid()) {
+            return redirect('/login')->with('error', 'This invitation has expired or is no longer valid.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required|string|min:8',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            // Create the user account
+            $user = User::create([
+                'name' => $invitation->name,
+                'email' => $invitation->email,
+                'password' => Hash::make($request->password),
+                'role' => 'sfao',
+                'campus_id' => $invitation->campus_id,
+                'email_verified_at' => now(),
+            ]);
+
+            // Mark invitation as accepted
+            $invitation->accept();
+
+            // Log the user in
+            session([
+                'user_id' => $user->id,
+                'role' => 'sfao',
+                'name' => $user->name,
+                'campus_id' => $user->campus_id,
+            ]);
+
+            return redirect('/sfao/dashboard')->with('success', 'Welcome! Your account has been created successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to create account. Please try again.');
+        }
+    }
+
+    // =====================================================
+    // USER PROFILE METHODS
+    // =====================================================
+
+    /**
+     * Get user profile information
+     */
+    public function getUserProfile($userId)
+    {
+        return User::with(['campus', 'form', 'applications.scholarship'])->find($userId);
+    }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        if (!session()->has('user_id')) {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . session('user_id'),
+        ]);
+
+        $user = User::find(session('user_id'));
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Change user password
+     */
+    public function changePassword(Request $request)
+    {
+        if (!session()->has('user_id')) {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = User::find(session('user_id'));
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Password changed successfully.');
+    }
+}
