@@ -90,6 +90,14 @@ class Invitation extends Model
     }
 
     /**
+     * Mark invitation as active (reactivate user)
+     */
+    public function markAsActive()
+    {
+        $this->update(['status' => 'active']);
+    }
+
+    /**
      * Mark invitation as expired
      */
     public function markAsExpired()
@@ -138,6 +146,14 @@ class Invitation extends Model
     }
 
     /**
+     * Scope for removed invitations
+     */
+    public function scopeRemoved($query)
+    {
+        return $query->where('status', 'removed');
+    }
+
+    /**
      * Scope for expired invitations
      */
     public function scopeExpired($query)
@@ -152,5 +168,37 @@ class Invitation extends Model
     {
         return $query->where('status', 'pending')
                     ->where('expires_at', '>', Carbon::now());
+    }
+
+    /**
+     * Check if invitation is active (not deactive)
+     */
+    public function isActive()
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Check if invitation is deactive
+     */
+    public function isDeactive()
+    {
+        return $this->status === 'deactive';
+    }
+
+    /**
+     * Check if invitation is removed
+     */
+    public function isRemoved()
+    {
+        return $this->status === 'removed';
+    }
+
+    /**
+     * Mark invitation as removed (when user is deleted)
+     */
+    public function markAsRemoved()
+    {
+        $this->update(['status' => 'removed']);
     }
 }

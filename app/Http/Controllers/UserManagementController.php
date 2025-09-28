@@ -541,6 +541,58 @@ class UserManagementController extends Controller
         }
     }
 
+    /**
+     * Deactivate SFAO staff member (remove from users table)
+     */
+    public function deactivateStaff(Request $request, $id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        try {
+            $user = User::findOrFail($id);
+            
+            // Check if user is SFAO staff
+            if ($user->role !== 'sfao') {
+                return back()->with('error', 'Only SFAO staff can be deactivated.');
+            }
+
+            // Store user information for logging before deletion
+            $userName = $user->name;
+            $userEmail = $user->email;
+            $userCampusId = $user->campus_id;
+
+            // Delete related applications first (if any)
+            $user->applications()->delete();
+            
+            // Delete the user's form (if any)
+            $user->form()->delete();
+            
+            // Update invitation status to 'removed' before deleting user
+            $invitation = Invitation::where('email', $userEmail)->first();
+            if ($invitation) {
+                $invitation->markAsRemoved();
+                Log::info("Invitation status updated to 'removed' for: {$userName} ({$userEmail})");
+            }
+            
+            // Delete the user record completely
+            $user->delete();
+            
+            Log::info("SFAO staff completely removed: {$userName} ({$userEmail}) by user ID: " . session('user_id'));
+
+            return back()->with('success', "SFAO staff member {$userName} has been completely removed from the system. Their account can no longer be used to login.");
+        } catch (\Exception $e) {
+            Log::error("Failed to remove SFAO staff: " . $e->getMessage());
+            return back()->with('error', 'Failed to remove staff member. Please try again.');
+        }
+    }
+
+    /**
+     * Note: Reactivate functionality removed since deactivated users are now completely deleted.
+     * To restore access, a new SFAO account must be created using the invite functionality.
+     */
+
     // =====================================================
     // SFAO PASSWORD SETUP METHODS
     // =====================================================

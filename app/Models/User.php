@@ -65,4 +65,17 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
     {
         return $this->hasOne(Form::class, 'user_id');
     }
+
+    /**
+     * User has one invitation (for SFAO staff)
+     */
+    public function invitation()
+    {
+        return $this->hasOne(Invitation::class, 'email', 'email');
+    }
+
+    /**
+     * Note: isSfaoActive() method removed since deactivated SFAO staff are now completely deleted from the users table.
+     * Only active SFAO staff will exist in the users table.
+     */
 }

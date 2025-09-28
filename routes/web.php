@@ -123,6 +123,7 @@ Route::middleware(['web', 'checkUserExists:central'])
         
         // Staff Management
         Route::post('/staff/invite', [UserManagementController::class, 'inviteStaff'])->name('staff.invite');
+        Route::post('/staff/{id}/deactivate', [UserManagementController::class, 'deactivateStaff'])->name('staff.deactivate');
     });
 
 

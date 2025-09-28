@@ -101,7 +101,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-            @forelse(\App\Models\User::where('role', 'sfao')->whereNotNull('email_verified_at')->with('campus')->get() as $staff)
+            @forelse(\App\Models\User::where('role', 'sfao')->whereNotNull('email_verified_at')->with(['campus', 'invitation'])->get() as $staff)
               <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -132,9 +132,16 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                    Deactivate
-                  </button>
+                  <form method="POST" action="{{ route('central.staff.deactivate', $staff->id) }}" 
+                        class="inline" 
+                        onsubmit="return confirm('⚠️ WARNING: This will permanently remove {{ $staff->name }} from the system. Their account will be completely deleted and cannot be recovered. Are you sure you want to proceed?')">
+                    @csrf
+                    <button type="submit" 
+                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 
+                                   hover:underline font-semibold">
+                      🗑️ Remove Staff
+                    </button>
+                  </form>
                 </td>
               </tr>
             @empty
@@ -186,6 +193,7 @@
                       <div class="h-8 w-8 rounded-full 
                         @if($invitation->status === 'active') bg-green-400
                         @elseif($invitation->status === 'pending') bg-yellow-400
+                        @elseif($invitation->status === 'removed') bg-gray-400
                         @else bg-red-400
                         @endif flex items-center justify-center">
                         <span class="text-white text-sm font-medium">
@@ -213,6 +221,7 @@
                   <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
                     @if($invitation->status === 'active') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                     @elseif($invitation->status === 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                    @elseif($invitation->status === 'removed') bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200
                     @else bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
                     @endif">
                     {{ ucfirst($invitation->status) }}
