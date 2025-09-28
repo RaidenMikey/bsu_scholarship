@@ -150,6 +150,41 @@ class ScholarshipsTableSeeder extends Seeder
                     ['name' => 'income', 'value' => '12000', 'is_mandatory' => true],
                 ],
             ],
+            [
+                'scholarship_name' => 'Research Excellence Grant',
+                'description'      => 'For students engaged in research activities and academic projects.',
+                'submission_deadline' => Carbon::now()->addMonths(2),
+                'application_start_date' => Carbon::now()->subDays(5),
+                'slots_available'  => 12,
+                'grant_amount'     => 15000,
+                'renewal_allowed'  => true,
+                'priority_level'   => 'high',
+                'eligibility_notes' => 'Must provide research proposal and faculty recommendation.',
+                'created_by'       => 1,
+                'conditions' => [
+                    ['name' => 'gwa', 'value' => '1.25', 'is_mandatory' => true],
+                    ['name' => 'year_level', 'value' => 'Third Year', 'is_mandatory' => true],
+                    ['name' => 'program', 'value' => 'BS Computer Science', 'is_mandatory' => false],
+                    ['name' => 'age', 'value' => '20', 'is_mandatory' => false],
+                ],
+            ],
+            [
+                'scholarship_name' => 'International Student Support',
+                'description'      => 'Financial assistance for international students pursuing their studies.',
+                'submission_deadline' => Carbon::now()->addWeeks(10),
+                'application_start_date' => Carbon::now()->subDays(1),
+                'slots_available'  => 8,
+                'grant_amount'     => 20000,
+                'renewal_allowed'  => true,
+                'priority_level'   => 'medium',
+                'eligibility_notes' => 'Open to all international students with valid student visa.',
+                'created_by'       => 1,
+                'conditions' => [
+                    ['name' => 'gwa', 'value' => '2.00', 'is_mandatory' => true],
+                    ['name' => 'citizenship', 'value' => 'foreign', 'is_mandatory' => true],
+                    ['name' => 'year_level', 'value' => 'Second Year', 'is_mandatory' => false],
+                ],
+            ],
         ];
 
         foreach ($scholarships as $data) {

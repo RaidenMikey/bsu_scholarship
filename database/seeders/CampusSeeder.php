@@ -9,6 +9,9 @@ class CampusSeeder extends Seeder
 {
     public function run()
     {
+        // Clear existing data
+        DB::table('campuses')->truncate();
+
         // Insert constituent campuses first
         $pabloBorbon = DB::table('campuses')->insertGetId([
             'name' => 'BatStateU Pablo Borbon (Main)',

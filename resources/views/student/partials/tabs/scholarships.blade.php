@@ -1,4 +1,4 @@
-<div x-show="tab === 'scholarships'" 
+<div x-show="tab === 'scholarships' && subTab === 'available'" 
      x-data="{
        openWarning: false,
        appliedScholarship: @js($scholarships->firstWhere('applied', true)),

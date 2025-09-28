@@ -9,11 +9,6 @@
 
     <div class="space-y-8">
 
-      <a href="{{ url('/student/form') }}"
-         class="block w-full text-center bg-bsu-red hover:bg-bsu-redDark text-white font-semibold py-3 rounded-lg shadow hover:shadow-lg transition">
-        📝 Update Scholarship Form
-      </a>
-
       <!-- Dark Mode Toggle -->
       <div class="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
         <span class="text-base font-medium text-gray-800 dark:text-gray-200">🌙 Enable Dark Mode</span>

@@ -65,7 +65,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     Route::post('/upload-documents/{scholarship_id}', [UserManagementController::class, 'uploadDocuments'])->name('upload-documents.submit');
     
     // Print Application
-    Route::get('/print-application', [UserManagementController::class, 'printApplication']);
+    Route::get('/print-application', [UserManagementController::class, 'printApplication'])->name('print-application');
 });
 
 // --------------------------------------------------
