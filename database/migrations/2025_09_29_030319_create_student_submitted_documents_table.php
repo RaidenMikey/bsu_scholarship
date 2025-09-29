@@ -25,10 +25,18 @@ return new class extends Migration
             $table->bigInteger('file_size'); // File size in bytes
             $table->boolean('is_mandatory')->default(true); // Whether this document was mandatory
             $table->text('description')->nullable(); // Optional description
+            
+            // Evaluation fields
+            $table->enum('evaluation_status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('evaluation_notes')->nullable(); // SFAO evaluation notes
+            $table->unsignedBigInteger('evaluated_by')->nullable(); // SFAO admin who evaluated
+            $table->timestamp('evaluated_at')->nullable(); // When evaluation was completed
+            
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('scholarship_id')->references('id')->on('scholarships')->onDelete('cascade');
+            $table->foreign('evaluated_by')->references('id')->on('users')->onDelete('set null');
             
             // Indexes for better performance
             $table->index(['user_id', 'scholarship_id', 'document_category'], 'ssd_user_scholarship_category_idx');

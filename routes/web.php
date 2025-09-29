@@ -89,6 +89,14 @@ Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.'
     // Applicants
     Route::get('/applicants/{user_id}/documents', [ApplicationManagementController::class, 'viewDocuments'])->name('viewDocuments');
     
+    // Document Evaluation System (4-Stage Process)
+    Route::get('/evaluation/{user_id}', [ApplicationManagementController::class, 'showEvaluation'])->name('evaluation.show');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents', [ApplicationManagementController::class, 'evaluateSfaoDocuments'])->name('evaluation.sfao-documents');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents/evaluate', [ApplicationManagementController::class, 'submitSfaoEvaluation'])->name('evaluation.sfao-submit');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents', [ApplicationManagementController::class, 'evaluateScholarshipDocuments'])->name('evaluation.scholarship-documents');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents/evaluate', [ApplicationManagementController::class, 'submitScholarshipEvaluation'])->name('evaluation.scholarship-submit');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/final', [ApplicationManagementController::class, 'finalEvaluation'])->name('evaluation.final');
+    
     // Application Management
     Route::post('/applications/{id}/approve', [ApplicationManagementController::class, 'sfaoApproveApplication'])->name('applications.approve');
     Route::post('/applications/{id}/reject', [ApplicationManagementController::class, 'sfaoRejectApplication'])->name('applications.reject');

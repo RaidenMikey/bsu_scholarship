@@ -45,22 +45,16 @@ class Scholarship extends Model
         return $this->belongsToMany(User::class, 'applications');
     }
 
-    // All requirements (both conditions and documents)
-    public function requirements()
-    {
-        return $this->hasMany(ScholarshipRequirement::class);
-    }
-
     // Conditions only (e.g. gwa, disability, income, year_level)
     public function conditions()
     {
-        return $this->hasMany(ScholarshipRequirement::class)->where('type', 'condition');
+        return $this->hasMany(ScholarshipRequiredCondition::class);
     }
 
     // Document requirements only
     public function documentRequirements()
     {
-        return $this->hasMany(ScholarshipRequirement::class)->where('type', 'document');
+        return $this->hasMany(ScholarshipRequiredDocument::class);
     }
 
     // Required documents for this scholarship
@@ -68,6 +62,7 @@ class Scholarship extends Model
     {
         return $this->hasMany(ScholarshipRequiredDocument::class);
     }
+
 
     // Get GWA requirement from conditions
     public function getGwaRequirement()

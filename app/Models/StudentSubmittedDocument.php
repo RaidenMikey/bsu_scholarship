@@ -20,11 +20,16 @@ class StudentSubmittedDocument extends Model
         'file_size',
         'is_mandatory',
         'description',
+        'evaluation_status',
+        'evaluation_notes',
+        'evaluated_by',
+        'evaluated_at',
     ];
 
     protected $casts = [
         'is_mandatory' => 'boolean',
         'file_size' => 'integer',
+        'evaluated_at' => 'datetime',
     ];
 
     // Relationships
@@ -36,6 +41,11 @@ class StudentSubmittedDocument extends Model
     public function scholarship()
     {
         return $this->belongsTo(Scholarship::class);
+    }
+
+    public function evaluator()
+    {
+        return $this->belongsTo(User::class, 'evaluated_by');
     }
 
     // Scopes
@@ -62,6 +72,26 @@ class StudentSubmittedDocument extends Model
     public function scopeByUserAndScholarship($query, $userId, $scholarshipId)
     {
         return $query->where('user_id', $userId)->where('scholarship_id', $scholarshipId);
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('evaluation_status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('evaluation_status', 'approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('evaluation_status', 'rejected');
+    }
+
+    public function scopeEvaluated($query)
+    {
+        return $query->whereIn('evaluation_status', ['approved', 'rejected']);
     }
 
     // Helper methods
@@ -100,5 +130,45 @@ class StudentSubmittedDocument extends Model
     public function getMandatoryStatusDisplayName()
     {
         return $this->is_mandatory ? 'Required' : 'Optional';
+    }
+
+    public function getEvaluationStatusDisplayName()
+    {
+        return match($this->evaluation_status) {
+            'pending' => 'Pending Review',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            default => 'Unknown'
+        };
+    }
+
+    public function getEvaluationStatusBadgeColor()
+    {
+        return match($this->evaluation_status) {
+            'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+            'approved' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'rejected' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        };
+    }
+
+    public function isEvaluated()
+    {
+        return in_array($this->evaluation_status, ['approved', 'rejected']);
+    }
+
+    public function isPending()
+    {
+        return $this->evaluation_status === 'pending';
+    }
+
+    public function isApproved()
+    {
+        return $this->evaluation_status === 'approved';
+    }
+
+    public function isRejected()
+    {
+        return $this->evaluation_status === 'rejected';
     }
 }

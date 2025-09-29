@@ -38,7 +38,8 @@ class ScholarshipRequiredDocument extends Model
         return $query->where('is_mandatory', false);
     }
 
-    public function scopeByType($query, $type)
+    // Scopes for filtering
+    public function scopeByDocumentType($query, $type)
     {
         return $query->where('document_type', $type);
     }

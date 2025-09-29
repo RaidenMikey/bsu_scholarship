@@ -260,7 +260,7 @@ class UserManagementController extends Controller
         // Get detailed application tracking data with enhanced information
         $applicationTracking = Application::where('user_id', $userId)
             ->with(['scholarship' => function($query) {
-                $query->with(['conditions', 'requirements']);
+                $query->with(['conditions', 'requiredDocuments']);
             }])
             ->orderBy('created_at', 'desc')
             ->get();

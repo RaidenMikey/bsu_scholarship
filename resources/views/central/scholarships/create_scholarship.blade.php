@@ -247,7 +247,7 @@
                             class="w-1/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
                         <option value="pdf">PDF</option>
                         <option value="image">Image</option>
-                        <option value="both">PDF or Image</option>
+                        <option value="both">Both</option>
                     </select>
 
                     <select x-model="doc.mandatory" :name="'documents['+index+'][mandatory]'" 

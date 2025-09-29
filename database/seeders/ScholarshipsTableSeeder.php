@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Scholarship;
-use App\Models\ScholarshipRequirement;
+use App\Models\ScholarshipRequiredCondition;
 use Carbon\Carbon;
 
 class ScholarshipsTableSeeder extends Seeder
@@ -195,9 +195,8 @@ class ScholarshipsTableSeeder extends Seeder
             
             // Add multiple conditions for each scholarship
             foreach ($conditions as $condition) {
-                ScholarshipRequirement::create([
+                ScholarshipRequiredCondition::create([
                     'scholarship_id' => $scholarship->id,
-                    'type' => 'condition',
                     'name' => $condition['name'],
                     'value' => $condition['value'],
                     'is_mandatory' => $condition['is_mandatory'],

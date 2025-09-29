@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Application;
 use App\Models\Scholarship;
 use App\Models\SfaoRequirement;
+use App\Models\StudentSubmittedDocument;
 use App\Models\Campus;
 use App\Services\NotificationService;
 
@@ -169,19 +170,54 @@ class ApplicationManagementController extends Controller
         $sfaoCampus = $user->campus;
         $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
 
-        // Get students only from the SFAO admin's campus and its extensions
-        $students = User::where('role', 'student')
+        // Get sorting parameters
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+        $campusFilter = $request->get('campus_filter', 'all');
+
+        // Build the query
+        $query = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
             ->with(['applications.scholarship', 'form', 'campus'])
-            ->leftJoin('sfao_requirements', 'users.id', '=', 'sfao_requirements.user_id')
-            ->select(
+            ->leftJoin('student_submitted_documents', function($join) {
+                $join->on('users.id', '=', 'student_submitted_documents.user_id')
+                     ->where('student_submitted_documents.document_category', '=', 'sfao_required');
+            });
+
+        // Apply campus filter
+        if ($campusFilter !== 'all') {
+            $query->where('users.campus_id', $campusFilter);
+        }
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'name':
+                $query->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $query->orderBy('users.email', $sortOrder);
+                break;
+            case 'date_joined':
+                $query->orderBy('users.created_at', $sortOrder);
+                break;
+            case 'last_uploaded':
+                $query->orderBy(DB::raw('MAX(student_submitted_documents.updated_at)'), $sortOrder);
+                break;
+            case 'documents_count':
+                $query->orderBy(DB::raw('COUNT(DISTINCT student_submitted_documents.id)'), $sortOrder);
+                break;
+            default:
+                $query->orderBy('users.name', 'asc');
+        }
+
+        $students = $query->select(
                 'users.id as student_id',
                 'users.name',
                 'users.email',
                 'users.created_at',
                 'users.campus_id',
-                DB::raw('MAX(sfao_requirements.updated_at) as last_uploaded'),
-                DB::raw('COUNT(DISTINCT sfao_requirements.id) as documents_count')
+                DB::raw('MAX(student_submitted_documents.updated_at) as last_uploaded'),
+                DB::raw('COUNT(DISTINCT student_submitted_documents.id) as documents_count')
             )
             ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at', 'users.campus_id')
             ->get();
@@ -226,7 +262,13 @@ class ApplicationManagementController extends Controller
         
         $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus'));
+        // Get campus options for filtering
+        $campusOptions = collect([['id' => 'all', 'name' => 'All Campuses']])
+            ->merge($sfaoCampus->getAllCampusesUnder()->map(function($campus) {
+                return ['id' => $campus->id, 'name' => $campus->name];
+            }));
+
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter'));
     }
 
     /**
@@ -243,15 +285,16 @@ class ApplicationManagementController extends Controller
         $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
 
         // Get students who have uploaded at least one document, only from this SFAO admin's jurisdiction
-        $students = DB::table('sfao_requirements')
-            ->join('users', 'sfao_requirements.user_id', '=', 'users.id')
+        $students = DB::table('student_submitted_documents')
+            ->join('users', 'student_submitted_documents.user_id', '=', 'users.id')
             ->whereIn('users.campus_id', $campusIds)
+            ->where('student_submitted_documents.document_category', 'sfao_required')
             ->select(
                 'users.id as student_id',
                 'users.name',
                 'users.email',
                 'users.campus_id',
-                DB::raw('MAX(sfao_requirements.updated_at) as last_uploaded')
+                DB::raw('MAX(student_submitted_documents.updated_at) as last_uploaded')
             )
             ->groupBy('users.id', 'users.name', 'users.email', 'users.campus_id')
             ->get();
@@ -448,7 +491,7 @@ class ApplicationManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $scholarships = Scholarship::with(['conditions', 'requirements'])->get();
+        $scholarships = Scholarship::with(['conditions', 'requiredDocuments'])->get();
         
         // Apply sorting
         $sortBy = $request->get('sort_by', 'created_at');
@@ -501,5 +544,213 @@ class ApplicationManagementController extends Controller
         return Application::with(['user', 'scholarship'])
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    // =====================================================
+    // DOCUMENT EVALUATION SYSTEM
+    // =====================================================
+
+    /**
+     * Show evaluation overview - Stage 1: Select Scholarship
+     */
+    public function showEvaluation($userId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $student = User::with(['applications.scholarship', 'campus'])->findOrFail($userId);
+        
+        // Get SFAO admin's campus to verify jurisdiction
+        $sfaoAdmin = User::with('campus')->find(session('user_id'));
+        $campusIds = $sfaoAdmin->campus->getAllCampusesUnder()->pluck('id')->toArray();
+        
+        if (!in_array($student->campus_id, $campusIds)) {
+            return redirect()->route('sfao.dashboard')->with('error', 'You do not have permission to evaluate this student.');
+        }
+
+        // Get scholarships the student has applied to
+        $appliedScholarships = $student->applications->pluck('scholarship')->unique('id');
+        
+        return view('sfao.evaluation.stage1-scholarship-selection', compact('student', 'appliedScholarships'));
+    }
+
+    /**
+     * Show SFAO documents evaluation - Stage 2: Evaluate SFAO Documents
+     */
+    public function evaluateSfaoDocuments($userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $student = User::with(['campus'])->findOrFail($userId);
+        $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($scholarshipId);
+        
+        // Verify SFAO has jurisdiction
+        $sfaoAdmin = User::with('campus')->find(session('user_id'));
+        $campusIds = $sfaoAdmin->campus->getAllCampusesUnder()->pluck('id')->toArray();
+        
+        if (!in_array($student->campus_id, $campusIds)) {
+            return redirect()->route('sfao.dashboard')->with('error', 'You do not have permission to evaluate this student.');
+        }
+
+        // Get only SFAO required documents for this scholarship
+        $sfaoDocuments = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->where('document_category', 'sfao_required')
+            ->with('evaluator')
+            ->get();
+
+        return view('sfao.evaluation.stage2-sfao-documents', compact(
+            'student', 
+            'scholarship', 
+            'sfaoDocuments'
+        ));
+    }
+
+    /**
+     * Show scholarship documents evaluation - Stage 3: Evaluate Scholarship Documents
+     */
+    public function evaluateScholarshipDocuments($userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $student = User::with(['campus'])->findOrFail($userId);
+        $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($scholarshipId);
+        
+        // Verify SFAO has jurisdiction
+        $sfaoAdmin = User::with('campus')->find(session('user_id'));
+        $campusIds = $sfaoAdmin->campus->getAllCampusesUnder()->pluck('id')->toArray();
+        
+        if (!in_array($student->campus_id, $campusIds)) {
+            return redirect()->route('sfao.dashboard')->with('error', 'You do not have permission to evaluate this student.');
+        }
+
+        // Get only scholarship required documents for this scholarship
+        $scholarshipDocuments = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->where('document_category', 'scholarship_required')
+            ->with('evaluator')
+            ->get();
+
+        return view('sfao.evaluation.stage3-scholarship-documents', compact(
+            'student', 
+            'scholarship', 
+            'scholarshipDocuments'
+        ));
+    }
+
+    /**
+     * Submit SFAO documents evaluation
+     */
+    public function submitSfaoEvaluation(Request $request, $userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'evaluations' => 'required|array',
+            'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
+            'evaluations.*.status' => 'required|in:approved,rejected',
+            'evaluations.*.notes' => 'nullable|string|max:1000',
+        ]);
+
+        $evaluatorId = session('user_id');
+        $evaluatedAt = now();
+
+        foreach ($request->evaluations as $evaluation) {
+            StudentSubmittedDocument::where('id', $evaluation['document_id'])
+                ->where('user_id', $userId)
+                ->where('scholarship_id', $scholarshipId)
+                ->where('document_category', 'sfao_required')
+                ->update([
+                    'evaluation_status' => $evaluation['status'],
+                    'evaluation_notes' => $evaluation['notes'] ?? null,
+                    'evaluated_by' => $evaluatorId,
+                    'evaluated_at' => $evaluatedAt,
+                ]);
+        }
+
+        return redirect()->route('sfao.evaluation.scholarship-documents', ['user_id' => $userId, 'scholarship_id' => $scholarshipId])
+            ->with('success', 'SFAO documents evaluation completed. Proceeding to scholarship documents.');
+    }
+
+    /**
+     * Submit scholarship documents evaluation
+     */
+    public function submitScholarshipEvaluation(Request $request, $userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'evaluations' => 'required|array',
+            'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
+            'evaluations.*.status' => 'required|in:approved,rejected',
+            'evaluations.*.notes' => 'nullable|string|max:1000',
+        ]);
+
+        $evaluatorId = session('user_id');
+        $evaluatedAt = now();
+
+        foreach ($request->evaluations as $evaluation) {
+            StudentSubmittedDocument::where('id', $evaluation['document_id'])
+                ->where('user_id', $userId)
+                ->where('scholarship_id', $scholarshipId)
+                ->where('document_category', 'scholarship_required')
+                ->update([
+                    'evaluation_status' => $evaluation['status'],
+                    'evaluation_notes' => $evaluation['notes'] ?? null,
+                    'evaluated_by' => $evaluatorId,
+                    'evaluated_at' => $evaluatedAt,
+                ]);
+        }
+
+        return redirect()->route('sfao.evaluation.final', ['user_id' => $userId, 'scholarship_id' => $scholarshipId])
+            ->with('success', 'Scholarship documents evaluation completed. Proceeding to final review.');
+    }
+
+    /**
+     * Show final evaluation - Stage 4: Final Review
+     */
+    public function finalEvaluation($userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $student = User::with(['campus'])->findOrFail($userId);
+        $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($scholarshipId);
+        
+        // Verify SFAO has jurisdiction
+        $sfaoAdmin = User::with('campus')->find(session('user_id'));
+        $campusIds = $sfaoAdmin->campus->getAllCampusesUnder()->pluck('id')->toArray();
+        
+        if (!in_array($student->campus_id, $campusIds)) {
+            return redirect()->route('sfao.dashboard')->with('error', 'You do not have permission to evaluate this student.');
+        }
+
+        // Get all evaluated documents
+        $evaluatedDocuments = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->with('evaluator')
+            ->get();
+
+        // Get application for this scholarship
+        $application = Application::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->first();
+
+        return view('sfao.evaluation.stage4-final-review', compact(
+            'student', 
+            'scholarship', 
+            'evaluatedDocuments',
+            'application'
+        ));
     }
 }

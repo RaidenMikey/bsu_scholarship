@@ -9,6 +9,53 @@
         </p>
     </div>
 
+    <!-- Sorting and Filtering Controls -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+        <form method="GET" action="{{ route('sfao.dashboard') }}" class="space-y-4">
+            <!-- Filter Row -->
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Sort:</label>
+                    <select name="sort_by" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
+                        <option value="name" {{ $sortBy === 'name' ? 'selected' : '' }}>Name</option>
+                        <option value="email" {{ $sortBy === 'email' ? 'selected' : '' }}>Email</option>
+                        <option value="date_joined" {{ $sortBy === 'date_joined' ? 'selected' : '' }}>Date Joined</option>
+                        <option value="last_uploaded" {{ $sortBy === 'last_uploaded' ? 'selected' : '' }}>Last Upload</option>
+                        <option value="documents_count" {{ $sortBy === 'documents_count' ? 'selected' : '' }}>Document Count</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Order:</label>
+                    <select name="sort_order" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
+                        <option value="asc" {{ $sortOrder === 'asc' ? 'selected' : '' }}>Ascending</option>
+                        <option value="desc" {{ $sortOrder === 'desc' ? 'selected' : '' }}>Descending</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Campus:</label>
+                    <select name="campus_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
+                        @foreach($campusOptions as $campus)
+                            <option value="{{ $campus['id'] }}" {{ $campusFilter == $campus['id'] ? 'selected' : '' }}>
+                                {{ $campus['name'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button type="submit" class="bg-bsu-red text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
+                        Apply
+                    </button>
+                    <a href="{{ route('sfao.dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
+                        Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
@@ -195,9 +242,9 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         @if($student->has_documents)
-                                            <a href="{{ route('sfao.viewDocuments', $student->student_id) }}"
+                                            <a href="{{ route('sfao.evaluation.show', $student->student_id) }}"
                                                class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                View Docs
+                                                Evaluate
                                             </a>
                                         @endif
                                         @if($student->has_applications)

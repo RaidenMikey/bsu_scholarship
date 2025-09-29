@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Scholarship;
 use App\Models\Application;
 use App\Models\User;
-use App\Models\ScholarshipRequirement;
+use App\Models\ScholarshipRequiredCondition;
 use App\Models\ScholarshipRequiredDocument;
 use App\Services\NotificationService;
 
@@ -40,7 +40,7 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $scholarships = Scholarship::with(['conditions', 'requirements'])->get();
+        $scholarships = Scholarship::with(['conditions', 'requiredDocuments'])->get();
         
         // Apply sorting
         $sortBy = $request->get('sort_by', 'created_at');
@@ -116,7 +116,7 @@ class ScholarshipManagementController extends Controller
                 $scholarship->conditions()->create([
                     'name' => $cond['type'],
                     'value' => $cond['value'],
-                    'type' => 'condition',
+                    'is_mandatory' => true, // Conditions are always mandatory
                 ]);
             }
         }
@@ -199,7 +199,7 @@ class ScholarshipManagementController extends Controller
                 $scholarship->conditions()->create([
                     'name' => $cond['type'],
                     'value' => $cond['value'],
-                    'type' => 'condition',
+                    'is_mandatory' => true, // Conditions are always mandatory
                 ]);
             }
         }
@@ -364,7 +364,7 @@ class ScholarshipManagementController extends Controller
      */
     public function getScholarshipDetails($id)
     {
-        return Scholarship::with(['conditions', 'requirements', 'applications'])
+        return Scholarship::with(['conditions', 'requiredDocuments', 'applications'])
             ->findOrFail($id);
     }
 
@@ -386,11 +386,11 @@ class ScholarshipManagementController extends Controller
             'value' => 'required|string',
         ]);
 
-        ScholarshipRequirement::create([
+        ScholarshipRequiredCondition::create([
             'scholarship_id' => $scholarshipId,
             'name' => $request->name,
             'value' => $request->value,
-            'type' => 'condition',
+            'is_mandatory' => true, // Conditions are always mandatory
         ]);
 
         return back()->with('success', 'Condition added successfully.');
@@ -410,10 +410,10 @@ class ScholarshipManagementController extends Controller
             'is_mandatory' => 'boolean',
         ]);
 
-        ScholarshipRequirement::create([
+        ScholarshipRequiredDocument::create([
             'scholarship_id' => $scholarshipId,
-            'name' => $request->name,
-            'type' => 'document',
+            'document_name' => $request->name,
+            'type' => 'pdf', // Default to PDF
             'is_mandatory' => $request->boolean('is_mandatory'),
         ]);
 
@@ -421,18 +421,33 @@ class ScholarshipManagementController extends Controller
     }
 
     /**
-     * Remove requirement from scholarship
+     * Remove condition from scholarship
      */
-    public function removeRequirement($requirementId)
+    public function removeCondition($conditionId)
     {
         if (!session()->has('user_id') || session('role') !== 'central') {
             return redirect('/login')->with('session_expired', true);
         }
 
-        $requirement = ScholarshipRequirement::findOrFail($requirementId);
-        $requirement->delete();
+        $condition = ScholarshipRequiredCondition::findOrFail($conditionId);
+        $condition->delete();
 
-        return back()->with('success', 'Requirement removed successfully.');
+        return back()->with('success', 'Condition removed successfully.');
+    }
+
+    /**
+     * Remove document requirement from scholarship
+     */
+    public function removeDocument($documentId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $document = ScholarshipRequiredDocument::findOrFail($documentId);
+        $document->delete();
+
+        return back()->with('success', 'Document requirement removed successfully.');
     }
 
     // =====================================================

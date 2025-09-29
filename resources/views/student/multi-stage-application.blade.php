@@ -200,7 +200,7 @@
                             @foreach($scholarship->requiredDocuments as $doc)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        {{ strip_tags($doc->document_name) }} {{ $doc->is_mandatory ? '<span class="text-red-500">*</span>' : '' }}
+                                        {{ strip_tags($doc->document_name) }}@if($doc->is_mandatory)<span class="text-red-500">*</span>@endif
                                     </label>
                                     <input type="file" name="scholarship_doc_{{ $doc->id }}" 
                                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
