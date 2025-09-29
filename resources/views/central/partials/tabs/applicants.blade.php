@@ -1,9 +1,14 @@
 <div x-show="tab === 'applicants'" x-cloak x-data="{ showModal: false, showFormModal: false, selectedApp: null }">
     <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold text-bsu-red mb-6">All Scholarship Applicants</h1>
+        <h1 class="text-3xl font-bold text-bsu-red mb-6">SFAO-Approved Applicants</h1>
+        <p class="text-gray-600 mb-6">These applications have been reviewed and approved by SFAO administrators.</p>
 
         @if ($applications->isEmpty())
-            <p class="text-gray-600">No applications found.</p>
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">📋</div>
+                <h3 class="text-xl font-medium text-gray-900 mb-2">No SFAO-approved applications</h3>
+                <p class="text-gray-600">There are currently no applications that have been approved by SFAO administrators.</p>
+            </div>
         @else
             <div class="overflow-x-auto">
                 <table class="min-w-full bg-white border border-gray-300 shadow-lg rounded-lg">
@@ -92,24 +97,14 @@
             </template>
 
             <div class="flex flex-col items-center mt-6 space-y-3">
-                <button 
-                    @click="showModal = false; showFormModal = true" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-2/3 text-center"
-                >
-                    View Application Form
-                </button>
-                <form method="POST" :action="'/central/applications/' + selectedApp.id + '/approve'" class="w-2/3">
-                    @csrf
-                    <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        Approve
-                    </button>
-                </form>
-                <form method="POST" :action="'/central/applications/' + selectedApp.id + '/reject'" class="w-2/3">
-                    @csrf
-                    <button type="submit" class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                        Reject
-                    </button>
-                </form>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-blue-800 font-medium">This application has been approved by SFAO</span>
+                    </div>
+                </div>
                 <form method="POST" :action="'/central/applications/' + selectedApp.id + '/claim'" class="w-2/3">
                     @csrf
                     <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -120,21 +115,5 @@
         </div>
     </div>
 
-    <!-- View Application Form Modal -->
-    <div 
-        x-show="showFormModal" 
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        x-transition 
-        x-cloak
-    >
-        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative overflow-y-auto max-h-[90vh]">
-            <button @click="showFormModal = false" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-2xl">
-                &times;
-            </button>
-
-            <h2 class="text-2xl font-bold mb-4 text-bsu-red">Application Form</h2>
-
-        </div>
-    </div>
     
 </div>

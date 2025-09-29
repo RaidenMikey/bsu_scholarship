@@ -25,7 +25,8 @@
     tab: localStorage.getItem('activeTab') || 'scholarships',
     subTab: localStorage.getItem('activeSubTab') || 'available',
     darkMode: localStorage.getItem('darkMode') === 'true',
-    scholarshipsDropdownOpen: false
+    scholarshipsDropdownOpen: false,
+    applicationsDropdownOpen: false
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
@@ -38,6 +39,7 @@
   <meta http-equiv="Cache-Control" content="no-store" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Student Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
@@ -130,22 +132,43 @@
         </div>
       </div>
 
-      <button @click="tab = 'applications'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'applications' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        📄 Applications
-      </button>
+      <!-- Applications Dropdown -->
+      <div class="relative">
+        <button @click="applicationsDropdownOpen = !applicationsDropdownOpen"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
+                :class="(tab === 'applied-scholarships' || tab === 'application-tracking') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <span>📄 Applications</span>
+          <svg class="w-4 h-4 transition-transform" :class="applicationsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <div x-show="applicationsDropdownOpen" x-transition class="ml-4 mt-2 space-y-1">
+          <button @click="tab = 'applied-scholarships'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'applied-scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🎓 Applied Scholarships
+          </button>
+          
+          <button @click="tab = 'application-tracking'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'application-tracking' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            📊 Application Tracking
+          </button>
+        </div>
+      </div>
 
-      <button @click="tab = 'tracking'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'tracking' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        📊 Application Tracking
-      </button>
-
-      <button @click="tab = 'announcements'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'announcements' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        📢 Announcements
+      <button @click="tab = 'notifications'; sidebarOpen = false"
+              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition relative"
+              :class="tab === 'notifications' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        <span class="flex items-center justify-between">
+          <span>🔔 Notifications</span>
+          @if($unreadCount > 0)
+            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+              {{ $unreadCount }}
+            </span>
+          @endif
+        </span>
       </button>
 
       <button @click="tab = 'account'; sidebarOpen = false"
@@ -674,9 +697,21 @@
       </div>
     </div>
     
-    @include('student.partials.tabs.applications')
-    @include('student.application_tracking')
-    @include('student.partials.tabs.announcements')
+    <!-- Applied Scholarships Tab -->
+    <div x-show="tab === 'applied-scholarships'" x-transition>
+      @include('student.partials.tabs.applications')
+    </div>
+    
+    <!-- Application Tracking Tab -->
+    <div x-show="tab === 'application-tracking'" x-transition>
+      @include('student.application_tracking')
+    </div>
+    
+    <!-- Notifications Tab -->
+    <div x-show="tab === 'notifications'" x-transition>
+      @include('student.partials.tabs.notifications')
+    </div>
+    
     @include('student.partials.tabs.account')
   </main>
 
@@ -688,13 +723,17 @@
       }
     });
     
-    // Handle scholarships dropdown state
+    // Handle dropdown states
     document.addEventListener('alpine:init', () => {
       Alpine.data('dashboard', () => ({
         init() {
           // Open scholarships dropdown if scholarships tab is active
           if (this.tab === 'scholarships') {
             this.scholarshipsDropdownOpen = true;
+          }
+          // Open applications dropdown if applications tab is active
+          if (this.tab === 'applied-scholarships' || this.tab === 'application-tracking') {
+            this.applicationsDropdownOpen = true;
           }
         }
       }));

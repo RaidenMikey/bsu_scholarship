@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Campus;
 use App\Models\SfaoRequirement;
 use App\Models\Application;
+use App\Models\Notification;
 use App\Models\Form;
 use App\Models\Scholarship;
 use App\Models\Invitation;
@@ -254,13 +255,33 @@ class UserManagementController extends Controller
 
         $applications = $user ? $user->appliedScholarships : collect();
         
-        // Get detailed application tracking data
+        // Get detailed application tracking data with enhanced information
         $applicationTracking = Application::where('user_id', $userId)
-            ->with('scholarship')
+            ->with(['scholarship' => function($query) {
+                $query->with(['conditions', 'requirements']);
+            }])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form'));
+        // Add additional data to each application
+        $applicationTracking->each(function($application) {
+            $application->scholarship->status_badge = $this->getStatusBadge($application->status);
+            $application->scholarship->type_badge = $this->getTypeBadge($application->type);
+            $application->scholarship->days_remaining = $this->getDaysRemaining($application->scholarship->submission_deadline);
+            $application->scholarship->grant_amount_formatted = $application->scholarship->grant_amount ? '₱' . number_format($application->scholarship->grant_amount, 2) : 'Not specified';
+        });
+
+        // Get notifications for the student
+        $notifications = Notification::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        $unreadCount = Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->count();
+
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount'));
     }
 
     /**
@@ -709,5 +730,48 @@ class UserManagementController extends Controller
         ]);
 
         return back()->with('success', 'Password changed successfully.');
+    }
+
+    /**
+     * Get status badge for application
+     */
+    private function getStatusBadge($status)
+    {
+        return match($status) {
+            'pending' => ['text' => 'Pending', 'color' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'],
+            'approved' => ['text' => 'Approved', 'color' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'],
+            'rejected' => ['text' => 'Rejected', 'color' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'],
+            'claimed' => ['text' => 'Claimed', 'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'],
+            default => ['text' => 'Unknown', 'color' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200']
+        };
+    }
+
+    /**
+     * Get type badge for application
+     */
+    private function getTypeBadge($type)
+    {
+        return match($type) {
+            'new' => ['text' => 'New Applicant', 'color' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'],
+            'continuing' => ['text' => 'Continuing', 'color' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'],
+            default => ['text' => 'Unknown', 'color' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200']
+        };
+    }
+
+    /**
+     * Get days remaining until deadline
+     */
+    private function getDaysRemaining($deadline)
+    {
+        if (!$deadline) return null;
+        
+        $now = now();
+        $deadlineDate = \Carbon\Carbon::parse($deadline);
+        
+        if ($now->gt($deadlineDate)) {
+            return 0; // Deadline has passed
+        }
+        
+        return $now->diffInDays($deadlineDate);
     }
 }

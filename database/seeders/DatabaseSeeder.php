@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
             FormsTableSeeder::class,
             ScholarshipsTableSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

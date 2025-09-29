@@ -123,4 +123,5 @@ class FormController extends Controller
 
         return redirect('/student')->with('success', 'Application saved successfully.');
     }
+
 }

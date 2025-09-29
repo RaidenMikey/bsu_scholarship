@@ -1,4 +1,4 @@
-<div x-show="tab === 'tracking'" x-transition x-cloak class="px-4 py-6">
+<div x-cloak class="px-4 py-6">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">📊 Application Tracking</h2>
         <p class="text-gray-600 dark:text-gray-300">Monitor the progress of your scholarship applications</p>

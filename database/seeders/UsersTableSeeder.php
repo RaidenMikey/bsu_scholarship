@@ -39,9 +39,9 @@ class UsersTableSeeder extends Seeder
                 // Create students for this campus
                 for ($i = 0; $i < $studentsForThisCampus; $i++) {
                     $studentCount++;
-                    $yearPrefix = $faker->numberBetween(20, 25);
-                    $studentId = $faker->unique()->numberBetween(10000, 99999);
-                    $studentEmail = sprintf("%02d-%05d@g.batstate-u.edu.ph", $yearPrefix, $studentId);
+                    // Use 99-xxxxxx format to avoid conflicts with actual G Suite accounts
+                    $studentId = $faker->unique()->numberBetween(100000, 999999);
+                    $studentEmail = sprintf("99-%06d@g.batstate-u.edu.ph", $studentId);
                     
                     User::create([
                         'name' => $faker->name(),
@@ -58,7 +58,7 @@ class UsersTableSeeder extends Seeder
         // Create 1 SFAO Admin per constituent campus
         foreach ($constituentCampuses as $campus) {
             User::updateOrCreate(
-                ['email' => "sfaoadmin{$campus->id}@g.batstate-u.edu.ph"],
+                ['email' => "test-sfao{$campus->id}@g.batstate-u.edu.ph"],
                 [
                     'name' => "SFAO Admin - {$campus->name}",
                     'password' => Hash::make('password123'),
@@ -71,7 +71,7 @@ class UsersTableSeeder extends Seeder
 
         // Permanent Central Admin
         User::updateOrCreate(
-            ['email' => 'centraladmin@g.batstate-u.edu.ph'],
+            ['email' => 'test-central@g.batstate-u.edu.ph'],
             [
                 'name' => 'Central Admin',
                 'password' => Hash::make('password123'),

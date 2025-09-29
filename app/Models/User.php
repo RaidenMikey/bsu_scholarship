@@ -75,6 +75,14 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
     }
 
     /**
+     * User has many notifications
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
      * Note: isSfaoActive() method removed since deactivated SFAO staff are now completely deleted from the users table.
      * Only active SFAO staff will exist in the users table.
      */

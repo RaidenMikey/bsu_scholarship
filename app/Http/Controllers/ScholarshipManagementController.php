@@ -7,6 +7,7 @@ use App\Models\Scholarship;
 use App\Models\Application;
 use App\Models\User;
 use App\Models\ScholarshipRequirement;
+use App\Services\NotificationService;
 
 /**
  * =====================================================
@@ -69,6 +70,7 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
+
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
             'scholarship_type' => 'required|in:internal,external',
@@ -83,20 +85,28 @@ class ScholarshipManagementController extends Controller
             'eligibility_notes' => 'nullable|string',
         ]);
 
-        $scholarship = Scholarship::create([
-            'scholarship_name' => $request->scholarship_name,
-            'scholarship_type' => $request->scholarship_type,
-            'description'      => $request->description,
-            'submission_deadline' => $request->submission_deadline,
-            'application_start_date' => $request->application_start_date,
-            'slots_available'  => $request->slots_available,
-            'grant_amount'     => $request->grant_amount,
-            'renewal_allowed'  => $request->boolean('renewal_allowed'),
-            'grant_type'       => $request->grant_type,
-            'priority_level'   => $request->priority_level,
-            'eligibility_notes' => $request->eligibility_notes,
-            'created_by'       => session('user_id'),
-        ]);
+        try {
+            $scholarship = Scholarship::create([
+                'scholarship_name' => $request->scholarship_name,
+                'scholarship_type' => $request->scholarship_type,
+                'description'      => $request->description,
+                'submission_deadline' => $request->submission_deadline,
+                'application_start_date' => $request->application_start_date,
+                'slots_available'  => $request->slots_available,
+                'grant_amount'     => $request->grant_amount,
+                'renewal_allowed'  => $request->boolean('renewal_allowed'),
+                'grant_type'       => $request->grant_type,
+                'priority_level'   => $request->priority_level,
+                'eligibility_notes' => $request->eligibility_notes,
+                'is_active'        => true, // Set as active by default
+                'created_by'       => session('user_id'),
+            ]);
+            
+            \Log::info('Scholarship created successfully:', ['id' => $scholarship->id, 'name' => $scholarship->scholarship_name]);
+        } catch (\Exception $e) {
+            \Log::error('Error creating scholarship:', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to create scholarship: ' . $e->getMessage()]);
+        }
 
         // Save conditions
         if ($request->has('conditions')) {
@@ -120,9 +130,12 @@ class ScholarshipManagementController extends Controller
             }
         }
 
+        // Create notifications for all students
+        NotificationService::notifyScholarshipCreated($scholarship);
+
         return redirect()
             ->route('central.dashboard')
-            ->with('success', 'Scholarship added successfully.');
+            ->with('success', 'Scholarship added successfully! You can view it in the scholarships section.');
     }
 
     /**

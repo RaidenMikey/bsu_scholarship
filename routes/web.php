@@ -113,8 +113,6 @@ Route::middleware(['web', 'checkUserExists:central'])
             Route::delete('/{id}', [ScholarshipManagementController::class, 'destroy'])->name('destroy');
         });
 
-        // View Form
-        Route::get('/form/{id}', [FormController::class, 'show'])->name('form.view');
         
         // Application Management
         Route::post('/applications/{id}/approve', [ApplicationManagementController::class, 'centralApproveApplication'])->name('applications.approve');
@@ -162,4 +160,43 @@ Route::post('/application-form/download', function (Request $request) {
               ->setPaper('A4', 'portrait');
 
     return $pdf->download('application_form.pdf');
+});
+
+// =====================================================
+// NOTIFICATION ROUTES
+// =====================================================
+
+// Mark notification as read
+Route::post('/notifications/{id}/mark-read', function ($id) {
+    if (!session()->has('user_id')) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+    
+    $notification = \App\Models\Notification::where('id', $id)
+        ->where('user_id', session('user_id'))
+        ->first();
+    
+    if (!$notification) {
+        return response()->json(['error' => 'Notification not found'], 404);
+    }
+    
+    $notification->markAsRead();
+    
+    return response()->json(['success' => true]);
+});
+
+// Mark all notifications as read
+Route::post('/notifications/mark-all-read', function () {
+    if (!session()->has('user_id')) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+    
+    \App\Models\Notification::where('user_id', session('user_id'))
+        ->where('is_read', false)
+        ->update([
+            'is_read' => true,
+            'read_at' => now()
+        ]);
+    
+    return response()->json(['success' => true]);
 });

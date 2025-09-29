@@ -10,6 +10,7 @@ use App\Models\Application;
 use App\Models\Scholarship;
 use App\Models\SfaoRequirement;
 use App\Models\Campus;
+use App\Services\NotificationService;
 
 /**
  * =====================================================
@@ -136,7 +137,7 @@ class ApplicationManagementController extends Controller
     // =====================================================
 
     /**
-     * View all applicants (Central Admin)
+     * View all applicants (Central Admin) - Only SFAO-approved applications
      */
     public function viewApplicants()
     {
@@ -144,8 +145,9 @@ class ApplicationManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        // Retrieve applications with related user, their form, and scholarship info
-        $applications = Application::with(['user.form', 'scholarship'])
+        // Retrieve only SFAO-approved applications with related user and scholarship info
+        $applications = Application::with(['user', 'scholarship'])
+            ->where('status', 'approved') // Only show SFAO-approved applications
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -289,6 +291,9 @@ class ApplicationManagementController extends Controller
         $application->status = 'approved';
         $application->save();
 
+        // Create notification for student
+        NotificationService::notifyApplicationStatusChange($application, 'approved');
+
         return back()->with('success', 'Application approved.');
     }
 
@@ -304,6 +309,9 @@ class ApplicationManagementController extends Controller
         $application = Application::findOrFail($id);
         $application->status = 'rejected';
         $application->save();
+
+        // Create notification for student
+        NotificationService::notifyApplicationStatusChange($application, 'rejected');
 
         return back()->with('success', 'Application rejected.');
     }
@@ -347,6 +355,9 @@ class ApplicationManagementController extends Controller
         $application->status = 'approved';
         $application->save();
 
+        // Create notification for student
+        NotificationService::notifyApplicationStatusChange($application, 'approved');
+
         return back()->with('success', 'Application approved.');
     }
 
@@ -362,6 +373,9 @@ class ApplicationManagementController extends Controller
         $application = Application::findOrFail($id);
         $application->status = 'rejected';
         $application->save();
+
+        // Create notification for student
+        NotificationService::notifyApplicationStatusChange($application, 'rejected');
 
         return back()->with('success', 'Application rejected.');
     }
@@ -420,7 +434,7 @@ class ApplicationManagementController extends Controller
     }
 
     /**
-     * Central Dashboard
+     * Central Dashboard - Only shows SFAO-approved applications
      */
     public function centralDashboard(Request $request)
     {
@@ -428,7 +442,9 @@ class ApplicationManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
+        // Only show SFAO-approved applications to Central admin
         $applications = Application::with(['user', 'scholarship'])
+            ->where('status', 'approved') // Only SFAO-approved applications
             ->orderBy('created_at', 'desc')
             ->get();
 

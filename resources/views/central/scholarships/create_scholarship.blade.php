@@ -43,6 +43,25 @@
         @if(isset($scholarship))
             @method('PUT')
         @endif
+        
+        <!-- Show validation errors -->
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <strong>Please fix the following errors:</strong>
+                <ul class="list-disc list-inside mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        
+        <!-- Show success message -->
+        @if (session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <strong>Success!</strong> {{ session('success') }}
+            </div>
+        @endif
 
         <!-- Scholarship Type -->
         <label class="block text-sm font-medium text-gray-700 mb-2">Scholarship Type</label>
