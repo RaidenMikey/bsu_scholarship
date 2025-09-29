@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SfaoRequirement extends Model
 {
-    protected $table = 'sfao_requirements';
+    protected $table = 'sfao_required_documents';
 
     protected $fillable = [
         'user_id',

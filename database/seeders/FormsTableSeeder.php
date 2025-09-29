@@ -11,8 +11,10 @@ class FormsTableSeeder extends Seeder
 {
     public function run()
     {
-        // clear old data
+        // clear old data - handle foreign key constraints
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('forms')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // Get only student users with their campus information
         $studentUsers = User::where('role', 'student')->with('campus')->get();

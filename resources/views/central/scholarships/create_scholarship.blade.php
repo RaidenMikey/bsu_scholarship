@@ -22,8 +22,8 @@
 
     // ✅ Precompute documents
     $documentsData = old('documents', isset($scholarship)
-        ? $scholarship->requirements->map(function($r){
-            return ['name' => $r->name, 'type' => $r->type, 'mandatory' => $r->is_mandatory];
+        ? $scholarship->requiredDocuments->map(function($r){
+            return ['name' => $r->document_name, 'type' => $r->document_type, 'mandatory' => $r->is_mandatory];
         })->toArray()
         : []
     );

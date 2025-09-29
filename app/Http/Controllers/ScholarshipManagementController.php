@@ -7,6 +7,7 @@ use App\Models\Scholarship;
 use App\Models\Application;
 use App\Models\User;
 use App\Models\ScholarshipRequirement;
+use App\Models\ScholarshipRequiredDocument;
 use App\Services\NotificationService;
 
 /**
@@ -119,12 +120,12 @@ class ScholarshipManagementController extends Controller
             }
         }
 
-        // Save requirements
+        // Save document requirements
         if ($request->has('documents')) {
             foreach ($request->documents as $doc) {
-                $scholarship->requirements()->create([
-                    'name' => $doc['name'],
-                    'type' => 'document',
+                $scholarship->requiredDocuments()->create([
+                    'document_name' => $doc['name'],
+                    'document_type' => $doc['type'] ?? 'pdf',
                     'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
             }
@@ -147,7 +148,7 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $scholarship = Scholarship::with(['conditions', 'requirements'])->findOrFail($id);
+        $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($id);
         return view('central.scholarships.create_scholarship', compact('scholarship'));
     }
 
@@ -202,13 +203,13 @@ class ScholarshipManagementController extends Controller
             }
         }
 
-        // Refresh requirements
-        $scholarship->requirements()->delete();
+        // Refresh document requirements
+        $scholarship->requiredDocuments()->delete();
         if ($request->has('documents')) {
             foreach ($request->documents as $doc) {
-                $scholarship->requirements()->create([
-                    'name' => $doc['name'],
-                    'type' => 'document',
+                $scholarship->requiredDocuments()->create([
+                    'document_name' => $doc['name'],
+                    'document_type' => $doc['type'] ?? 'pdf',
                     'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
             }
@@ -231,7 +232,7 @@ class ScholarshipManagementController extends Controller
         $scholarship = Scholarship::findOrFail($id);
 
         $scholarship->conditions()->delete();
-        $scholarship->requirements()->delete();
+        $scholarship->requiredDocuments()->delete();
         $scholarship->delete();
 
         return redirect()
