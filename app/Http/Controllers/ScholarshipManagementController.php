@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\Scholarship;
 use App\Models\Application;
 use App\Models\User;
@@ -103,9 +104,9 @@ class ScholarshipManagementController extends Controller
                 'created_by'       => session('user_id'),
             ]);
             
-            \Log::info('Scholarship created successfully:', ['id' => $scholarship->id, 'name' => $scholarship->scholarship_name]);
+            Log::info('Scholarship created successfully:', ['id' => $scholarship->id, 'name' => $scholarship->scholarship_name]);
         } catch (\Exception $e) {
-            \Log::error('Error creating scholarship:', ['error' => $e->getMessage()]);
+            Log::error('Error creating scholarship:', ['error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Failed to create scholarship: ' . $e->getMessage()]);
         }
 
@@ -124,7 +125,7 @@ class ScholarshipManagementController extends Controller
         if ($request->has('documents')) {
             foreach ($request->documents as $doc) {
                 $scholarship->requiredDocuments()->create([
-                    'document_name' => $doc['name'],
+                    'document_name' => strip_tags($doc['name']),
                     'document_type' => $doc['type'] ?? 'pdf',
                     'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);
@@ -208,7 +209,7 @@ class ScholarshipManagementController extends Controller
         if ($request->has('documents')) {
             foreach ($request->documents as $doc) {
                 $scholarship->requiredDocuments()->create([
-                    'document_name' => $doc['name'],
+                    'document_name' => strip_tags($doc['name']),
                     'document_type' => $doc['type'] ?? 'pdf',
                     'is_mandatory' => $doc['mandatory'] ?? true,
                 ]);

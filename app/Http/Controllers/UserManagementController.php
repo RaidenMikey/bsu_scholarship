@@ -17,6 +17,8 @@ use App\Models\Notification;
 use App\Models\Form;
 use App\Models\Scholarship;
 use App\Models\Invitation;
+use App\Models\StudentSubmittedDocument;
+use App\Models\ScholarshipRequiredDocument;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 /**
@@ -467,6 +469,270 @@ class UserManagementController extends Controller
         return redirect()
             ->route('student.dashboard')
             ->with('success', 'Documents uploaded successfully and you are now applied to this scholarship.');
+    }
+
+    // =====================================================
+    // MULTI-STAGE APPLICATION METHODS
+    // =====================================================
+
+    /**
+     * Show multi-stage application form
+     */
+    public function showMultiStageApplication($scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $scholarship = Scholarship::with(['requiredDocuments'])->findOrFail($scholarship_id);
+        $userId = session('user_id');
+        
+        // Get existing submitted documents
+        $submittedDocuments = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)->get();
+        
+        // Check application status
+        $application = Application::where('user_id', $userId)
+            ->where('scholarship_id', $scholarship_id)
+            ->first();
+
+        // Determine current stage based on submitted documents
+        $currentStage = 1;
+        $sfaoDocsCount = $submittedDocuments->where('document_category', 'sfao_required')->count();
+        $scholarshipDocsCount = $submittedDocuments->where('document_category', 'scholarship_required')->count();
+        
+        if ($sfaoDocsCount >= 3) { // At least 3 mandatory SFAO docs
+            $currentStage = 2;
+        }
+        
+        if ($scholarship->requiredDocuments->where('is_mandatory', true)->count() == 0 || $scholarshipDocsCount >= $scholarship->requiredDocuments->where('is_mandatory', true)->count()) {
+            if ($currentStage == 2) {
+                $currentStage = 3;
+            }
+        }
+        
+        if ($application) {
+            $currentStage = 3; // Application already submitted
+        }
+
+        return view('student.multi-stage-application', compact('scholarship', 'submittedDocuments', 'application', 'currentStage'));
+    }
+
+    /**
+     * Handle Stage 1: SFAO Required Documents
+     */
+    public function submitSfaoDocuments(Request $request, $scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'form_137'         => 'required|file|mimes:pdf,jpg,png|max:10240',
+            'grades'           => 'required|file|mimes:pdf,jpg,png|max:10240',
+            'certificate'      => 'nullable|file|mimes:pdf,jpg,png|max:10240',
+            'application_form' => 'required|file|mimes:pdf,jpg,png|max:10240',
+        ]);
+
+        $userId = session('user_id');
+        
+        // Define SFAO required documents
+        $sfaoDocuments = [
+            'form_137' => ['name' => 'Form 137', 'mandatory' => true],
+            'grades' => ['name' => 'Grades', 'mandatory' => true],
+            'certificate' => ['name' => 'Certificate', 'mandatory' => false],
+            'application_form' => ['name' => 'Application Form', 'mandatory' => true],
+        ];
+
+        foreach ($sfaoDocuments as $field => $config) {
+            if ($request->hasFile($field) && $request->file($field)) {
+                $file = $request->file($field);
+                $filePath = $file->store("documents/{$userId}/sfao", 'public');
+                
+                StudentSubmittedDocument::updateOrCreate(
+                    [
+                        'user_id' => $userId,
+                        'scholarship_id' => $scholarship_id,
+                        'document_category' => 'sfao_required',
+                        'document_name' => $config['name'],
+                    ],
+                    [
+                        'file_path' => $filePath,
+                        'original_filename' => $file->getClientOriginalName(),
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'file_size' => $file->getSize(),
+                        'is_mandatory' => $config['mandatory'],
+                    ]
+                );
+            }
+        }
+
+        return redirect()->route('student.apply', $scholarship_id)
+            ->with('success', 'SFAO required documents uploaded successfully!');
+    }
+
+    /**
+     * Handle Stage 2: Scholarship Required Documents
+     */
+    public function submitScholarshipDocuments(Request $request, $scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $scholarship = Scholarship::with(['requiredDocuments'])->findOrFail($scholarship_id);
+        $userId = session('user_id');
+        
+        // Get scholarship required documents
+        $requiredDocs = $scholarship->requiredDocuments;
+        
+        if ($requiredDocs->isEmpty()) {
+            return redirect()->route('student.apply', $scholarship_id)
+                ->with('success', 'No additional documents required for this scholarship.');
+        }
+
+        // Validate files based on scholarship requirements
+        $validationRules = [];
+        foreach ($requiredDocs as $doc) {
+            $fieldName = 'scholarship_doc_' . $doc->id;
+            $rule = $doc->is_mandatory ? 'required' : 'nullable';
+            $rule .= '|file|mimes:pdf,jpg,png|max:10240';
+            $validationRules[$fieldName] = $rule;
+        }
+
+        $request->validate($validationRules);
+
+        // Process each scholarship required document
+        foreach ($requiredDocs as $doc) {
+            $fieldName = 'scholarship_doc_' . $doc->id;
+            
+            if ($request->hasFile($fieldName) && $request->file($fieldName)) {
+                $file = $request->file($fieldName);
+                $filePath = $file->store("documents/{$userId}/scholarship", 'public');
+                
+                StudentSubmittedDocument::updateOrCreate(
+                    [
+                        'user_id' => $userId,
+                        'scholarship_id' => $scholarship_id,
+                        'document_category' => 'scholarship_required',
+                        'document_name' => $doc->document_name,
+                    ],
+                    [
+                        'file_path' => $filePath,
+                        'original_filename' => $file->getClientOriginalName(),
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'file_size' => $file->getSize(),
+                        'is_mandatory' => $doc->is_mandatory,
+                        'description' => $doc->description,
+                    ]
+                );
+            }
+        }
+
+        return redirect()->route('student.apply', $scholarship_id)
+            ->with('success', 'Scholarship required documents uploaded successfully!');
+    }
+
+    /**
+     * Handle Stage 3: Final Confirmation and Application Submission
+     */
+    public function submitFinalApplication(Request $request, $scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $userId = session('user_id');
+        
+        // Check if all required documents are submitted
+        $sfaoDocs = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)
+            ->sfaoRequired()
+            ->mandatory()
+            ->count();
+        
+        $scholarship = Scholarship::with(['requiredDocuments'])->findOrFail($scholarship_id);
+        $requiredScholarshipDocs = $scholarship->requiredDocuments->where('is_mandatory', true)->count();
+        $submittedScholarshipDocs = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)
+            ->scholarshipRequired()
+            ->mandatory()
+            ->count();
+
+        // Check if all mandatory documents are submitted
+        if ($sfaoDocs < 3) { // form_137, grades, application_form are mandatory
+            return redirect()->route('student.apply', $scholarship_id)
+                ->with('error', 'Please submit all required SFAO documents first.');
+        }
+
+        if ($requiredScholarshipDocs > 0 && $submittedScholarshipDocs < $requiredScholarshipDocs) {
+            return redirect()->route('student.apply', $scholarship_id)
+                ->with('error', 'Please submit all required scholarship documents first.');
+        }
+
+        // Create or update application
+        $hasClaimedGrant = Application::hasClaimedGrant($userId, $scholarship_id);
+        $applicationType = $hasClaimedGrant ? 'continuing' : 'new';
+        
+        Application::updateOrCreate(
+            [
+                'user_id' => $userId,
+                'scholarship_id' => $scholarship_id,
+            ],
+            [
+                'type' => $applicationType,
+                'status' => 'pending',
+            ]
+        );
+
+        return redirect()->route('student.dashboard')
+            ->with('success', 'Application submitted successfully! Your application is now under review.');
+    }
+
+    /**
+     * Get application progress for a specific scholarship
+     */
+    public function getApplicationProgress($scholarship_id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userId = session('user_id');
+        $scholarship = Scholarship::with(['requiredDocuments'])->findOrFail($scholarship_id);
+        
+        // Check SFAO documents progress
+        $sfaoSubmitted = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)
+            ->sfaoRequired()
+            ->count();
+        $sfaoRequired = 4; // form_137, grades, certificate, application_form
+        
+        // Check scholarship documents progress
+        $scholarshipRequired = $scholarship->requiredDocuments->where('is_mandatory', true)->count();
+        $scholarshipSubmitted = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)
+            ->scholarshipRequired()
+            ->mandatory()
+            ->count();
+        
+        // Check if application is submitted
+        $application = Application::where('user_id', $userId)
+            ->where('scholarship_id', $scholarship_id)
+            ->first();
+
+        return response()->json([
+            'stage1' => [
+                'completed' => $sfaoSubmitted >= 3, // At least 3 mandatory SFAO docs
+                'progress' => $sfaoSubmitted,
+                'required' => 3
+            ],
+            'stage2' => [
+                'completed' => $scholarshipRequired == 0 || $scholarshipSubmitted >= $scholarshipRequired,
+                'progress' => $scholarshipSubmitted,
+                'required' => $scholarshipRequired
+            ],
+            'stage3' => [
+                'completed' => $application !== null,
+                'progress' => $application ? 1 : 0,
+                'required' => 1
+            ]
+        ]);
     }
 
     /**

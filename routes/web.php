@@ -60,9 +60,18 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     Route::post('/apply', [ApplicationManagementController::class, 'apply'])->name('apply');
     Route::post('/unapply', [ApplicationManagementController::class, 'unapply'])->name('unapply');
     
-    // Document Uploads
-    Route::get('/upload-documents/{scholarship_id}', [UserManagementController::class, 'showUploadForm'])->name('upload-documents');
+    // Document Uploads (Legacy - Redirect to new multi-stage application)
+    Route::get('/upload-documents/{scholarship_id}', function($scholarship_id) {
+        return redirect()->route('student.apply', ['scholarship_id' => $scholarship_id]);
+    })->name('upload-documents');
     Route::post('/upload-documents/{scholarship_id}', [UserManagementController::class, 'uploadDocuments'])->name('upload-documents.submit');
+    
+    // Multi-Stage Application
+    Route::get('/apply/{scholarship_id}', [UserManagementController::class, 'showMultiStageApplication'])->name('apply');
+    Route::post('/apply/{scholarship_id}/sfao-documents', [UserManagementController::class, 'submitSfaoDocuments'])->name('apply.sfao-documents');
+    Route::post('/apply/{scholarship_id}/scholarship-documents', [UserManagementController::class, 'submitScholarshipDocuments'])->name('apply.scholarship-documents');
+    Route::post('/apply/{scholarship_id}/final-submission', [UserManagementController::class, 'submitFinalApplication'])->name('apply.final-submission');
+    Route::get('/apply/{scholarship_id}/progress', [UserManagementController::class, 'getApplicationProgress'])->name('apply.progress');
     
     // Print Application
     Route::get('/print-application', [UserManagementController::class, 'printApplication'])->name('print-application');
