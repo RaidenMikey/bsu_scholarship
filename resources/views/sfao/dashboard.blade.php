@@ -21,7 +21,7 @@
   :class="{ 'dark': darkMode }"
   x-data="{
     sidebarOpen: false,
-    tab: '{{ $activeTab ?? (request('tab') ?? (localStorage.getItem('sfaoTab') || 'scholarships')) }}',
+    tab: localStorage.getItem('sfaoTab') || 'scholarships',
     darkMode: localStorage.getItem('darkMode') === 'true'
   }"
   x-init="
