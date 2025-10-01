@@ -5,6 +5,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApplicationManagementController;
 use App\Http\Controllers\ScholarshipManagementController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\ReportController;
 use App\Models\Form;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -107,6 +108,16 @@ Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.'
     Route::post('/scholarships/{id}/update', [ScholarshipManagementController::class, 'update'])->name('scholarships.update');
     Route::get('/scholarships', [ScholarshipManagementController::class, 'sfaoIndex'])->name('scholarships.index');
     Route::get('/scholarships/{id}', [ScholarshipManagementController::class, 'sfaoShow'])->name('scholarships.show');
+    
+    // Reports Management
+    Route::get('/reports/create', [ReportController::class, 'createReport'])->name('reports.create');
+    Route::post('/reports', [ReportController::class, 'storeReport'])->name('reports.store');
+    Route::get('/reports/{id}', [ReportController::class, 'showReport'])->name('reports.show');
+    Route::get('/reports/{id}/edit', [ReportController::class, 'editReport'])->name('reports.edit');
+    Route::put('/reports/{id}', [ReportController::class, 'updateReport'])->name('reports.update');
+    Route::post('/reports/{id}/submit', [ReportController::class, 'submitReport'])->name('reports.submit');
+    Route::delete('/reports/{id}', [ReportController::class, 'deleteReport'])->name('reports.delete');
+    Route::post('/reports/generate-data', [ReportController::class, 'generateReportData'])->name('reports.generate-data');
 });
 
 // --------------------------------------------------
@@ -139,6 +150,11 @@ Route::middleware(['web', 'checkUserExists:central'])
         // Staff Management
         Route::post('/staff/invite', [UserManagementController::class, 'inviteStaff'])->name('staff.invite');
         Route::post('/staff/{id}/deactivate', [UserManagementController::class, 'deactivateStaff'])->name('staff.deactivate');
+        
+        // Reports Management
+        Route::get('/reports', [ReportController::class, 'centralReports'])->name('reports');
+        Route::get('/reports/{id}', [ReportController::class, 'centralShowReport'])->name('reports.show');
+        Route::post('/reports/{id}/review', [ReportController::class, 'reviewReport'])->name('reports.review');
     });
 
 

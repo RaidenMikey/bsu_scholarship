@@ -21,7 +21,7 @@
   :class="{ 'dark': darkMode }"
   x-data="{
     sidebarOpen: false,
-    tab: localStorage.getItem('sfaoTab') || 'scholarships',
+    tab: '{{ $activeTab ?? (request('tab') ?? (localStorage.getItem('sfaoTab') || 'scholarships')) }}',
     darkMode: localStorage.getItem('darkMode') === 'true'
   }"
   x-init="
@@ -103,6 +103,12 @@
         👥 Applicants Lists
       </button>
 
+      <button @click="tab = 'reports'; sidebarOpen = false"
+              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
+              :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        📊 Reports
+      </button>
+
       <button @click="tab = 'account'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'account' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
@@ -150,6 +156,7 @@
     <!-- Tabs -->
     @include('sfao.partials.tabs.scholarships') <!-- Scholarship Lists -->
     @include('sfao.partials.tabs.applicants')   <!-- Applicants Lists -->
+    @include('sfao.partials.tabs.reports')      <!-- Reports -->
     @include('sfao.partials.tabs.account')      <!-- Account -->
   </main>
 

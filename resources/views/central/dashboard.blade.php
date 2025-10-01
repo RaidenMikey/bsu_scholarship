@@ -98,6 +98,12 @@
         👥 Applicants
       </button>
 
+      <button @click="tab = 'reports'; sidebarOpen = false"
+              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
+              :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        📊 SFAO Reports
+      </button>
+
       <button @click="tab = 'staff'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'staff' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
@@ -152,6 +158,7 @@
     <!-- Tabs -->
     @include('central.partials.tabs.scholarships')
     @include('central.partials.tabs.applicants', ['applications' => $applications])
+    @include('central.partials.tabs.reports')
     @include('central.partials.tabs.staff')
     @include('central.partials.tabs.settings')
 

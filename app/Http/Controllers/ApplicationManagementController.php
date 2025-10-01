@@ -268,7 +268,26 @@ class ApplicationManagementController extends Controller
                 return ['id' => $campus->id, 'name' => $campus->name];
             }));
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter'));
+        // Get reports for the SFAO admin with filtering
+        $reportsQuery = \App\Models\Report::where('sfao_user_id', session('user_id'))
+            ->with(['campus', 'reviewer']);
+
+        // Apply status filter
+        if ($request->has('status') && $request->status !== 'all') {
+            $reportsQuery->where('status', $request->status);
+        }
+
+        // Apply type filter
+        if ($request->has('type') && $request->type !== 'all') {
+            $reportsQuery->where('report_type', $request->type);
+        }
+
+        $reports = $reportsQuery->orderBy('created_at', 'desc')->paginate(10);
+
+        // Get the active tab from session, query parameter, or default to 'students'
+        $activeTab = session('active_tab', $request->get('tab', 'students'));
+
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'reports', 'activeTab'));
     }
 
     /**
@@ -493,13 +512,71 @@ class ApplicationManagementController extends Controller
 
         $scholarships = Scholarship::with(['conditions', 'requiredDocuments'])->get();
         
+        // Get all reports with relationships for full functionality
+        $query = \App\Models\Report::with(['sfaoUser', 'campus', 'reviewer']);
+
+        // Apply filters if provided
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('report_type', $request->type);
+        }
+
+        if ($request->filled('campus') && $request->campus !== 'all') {
+            $query->where('campus_id', $request->campus);
+        }
+
+        // Apply sorting
+        $sortBy = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
+
+        switch ($sortBy) {
+            case 'submitted_at':
+                $query->orderBy('submitted_at', $sortOrder);
+                break;
+            case 'title':
+                $query->orderBy('title', $sortOrder);
+                break;
+            case 'campus':
+                $query->join('campuses', 'reports.campus_id', '=', 'campuses.id')
+                     ->orderBy('campuses.name', $sortOrder);
+                break;
+            default:
+                $query->orderBy('created_at', $sortOrder);
+        }
+
+        $reports = $query->get();
+        $totalReports = \App\Models\Report::count();
+
+        // Group reports by status
+        $reportsByStatus = [
+            'submitted' => $reports->where('status', 'submitted'),
+            'reviewed' => $reports->where('status', 'reviewed'),
+            'approved' => $reports->where('status', 'approved'),
+            'rejected' => $reports->where('status', 'rejected')
+        ];
+
+        // Get report statistics
+        $reportStats = [
+            'total_reports' => $totalReports,
+            'submitted_reports' => $reportsByStatus['submitted']->count(),
+            'reviewed_reports' => $reportsByStatus['reviewed']->count(),
+            'approved_reports' => $reportsByStatus['approved']->count(),
+            'pending_reports' => $reportsByStatus['submitted']->count(),
+        ];
+
+        // Get all campuses for filter
+        $campuses = \App\Models\Campus::all();
+        
         // Apply sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         
         $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
-        return view('central.dashboard', compact('applications', 'scholarships'));
+        return view('central.dashboard', compact('applications', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats'));
     }
 
     /**
