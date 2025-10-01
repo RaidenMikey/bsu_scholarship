@@ -57,7 +57,7 @@
                                     Review Report
                                 </button>
                             @endif
-                            <a href="{{ route('central.reports') }}" 
+                            <a href="{{ route('central.dashboard') }}" 
                                class="inline-flex items-center px-6 py-3 border border-white/30 shadow-sm text-sm font-medium rounded-lg text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>

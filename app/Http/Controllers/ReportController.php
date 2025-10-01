@@ -339,66 +339,6 @@ class ReportController extends Controller
     // CENTRAL ADMIN REPORT METHODS
     // =====================================================
 
-    /**
-     * Display all reports for Central Admin with filtering and grouping
-     */
-    public function centralReports(Request $request)
-    {
-        if (!session()->has('user_id') || session('role') !== 'central') {
-            return redirect('/login')->with('session_expired', true);
-        }
-
-        // Get all reports with relationships
-        $query = Report::with(['sfaoUser', 'campus', 'reviewer']);
-
-        // Apply filters
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('report_type', $request->type);
-        }
-
-        if ($request->filled('campus') && $request->campus !== 'all') {
-            $query->where('campus_id', $request->campus);
-        }
-
-        // Apply sorting
-        $sortBy = $request->get('sort', 'created_at');
-        $sortOrder = $request->get('order', 'desc');
-
-        switch ($sortBy) {
-            case 'submitted_at':
-                $query->orderBy('submitted_at', $sortOrder);
-                break;
-            case 'title':
-                $query->orderBy('title', $sortOrder);
-                break;
-            case 'campus':
-                $query->join('campuses', 'reports.campus_id', '=', 'campuses.id')
-                     ->orderBy('campuses.name', $sortOrder);
-                break;
-            default:
-                $query->orderBy('created_at', $sortOrder);
-        }
-
-        $reports = $query->get();
-        $totalReports = Report::count();
-
-        // Group reports by status
-        $reportsByStatus = [
-            'submitted' => $reports->where('status', 'submitted'),
-            'reviewed' => $reports->where('status', 'reviewed'),
-            'approved' => $reports->where('status', 'approved'),
-            'rejected' => $reports->where('status', 'rejected')
-        ];
-
-        // Get all campuses for filter
-        $campuses = \App\Models\Campus::all();
-
-        return view('central.reports.index', compact('reports', 'reportsByStatus', 'totalReports', 'campuses'));
-    }
 
     /**
      * Show report details for central admin

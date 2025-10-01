@@ -152,7 +152,6 @@ Route::middleware(['web', 'checkUserExists:central'])
         Route::post('/staff/{id}/deactivate', [UserManagementController::class, 'deactivateStaff'])->name('staff.deactivate');
         
         // Reports Management
-        Route::get('/reports', [ReportController::class, 'centralReports'])->name('reports');
         Route::get('/reports/{id}', [ReportController::class, 'centralShowReport'])->name('reports.show');
         Route::post('/reports/{id}/review', [ReportController::class, 'reviewReport'])->name('reports.review');
     });
