@@ -103,7 +103,7 @@
                     <span x-show="filteredData.approved !== undefined" x-text="'Approved: ' + (filteredData.approved || 0)"></span>
                     <span x-show="filteredData.rejected !== undefined" x-text="'Rejected: ' + (filteredData.rejected || 0)"></span>
                     <span x-show="filteredData.new !== undefined" x-text="'New: ' + (filteredData.new || 0)"></span>
-                    <span x-show="filteredData.renewal !== undefined" x-text="'Renewal: ' + (filteredData.renewal || 0)"></span>
+                    <span x-show="filteredData.continuing !== undefined" x-text="'Continuing: ' + (filteredData.continuing || 0)"></span>
                     <span x-show="filteredData.male !== undefined" x-text="'Male: ' + (filteredData.male || 0)"></span>
                     <span x-show="filteredData.female !== undefined" x-text="'Female: ' + (filteredData.female || 0)"></span>
                     </div>
@@ -333,34 +333,68 @@
                     // Apply analysis type
                     switch(this.filters.analysisType) {
                         case 'application_status':
-                            data = {
-                                total: campusData.total_students || 0,
-                                applied: campusData.students_with_applications || 0,
-                                not_applied: (campusData.total_students || 0) - (campusData.students_with_applications || 0),
-                                pending: campusData.pending_applications || 0,
-                                approved: campusData.approved_applications || 0,
-                                rejected: campusData.rejected_applications || 0
-                            };
+                            if (campusData) {
+                                data = {
+                                    total: campusData.total_students || 0,
+                                    applied: campusData.students_with_applications || 0,
+                                    not_applied: (campusData.total_students || 0) - (campusData.students_with_applications || 0),
+                                    pending: campusData.pending_applications || 0,
+                                    approved: campusData.approved_applications || 0,
+                                    rejected: campusData.rejected_applications || 0
+                                };
+                            } else {
+                                data = {
+                                    total: this.analyticsData.total_students || 0,
+                                    applied: this.analyticsData.students_with_applications || 0,
+                                    not_applied: (this.analyticsData.total_students || 0) - (this.analyticsData.students_with_applications || 0),
+                                    pending: this.analyticsData.pending_applications || 0,
+                                    approved: this.analyticsData.approved_applications || 0,
+                                    rejected: this.analyticsData.rejected_applications || 0
+                                };
+                            }
                             break;
                         case 'application_type':
-                            data = {
-                                total: campusData.total_applications || 0,
-                                new: campusData.new_applications || 0,
-                                renewal: campusData.continuing_applications || 0
-                            };
+                            if (campusData) {
+                                data = {
+                                    total: campusData.total_applications || 0,
+                                    new: campusData.new_applications || 0,
+                                    continuing: campusData.continuing_applications || 0
+                                };
+                            } else {
+                                data = {
+                                    total: this.analyticsData.total_applications || 0,
+                                    new: this.analyticsData.new_applications || 0,
+                                    continuing: this.analyticsData.continuing_applications || 0
+                                };
+                            }
                             break;
                         case 'gender':
-                            data = {
-                                total: campusData.total_students || 0,
-                                male: campusData.male_students || 0,
-                                female: campusData.female_students || 0
-                            };
+                            if (campusData) {
+                                data = {
+                                    total: campusData.total_students || 0,
+                                    male: campusData.male_students || 0,
+                                    female: campusData.female_students || 0
+                                };
+                            } else {
+                                data = {
+                                    total: this.analyticsData.total_students || 0,
+                                    male: this.analyticsData.male_students || 0,
+                                    female: this.analyticsData.female_students || 0
+                                };
+                            }
                             break;
                         case 'year_level':
-                            data = {
-                                total: campusData.total_students || 0,
-                                year_levels: campusData.year_level_counts || []
-                            };
+                            if (campusData) {
+                                data = {
+                                    total: campusData.total_students || 0,
+                                    year_levels: campusData.year_level_counts || []
+                                };
+                            } else {
+                                data = {
+                                    total: this.analyticsData.total_students || 0,
+                                    year_levels: this.analyticsData.year_level_counts || []
+                                };
+                            }
                             break;
                     }
                     
@@ -573,17 +607,17 @@
                             break;
                             
                         case 'application_type':
-                            labels = ['New Applications', 'Renewal Applications'];
+                            labels = ['New', 'Continuing'];
                             backgroundColor = ['#10B981', '#F59E0B'];
                             
-                            // For campus-specific data, we need to calculate from available data
                             if (campusData) {
-                                // Since we don't have new/continuing breakdown per campus, use overall data
+                                // Use campus-specific application type data
                                 data = [
-                                    this.analyticsData.new_applications || 0,
-                                    this.analyticsData.continuing_applications || 0
+                                    campusData.new_applications || 0,
+                                    campusData.continuing_applications || 0
                                 ];
                             } else {
+                                // Use overall application type data
                                 data = [
                                     this.analyticsData.new_applications || 0,
                                     this.analyticsData.continuing_applications || 0

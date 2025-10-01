@@ -644,12 +644,12 @@ class ApplicationManagementController extends Controller
 
         // Get comprehensive application statistics
         $totalApplications = $applicationQuery->count();
-        $approvedApplications = $applicationQuery->where('status', 'approved')->count();
-        $rejectedApplications = $applicationQuery->where('status', 'rejected')->count();
-        $pendingApplications = $applicationQuery->where('status', 'pending')->count();
-        $claimedApplications = $applicationQuery->where('status', 'claimed')->count();
-        $newApplications = $applicationQuery->where('type', 'new')->count();
-        $continuingApplications = $applicationQuery->where('type', 'continuing')->count();
+        $approvedApplications = (clone $applicationQuery)->where('status', 'approved')->count();
+        $rejectedApplications = (clone $applicationQuery)->where('status', 'rejected')->count();
+        $pendingApplications = (clone $applicationQuery)->where('status', 'pending')->count();
+        $claimedApplications = (clone $applicationQuery)->where('status', 'claimed')->count();
+        $newApplications = (clone $applicationQuery)->where('type', 'new')->count();
+        $continuingApplications = (clone $applicationQuery)->where('type', 'continuing')->count();
 
         // Get scholarship statistics
         $totalScholarships = \App\Models\Scholarship::count();
@@ -918,6 +918,9 @@ class ApplicationManagementController extends Controller
                 'students_without_applications' => $campusStudents - $campusStudentsWithApplications,
                 'approval_rate' => $campusApplications->count() > 0 ? 
                     round(($campusApplications->where('status', 'approved')->count() / $campusApplications->count()) * 100, 2) : 0,
+                // Add application type statistics
+                'new_applications' => $campusApplications->where('type', 'new')->count(),
+                'continuing_applications' => $campusApplications->where('type', 'continuing')->count(),
                 // Add gender statistics
                 'male_students' => $campusMaleStudents,
                 'female_students' => $campusFemaleStudents,

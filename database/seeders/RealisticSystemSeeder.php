@@ -122,8 +122,23 @@ class RealisticSystemSeeder extends Seeder
                 // Create form for student
                 $this->createStudentForm($student, $gender, $yearLevel, $program);
                 
+                // For constituent campuses, ensure first few students have specific application types
+                $applicationType = null;
+                if ($campus->type === 'constituent') {
+                    if ($i <= 2) {
+                        $applicationType = 'new'; // First 2 students are new applicants
+                    } elseif ($i === 3) {
+                        $applicationType = 'continuing'; // 3rd student is continuing
+                    }
+                }
+                
                 // Create applications based on status distribution
-                $this->createStudentApplications($student, $scholarships, $applicationStatuses[$i % 5]);
+                $this->createStudentApplications($student, $scholarships, $applicationStatuses[$i % 5], $applicationType);
+            }
+            
+            // Ensure constituent campuses have both new and continuing applicants
+            if ($campus->type === 'constituent') {
+                $this->ensureConstituentCampusApplicationTypes($campus, $scholarships);
             }
         }
     }
@@ -237,7 +252,7 @@ class RealisticSystemSeeder extends Seeder
         ]);
     }
     
-    private function createStudentApplications($student, $scholarships, $status)
+    private function createStudentApplications($student, $scholarships, $status, $applicationType = null)
     {
         if ($status === 'not_applied') {
             return; // Student hasn't applied
@@ -253,11 +268,14 @@ class RealisticSystemSeeder extends Seeder
         // Random scholarship
         $scholarship = $scholarships->random();
         
+        // Determine application type
+        $type = $applicationType ?: (rand(0, 1) ? 'new' : 'continuing');
+        
         // Create application with realistic timeline
         $applicationData = [
             'user_id' => $student->id,
             'scholarship_id' => $scholarship->id,
-            'type' => rand(0, 1) ? 'new' : 'continuing',
+            'type' => $type,
             'grant_count' => $status === 'approved' ? rand(1, 3) : 0,
         ];
         
@@ -287,6 +305,99 @@ class RealisticSystemSeeder extends Seeder
         }
         
         Application::create($applicationData);
+    }
+    
+    private function ensureConstituentCampusApplicationTypes($campus, $scholarships)
+    {
+        $this->command->info("🎯 Ensuring application type diversity for {$campus->name}...");
+        
+        // Get existing applications for this campus
+        $existingApplications = Application::whereHas('user', function($query) use ($campus) {
+            $query->where('campus_id', $campus->id);
+        })->get();
+        
+        $newApplications = $existingApplications->where('type', 'new')->count();
+        $continuingApplications = $existingApplications->where('type', 'continuing')->count();
+        
+        $this->command->info("📊 Current applications for {$campus->name}: New: {$newApplications}, Continuing: {$continuingApplications}");
+        
+        // If we don't have at least 2 new applications, create some
+        if ($newApplications < 2) {
+            $studentsNeeded = 2 - $newApplications;
+            $this->createAdditionalApplications($campus, $scholarships, 'new', $studentsNeeded);
+        }
+        
+        // If we don't have at least 1 continuing application, create some
+        if ($continuingApplications < 1) {
+            $studentsNeeded = 1 - $continuingApplications;
+            $this->createAdditionalApplications($campus, $scholarships, 'continuing', $studentsNeeded);
+        }
+        
+        // Verify final counts
+        $finalApplications = Application::whereHas('user', function($query) use ($campus) {
+            $query->where('campus_id', $campus->id);
+        })->get();
+        
+        $finalNew = $finalApplications->where('type', 'new')->count();
+        $finalContinuing = $finalApplications->where('type', 'continuing')->count();
+        
+        $this->command->info("✅ Final applications for {$campus->name}: New: {$finalNew}, Continuing: {$finalContinuing}");
+    }
+    
+    private function createAdditionalApplications($campus, $scholarships, $type, $count)
+    {
+        // Get students from this campus who don't have applications yet
+        $studentsWithoutApplications = User::where('campus_id', $campus->id)
+            ->where('role', 'student')
+            ->whereDoesntHave('applications')
+            ->limit($count)
+            ->get();
+        
+        if ($studentsWithoutApplications->count() < $count) {
+            $this->command->warning("⚠️  Not enough students without applications for {$campus->name}. Creating additional students...");
+            
+            // Create additional students if needed
+            $additionalNeeded = $count - $studentsWithoutApplications->count();
+            for ($i = 1; $i <= $additionalNeeded; $i++) {
+                $gender = ['male', 'female'][array_rand([0, 1])];
+                $yearLevel = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'][array_rand([0, 1, 2, 3, 4])];
+                $program = 'Bachelor of Science in Computer Engineering';
+                
+                $email = 'additional' . $i . '.' . strtolower(str_replace([' ', '(', ')', '–'], ['', '', '', ''], $campus->name)) . '@g.batstate-u.edu.ph';
+                
+                $student = User::create([
+                    'name' => $this->generateStudentName($gender),
+                    'email' => $email,
+                    'password' => Hash::make('password'),
+                    'role' => 'student',
+                    'campus_id' => $campus->id,
+                    'email_verified_at' => now()->subMonths(rand(1, 12)),
+                ]);
+                
+                // Create form for student
+                $this->createStudentForm($student, $gender, $yearLevel, $program);
+                
+                $studentsWithoutApplications->push($student);
+            }
+        }
+        
+        // Create applications for the students
+        foreach ($studentsWithoutApplications->take($count) as $student) {
+            $scholarship = $scholarships->random();
+            
+            $applicationData = [
+                'user_id' => $student->id,
+                'scholarship_id' => $scholarship->id,
+                'type' => $type,
+                'grant_count' => $type === 'continuing' ? rand(1, 3) : 0,
+                'status' => 'approved', // Make them approved to show they're active
+                'created_at' => now()->subDays(rand(30, 180)), // Created some time ago
+                'updated_at' => now()->subDays(rand(1, 30)), // Recently updated
+            ];
+            
+            Application::create($applicationData);
+            $this->command->info("✅ Created {$type} application for student {$student->name} at {$campus->name}");
+        }
     }
     
     private function createReports($campuses)
