@@ -595,10 +595,165 @@ class ApplicationManagementController extends Controller
         $draftReports = \App\Models\Report::where('status', 'draft')->count();
         $pendingReviews = \App\Models\Report::where('status', 'submitted')->count();
 
+        // Get comprehensive application statistics
+        $totalApplications = \App\Models\Application::count();
+        $approvedApplications = \App\Models\Application::where('status', 'approved')->count();
+        $rejectedApplications = \App\Models\Application::where('status', 'rejected')->count();
+        $pendingApplications = \App\Models\Application::where('status', 'pending')->count();
+        $claimedApplications = \App\Models\Application::where('status', 'claimed')->count();
+        $newApplications = \App\Models\Application::where('type', 'new')->count();
+        $continuingApplications = \App\Models\Application::where('type', 'continuing')->count();
+
+        // Get scholarship statistics
+        $totalScholarships = \App\Models\Scholarship::count();
+        $activeScholarships = \App\Models\Scholarship::where('is_active', true)->count();
+        $acceptingApplicationsScholarships = \App\Models\Scholarship::acceptingApplications()->count();
+        $highPriorityScholarships = \App\Models\Scholarship::highPriority()->count();
+        $oneTimeScholarships = \App\Models\Scholarship::where('grant_type', 'one_time')->count();
+        $recurringScholarships = \App\Models\Scholarship::where('grant_type', 'recurring')->count();
+        $discontinuedScholarships = \App\Models\Scholarship::where('grant_type', 'discontinued')->count();
+
+        // Get user statistics
+        $totalUsers = \App\Models\User::count();
+        $totalStudents = \App\Models\User::where('role', 'student')->count();
+        $totalSfaoUsers = \App\Models\User::where('role', 'sfao')->count();
+        $totalCentralUsers = \App\Models\User::where('role', 'central')->count();
+
+        // Get demographic statistics from forms table
+        $maleStudents = \App\Models\Form::whereHas('user', function($query) {
+            $query->where('role', 'student');
+        })->where('sex', 'male')->count();
+        $femaleStudents = \App\Models\Form::whereHas('user', function($query) {
+            $query->where('role', 'student');
+        })->where('sex', 'female')->count();
+        $studentsWithApplications = \App\Models\User::where('role', 'student')
+            ->whereHas('applications')
+            ->count();
+        $studentsWithoutApplications = $totalStudents - $studentsWithApplications;
+
+        // Get application status by gender (using forms table)
+        $maleApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'male');
+        })->count();
+        $femaleApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'female');
+        })->count();
+
+        $maleApprovedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'male');
+        })->where('status', 'approved')->count();
+        $femaleApprovedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'female');
+        })->where('status', 'approved')->count();
+
+        $maleRejectedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'male');
+        })->where('status', 'rejected')->count();
+        $femaleRejectedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'female');
+        })->where('status', 'rejected')->count();
+
+        $malePendingApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'male');
+        })->where('status', 'pending')->count();
+        $femalePendingApplications = \App\Models\Application::whereHas('user.form', function($query) {
+            $query->where('sex', 'female');
+        })->where('status', 'pending')->count();
+
+        // Get year level distribution from forms table
+        $yearLevelStats = \App\Models\Form::whereHas('user', function($query) {
+            $query->where('role', 'student');
+        })->selectRaw('year_level, COUNT(*) as count')
+            ->groupBy('year_level')
+            ->get();
+
+        // Normalize year level labels to standard format
+        $yearLevelMapping = [
+            '1st Year' => '1st Year',
+            'First Year' => '1st Year',
+            '1st' => '1st Year',
+            '2nd Year' => '2nd Year', 
+            'Second Year' => '2nd Year',
+            '2nd' => '2nd Year',
+            '3rd Year' => '3rd Year',
+            'Third Year' => '3rd Year', 
+            '3rd' => '3rd Year',
+            '4th Year' => '4th Year',
+            'Fourth Year' => '4th Year',
+            '4th' => '4th Year',
+            '5th Year' => '5th Year',
+            'Fifth Year' => '5th Year',
+            '5th' => '5th Year'
+        ];
+
+        // Group and normalize the data
+        $normalizedYearLevels = [];
+        foreach ($yearLevelStats as $stat) {
+            $normalizedLabel = $yearLevelMapping[$stat->year_level] ?? $stat->year_level;
+            if (!isset($normalizedYearLevels[$normalizedLabel])) {
+                $normalizedYearLevels[$normalizedLabel] = 0;
+            }
+            $normalizedYearLevels[$normalizedLabel] += $stat->count;
+        }
+
+        // Sort by year level order
+        $yearLevelOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+        $sortedYearLevels = [];
+        foreach ($yearLevelOrder as $level) {
+            if (isset($normalizedYearLevels[$level])) {
+                $sortedYearLevels[$level] = $normalizedYearLevels[$level];
+            }
+        }
+
+        $yearLevelLabels = array_keys($sortedYearLevels);
+        $yearLevelCounts = array_values($sortedYearLevels);
+
+        // Get program distribution from forms table
+        $programStats = \App\Models\Form::whereHas('user', function($query) {
+            $query->where('role', 'student');
+        })->selectRaw('program, COUNT(*) as count')
+            ->groupBy('program')
+            ->orderBy('count', 'desc')
+            ->limit(10) // Top 10 programs
+            ->get();
+
+        $programLabels = $programStats->pluck('program')->toArray();
+        $programCounts = $programStats->pluck('count')->toArray();
+
+        // Get application status by year level (using forms table)
+        $yearLevelApplicationStats = [];
+        $standardYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+        
+        foreach ($standardYearLevels as $standardYearLevel) {
+            // Get all possible variations for this year level
+            $yearLevelVariations = [];
+            foreach ($yearLevelMapping as $original => $normalized) {
+                if ($normalized === $standardYearLevel) {
+                    $yearLevelVariations[] = $original;
+                }
+            }
+            
+            // Get applications for all variations of this year level
+            $yearLevelApplications = \App\Models\Application::whereHas('user.form', function($query) use ($yearLevelVariations) {
+                $query->whereIn('year_level', $yearLevelVariations);
+            })->get();
+
+            $yearLevelApplicationStats[] = [
+                'year_level' => $standardYearLevel,
+                'total_applications' => $yearLevelApplications->count(),
+                'approved_applications' => $yearLevelApplications->where('status', 'approved')->count(),
+                'rejected_applications' => $yearLevelApplications->where('status', 'rejected')->count(),
+                'pending_applications' => $yearLevelApplications->where('status', 'pending')->count(),
+                'claimed_applications' => $yearLevelApplications->where('status', 'claimed')->count()
+            ];
+        }
+
         // Get monthly trends (last 6 months)
         $monthlyLabels = [];
         $monthlyReports = [];
         $monthlyApplications = [];
+        $monthlyApprovedApplications = [];
+        $monthlyRejectedApplications = [];
         
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
@@ -611,14 +766,62 @@ class ApplicationManagementController extends Controller
             $monthlyApplications[] = \App\Models\Application::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
+
+            $monthlyApprovedApplications[] = \App\Models\Application::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->where('status', 'approved')
+                ->count();
+
+            $monthlyRejectedApplications[] = \App\Models\Application::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->where('status', 'rejected')
+                ->count();
         }
 
-        // Get campus performance data
-        $campuses = \App\Models\Campus::withCount('reports')->get();
+        // Get campus performance data with applications
+        $campuses = \App\Models\Campus::withCount(['reports', 'users' => function($query) {
+            $query->where('role', 'student');
+        }])->get();
+        
         $campusNames = $campuses->pluck('name')->toArray();
         $campusReports = $campuses->pluck('reports_count')->toArray();
+        $campusStudents = $campuses->pluck('users_count')->toArray();
 
-        // Get scholarship distribution
+        // Get campus application statistics
+        $campusApplicationStats = [];
+        foreach ($campuses as $campus) {
+            $campusApplications = \App\Models\Application::whereHas('user', function($query) use ($campus) {
+                $query->where('campus_id', $campus->id);
+            })->get();
+
+            // Get total students for this campus
+            $campusStudents = \App\Models\User::where('role', 'student')
+                ->where('campus_id', $campus->id)
+                ->count();
+
+            // Get students with applications for this campus
+            $campusStudentsWithApplications = \App\Models\User::where('role', 'student')
+                ->where('campus_id', $campus->id)
+                ->whereHas('applications')
+                ->count();
+
+            $campusApplicationStats[] = [
+                'campus_id' => $campus->id,
+                'campus_name' => $campus->name,
+                'total_students' => $campusStudents,
+                'total_applications' => $campusApplications->count(),
+                'approved_applications' => $campusApplications->where('status', 'approved')->count(),
+                'rejected_applications' => $campusApplications->where('status', 'rejected')->count(),
+                'pending_applications' => $campusApplications->where('status', 'pending')->count(),
+                'claimed_applications' => $campusApplications->where('status', 'claimed')->count(),
+                'students_with_applications' => $campusStudentsWithApplications,
+                'students_without_applications' => $campusStudents - $campusStudentsWithApplications,
+                'approval_rate' => $campusApplications->count() > 0 ? 
+                    round(($campusApplications->where('status', 'approved')->count() / $campusApplications->count()) * 100, 2) : 0
+            ];
+        }
+
+        // Get scholarship distribution by type
         $scholarshipTypes = \App\Models\Scholarship::selectRaw('scholarship_type, COUNT(*) as count')
             ->groupBy('scholarship_type')
             ->get();
@@ -626,20 +829,129 @@ class ApplicationManagementController extends Controller
         $scholarshipTypeNames = $scholarshipTypes->pluck('scholarship_type')->toArray();
         $scholarshipTypeCounts = $scholarshipTypes->pluck('count')->toArray();
 
+        // Get scholarship performance data
+        $scholarshipPerformance = \App\Models\Scholarship::withCount(['applications', 'applications as approved_applications_count' => function($query) {
+            $query->where('status', 'approved');
+        }])->get()->map(function($scholarship) {
+            return [
+                'name' => $scholarship->scholarship_name,
+                'type' => $scholarship->scholarship_type,
+                'total_applications' => $scholarship->applications_count,
+                'approved_applications' => $scholarship->approved_applications_count,
+                'slots_available' => $scholarship->slots_available,
+                'grant_amount' => $scholarship->grant_amount,
+                'fill_percentage' => $scholarship->slots_available > 0 ? 
+                    min(($scholarship->applications_count / $scholarship->slots_available) * 100, 100) : 0,
+                'approval_rate' => $scholarship->applications_count > 0 ? 
+                    round(($scholarship->approved_applications_count / $scholarship->applications_count) * 100, 2) : 0
+            ];
+        });
+
+        // Get application status distribution
+        $applicationStatusData = [
+            'approved' => $approvedApplications,
+            'rejected' => $rejectedApplications,
+            'pending' => $pendingApplications,
+            'claimed' => $claimedApplications
+        ];
+
+        // Get application type distribution
+        $applicationTypeData = [
+            'new' => $newApplications,
+            'continuing' => $continuingApplications
+        ];
+
+        // Get scholarship grant type distribution
+        $grantTypeData = [
+            'one_time' => $oneTimeScholarships,
+            'recurring' => $recurringScholarships,
+            'discontinued' => $discontinuedScholarships
+        ];
+
+        // Calculate approval rates
+        $overallApprovalRate = $totalApplications > 0 ? round(($approvedApplications / $totalApplications) * 100, 2) : 0;
+        $overallRejectionRate = $totalApplications > 0 ? round(($rejectedApplications / $totalApplications) * 100, 2) : 0;
+
         return [
+            // Report Statistics
             'total_reports' => $totalReports,
             'submitted_reports' => $submittedReports,
             'approved_reports' => $approvedReports,
             'rejected_reports' => $rejectedReports,
             'draft_reports' => $draftReports,
             'pending_reviews' => $pendingReviews,
+            
+            // Application Statistics
+            'total_applications' => $totalApplications,
+            'approved_applications' => $approvedApplications,
+            'rejected_applications' => $rejectedApplications,
+            'pending_applications' => $pendingApplications,
+            'claimed_applications' => $claimedApplications,
+            'new_applications' => $newApplications,
+            'continuing_applications' => $continuingApplications,
+            'overall_approval_rate' => $overallApprovalRate,
+            'overall_rejection_rate' => $overallRejectionRate,
+            
+            // Scholarship Statistics
+            'total_scholarships' => $totalScholarships,
+            'active_scholarships' => $activeScholarships,
+            'accepting_applications_scholarships' => $acceptingApplicationsScholarships,
+            'high_priority_scholarships' => $highPriorityScholarships,
+            'one_time_scholarships' => $oneTimeScholarships,
+            'recurring_scholarships' => $recurringScholarships,
+            'discontinued_scholarships' => $discontinuedScholarships,
+            
+            // User Statistics
+            'total_users' => $totalUsers,
+            'total_students' => $totalStudents,
+            'total_sfao_users' => $totalSfaoUsers,
+            'total_central_users' => $totalCentralUsers,
+            
+            // Demographic Statistics
+            'male_students' => $maleStudents,
+            'female_students' => $femaleStudents,
+            'students_with_applications' => $studentsWithApplications,
+            'students_without_applications' => $studentsWithoutApplications,
+            
+            // Gender-based Application Statistics
+            'male_applications' => $maleApplications,
+            'female_applications' => $femaleApplications,
+            'male_approved_applications' => $maleApprovedApplications,
+            'female_approved_applications' => $femaleApprovedApplications,
+            'male_rejected_applications' => $maleRejectedApplications,
+            'female_rejected_applications' => $femaleRejectedApplications,
+            'male_pending_applications' => $malePendingApplications,
+            'female_pending_applications' => $femalePendingApplications,
+            
+            // Year Level and Program Data
+            'year_level_labels' => $yearLevelLabels,
+            'year_level_counts' => $yearLevelCounts,
+            'program_labels' => $programLabels,
+            'program_counts' => $programCounts,
+            'year_level_application_stats' => $yearLevelApplicationStats,
+            
+            // Monthly Trends
             'monthly_labels' => $monthlyLabels,
             'monthly_reports' => $monthlyReports,
             'monthly_applications' => $monthlyApplications,
+            'monthly_approved_applications' => $monthlyApprovedApplications,
+            'monthly_rejected_applications' => $monthlyRejectedApplications,
+            
+            // Campus Data
             'campus_names' => $campusNames,
             'campus_reports' => $campusReports,
+            'campus_students' => $campusStudents,
+            'campus_application_stats' => $campusApplicationStats,
+            
+            // Scholarship Data
             'scholarship_types' => $scholarshipTypeNames,
-            'scholarship_counts' => $scholarshipTypeCounts
+            'scholarship_counts' => $scholarshipTypeCounts,
+            'scholarship_performance' => $scholarshipPerformance,
+            
+            // Distribution Data
+            'application_status_data' => $applicationStatusData,
+            'application_type_data' => $applicationTypeData,
+            'grant_type_data' => $grantTypeData
         ];
     }
 
