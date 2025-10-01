@@ -22,11 +22,17 @@
   x-data="{
     sidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
-    darkMode: localStorage.getItem('darkMode') === 'true'
+    darkMode: localStorage.getItem('darkMode') === 'true',
+    reportsDropdownOpen: false
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
+    
+    // Handle dropdown states
+    if (localStorage.getItem('activeTab') === 'reports' || localStorage.getItem('activeTab') === 'statistics') {
+      this.reportsDropdownOpen = true;
+    }
   ">
 
 <head>
@@ -98,11 +104,38 @@
         👥 Applicants
       </button>
 
-      <button @click="tab = 'reports'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        📊 SFAO Reports
-      </button>
+      <!-- Reports Dropdown -->
+      <div class="space-y-1">
+        <button @click="reportsDropdownOpen = !reportsDropdownOpen; tab = 'reports'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
+                :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <span>📊 Reports</span>
+          <svg class="w-4 h-4 transition-transform" :class="reportsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div x-show="reportsDropdownOpen" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="ml-4 space-y-1">
+          <button @click="tab = 'reports'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            📋 SFAO Reports
+          </button>
+          <button @click="tab = 'statistics'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'statistics' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            📊 Statistics
+          </button>
+        </div>
+      </div>
 
       <button @click="tab = 'staff'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
@@ -159,6 +192,7 @@
     @include('central.partials.tabs.scholarships')
     @include('central.partials.tabs.applicants', ['applications' => $applications])
     @include('central.partials.tabs.reports')
+    @include('central.partials.tabs.statistics')
     @include('central.partials.tabs.staff')
     @include('central.partials.tabs.settings')
 

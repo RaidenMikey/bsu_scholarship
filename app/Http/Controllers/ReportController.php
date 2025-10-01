@@ -33,7 +33,24 @@ class ReportController extends Controller
         // Get campuses that this SFAO can monitor (their constituent campus and its extensions)
         $monitoredCampuses = $campus->getAllCampusesUnder();
         
-        return view('sfao.reports.create', compact('campus', 'monitoredCampuses'));
+        // Add a special option for "Constituent + Extensions" if the user's campus is a constituent
+        $campusOptions = collect();
+        
+        // Add individual campuses
+        foreach ($monitoredCampuses as $campusOption) {
+            $campusOptions->push($campusOption);
+        }
+        
+        // Add "Constituent + Extensions" option if the user's campus is a constituent
+        if ($campus->type === 'constituent' && $campus->extensionCampuses->count() > 0) {
+            $constituentWithExtensions = new \stdClass();
+            $constituentWithExtensions->id = 'constituent_with_extensions';
+            $constituentWithExtensions->name = $campus->name . ' + Extensions';
+            $constituentWithExtensions->type = 'constituent_with_extensions';
+            $campusOptions->push($constituentWithExtensions);
+        }
+        
+        return view('sfao.reports.create', compact('campus', 'monitoredCampuses', 'campusOptions'));
     }
 
     /**
@@ -51,6 +68,7 @@ class ReportController extends Controller
             'description' => 'nullable|string',
             'report_period_start' => 'required|date',
             'report_period_end' => 'required|date|after_or_equal:report_period_start',
+            'campus_id' => 'required'
         ]);
 
         $user = User::with('campus')->find(session('user_id'));
@@ -58,7 +76,7 @@ class ReportController extends Controller
 
         // Generate report data
         $reportData = Report::generateReportData(
-            $campus->id,
+            $request->campus_id,
             $request->report_period_start,
             $request->report_period_end
         );
@@ -86,7 +104,7 @@ class ReportController extends Controller
             'report_period_end' => 'required|date|after_or_equal:report_period_start',
             'notes' => 'nullable|string',
             'submit_immediately' => 'boolean',
-            'campus_id' => 'required|exists:campuses,id'
+            'campus_id' => 'required'
         ]);
 
         $user = User::with('campus')->find(session('user_id'));
@@ -97,17 +115,14 @@ class ReportController extends Controller
         $monitoredCampusIds = $monitoredCampuses->pluck('id')->toArray();
         
         // Validate that the selected campus is within the SFAO's jurisdiction
-        if (!in_array($request->campus_id, $monitoredCampusIds)) {
+        if ($request->campus_id !== 'constituent_with_extensions' && !in_array($request->campus_id, $monitoredCampusIds)) {
             return redirect()->back()->withErrors(['campus_id' => 'You can only create reports for campuses under your jurisdiction.'])->withInput();
         }
 
-        // Get the selected campus
-        $selectedCampus = Campus::findOrFail($request->campus_id);
-        
         // Generate report data with error handling
         try {
             $reportData = Report::generateReportData(
-                $selectedCampus->id,
+                $request->campus_id,
                 $request->report_period_start,
                 $request->report_period_end
             );
@@ -126,9 +141,13 @@ class ReportController extends Controller
         }
 
         // Create report
+        // For "constituent_with_extensions", use the user's campus ID
+        $reportCampusId = $request->campus_id === 'constituent_with_extensions' ? $campus->id : $request->campus_id;
+        
         $report = Report::create([
             'sfao_user_id' => session('user_id'),
-            'campus_id' => $selectedCampus->id,
+            'campus_id' => $reportCampusId,
+            'original_campus_selection' => $request->campus_id, // Store original selection
             'report_type' => $request->report_type,
             'title' => $request->title,
             'description' => $request->description,
@@ -213,8 +232,25 @@ class ReportController extends Controller
         
         // Get campuses that this SFAO can monitor (their constituent campus and its extensions)
         $monitoredCampuses = $campus->getAllCampusesUnder();
+        
+        // Add a special option for "Constituent + Extensions" if the user's campus is a constituent
+        $campusOptions = collect();
+        
+        // Add individual campuses
+        foreach ($monitoredCampuses as $campusOption) {
+            $campusOptions->push($campusOption);
+        }
+        
+        // Add "Constituent + Extensions" option if the user's campus is a constituent
+        if ($campus->type === 'constituent' && $campus->extensionCampuses->count() > 0) {
+            $constituentWithExtensions = new \stdClass();
+            $constituentWithExtensions->id = 'constituent_with_extensions';
+            $constituentWithExtensions->name = $campus->name . ' + Extensions';
+            $constituentWithExtensions->type = 'constituent_with_extensions';
+            $campusOptions->push($constituentWithExtensions);
+        }
 
-        return view('sfao.reports.edit', compact('report', 'campus', 'monitoredCampuses'));
+        return view('sfao.reports.edit', compact('report', 'campus', 'monitoredCampuses', 'campusOptions'));
     }
 
     /**
@@ -235,7 +271,7 @@ class ReportController extends Controller
             'description' => 'nullable|string',
             'notes' => 'nullable|string',
             'submit_immediately' => 'boolean',
-            'campus_id' => 'required|exists:campuses,id'
+            'campus_id' => 'required'
         ]);
 
         $user = User::with('campus')->find(session('user_id'));
@@ -246,23 +282,27 @@ class ReportController extends Controller
         $monitoredCampusIds = $monitoredCampuses->pluck('id')->toArray();
         
         // Validate that the selected campus is within the SFAO's jurisdiction
-        if (!in_array($request->campus_id, $monitoredCampusIds)) {
+        if ($request->campus_id !== 'constituent_with_extensions' && !in_array($request->campus_id, $monitoredCampusIds)) {
             return redirect()->back()->withErrors(['campus_id' => 'You can only create reports for campuses under your jurisdiction.'])->withInput();
         }
 
+        // For "constituent_with_extensions", use the user's campus ID
+        $reportCampusId = $request->campus_id === 'constituent_with_extensions' ? $campus->id : $request->campus_id;
+        
         $report->update([
             'title' => $request->title,
             'description' => $request->description,
             'notes' => $request->notes,
-            'campus_id' => $request->campus_id,
+            'campus_id' => $reportCampusId,
+            'original_campus_selection' => $request->campus_id, // Store original selection
             'status' => $request->submit_immediately ? 'submitted' : 'draft',
             'submitted_at' => $request->submit_immediately ? now() : null
         ]);
 
         if ($request->submit_immediately) {
-            // Regenerate report data
+            // Regenerate report data using original campus selection
             $reportData = Report::generateReportData(
-                $report->campus_id,
+                $request->campus_id,
                 $report->report_period_start,
                 $report->report_period_end
             );
@@ -294,9 +334,10 @@ class ReportController extends Controller
             ->where('status', 'draft')
             ->findOrFail($id);
 
-        // Regenerate report data
+        // Regenerate report data using original campus selection
+        $campusId = $report->original_campus_selection ?? $report->campus_id;
         $reportData = Report::generateReportData(
-            $report->campus_id,
+            $campusId,
             $report->report_period_start,
             $report->report_period_end
         );
@@ -385,7 +426,7 @@ class ReportController extends Controller
             ? 'Report approved successfully!' 
             : 'Report marked as reviewed successfully!';
 
-        return redirect()->route('central.reports')
+        return redirect()->route('central.dashboard')
             ->with('success', $message);
     }
 

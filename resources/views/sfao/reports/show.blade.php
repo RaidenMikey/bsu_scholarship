@@ -57,6 +57,13 @@
                                     <span>{{ $report->getPeriodDisplayName() }}</span>
                                     <span>Created {{ $report->created_at->format('M d, Y') }}</span>
                                 </div>
+                                <div class="mt-1 text-sm text-white">
+                                    @if($report->original_campus_selection === 'constituent_with_extensions')
+                                        📍 Report for: {{ $report->campus->name }} + Extensions
+                                    @else
+                                        📍 Report for: {{ $report->campus->name ?? 'Unknown Campus' }}
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <div class="flex space-x-3">

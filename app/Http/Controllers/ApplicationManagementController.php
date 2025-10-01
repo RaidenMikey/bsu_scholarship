@@ -567,6 +567,9 @@ class ApplicationManagementController extends Controller
             'pending_reports' => $reportsByStatus['submitted']->count(),
         ];
 
+        // Generate comprehensive analytics data
+        $analytics = $this->generateAnalyticsData();
+
         // Get all campuses for filter
         $campuses = \App\Models\Campus::all();
         
@@ -576,7 +579,68 @@ class ApplicationManagementController extends Controller
         
         $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
-        return view('central.dashboard', compact('applications', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats'));
+        return view('central.dashboard', compact('applications', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics'));
+    }
+
+    /**
+     * Generate comprehensive analytics data for the statistics dashboard
+     */
+    private function generateAnalyticsData()
+    {
+        // Get basic report statistics
+        $totalReports = \App\Models\Report::count();
+        $submittedReports = \App\Models\Report::where('status', 'submitted')->count();
+        $approvedReports = \App\Models\Report::where('status', 'approved')->count();
+        $rejectedReports = \App\Models\Report::where('status', 'rejected')->count();
+        $draftReports = \App\Models\Report::where('status', 'draft')->count();
+        $pendingReviews = \App\Models\Report::where('status', 'submitted')->count();
+
+        // Get monthly trends (last 6 months)
+        $monthlyLabels = [];
+        $monthlyReports = [];
+        $monthlyApplications = [];
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthlyLabels[] = $date->format('M');
+            
+            $monthlyReports[] = \App\Models\Report::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+                
+            $monthlyApplications[] = \App\Models\Application::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+        }
+
+        // Get campus performance data
+        $campuses = \App\Models\Campus::withCount('reports')->get();
+        $campusNames = $campuses->pluck('name')->toArray();
+        $campusReports = $campuses->pluck('reports_count')->toArray();
+
+        // Get scholarship distribution
+        $scholarshipTypes = \App\Models\Scholarship::selectRaw('scholarship_type, COUNT(*) as count')
+            ->groupBy('scholarship_type')
+            ->get();
+        
+        $scholarshipTypeNames = $scholarshipTypes->pluck('scholarship_type')->toArray();
+        $scholarshipTypeCounts = $scholarshipTypes->pluck('count')->toArray();
+
+        return [
+            'total_reports' => $totalReports,
+            'submitted_reports' => $submittedReports,
+            'approved_reports' => $approvedReports,
+            'rejected_reports' => $rejectedReports,
+            'draft_reports' => $draftReports,
+            'pending_reviews' => $pendingReviews,
+            'monthly_labels' => $monthlyLabels,
+            'monthly_reports' => $monthlyReports,
+            'monthly_applications' => $monthlyApplications,
+            'campus_names' => $campusNames,
+            'campus_reports' => $campusReports,
+            'scholarship_types' => $scholarshipTypeNames,
+            'scholarship_counts' => $scholarshipTypeCounts
+        ];
     }
 
     /**

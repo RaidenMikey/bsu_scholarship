@@ -128,9 +128,13 @@
                         <select name="campus_id" id="campus_id" required 
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
                             <option value="">Select Campus</option>
-                            @foreach($monitoredCampuses as $monitoredCampus)
-                                <option value="{{ $monitoredCampus->id }}" {{ old('campus_id') == $monitoredCampus->id ? 'selected' : '' }}>
-                                    🏫 {{ $monitoredCampus->name }} ({{ ucfirst($monitoredCampus->type) }})
+                            @foreach($campusOptions as $campusOption)
+                                <option value="{{ $campusOption->id }}" {{ old('campus_id') == $campusOption->id ? 'selected' : '' }}>
+                                    @if($campusOption->type === 'constituent_with_extensions')
+                                        🏫 {{ $campusOption->name }} (Constituent + Extensions)
+                                    @else
+                                        🏫 {{ $campusOption->name }} ({{ ucfirst($campusOption->type) }})
+                                    @endif
                                 </option>
                             @endforeach
                         </select>

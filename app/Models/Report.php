@@ -13,6 +13,7 @@ class Report extends Model
     protected $fillable = [
         'sfao_user_id',
         'campus_id',
+        'original_campus_selection',
         'report_type',
         'title',
         'description',
@@ -155,8 +156,25 @@ class Report extends Model
     // Generate report data
     public static function generateReportData($campusId, $startDate, $endDate)
     {
-        $campus = Campus::find($campusId);
-        $campusIds = $campus->getAllCampusesUnder()->pluck('id');
+        $campus = null;
+        
+        // Handle special case for "constituent_with_extensions"
+        if ($campusId === 'constituent_with_extensions') {
+            // Get the user's campus (which should be a constituent)
+            $user = User::with('campus')->find(session('user_id'));
+            if (!$user || !$user->campus) {
+                throw new \Exception('User or campus not found');
+            }
+            $campus = $user->campus;
+            $campusIds = $campus->getAllCampusesUnder()->pluck('id');
+        } else {
+            // Regular campus selection - only the selected campus
+            $campus = Campus::find($campusId);
+            if (!$campus) {
+                throw new \Exception('Campus not found');
+            }
+            $campusIds = collect([$campusId]);
+        }
 
         // Get applications in the period
         $applications = Application::whereHas('user', function($query) use ($campusIds) {
@@ -225,6 +243,13 @@ class Report extends Model
 
         // Campus-specific analysis
         $campusAnalysis = self::generateCampusAnalysis($campusIds, $startDate, $endDate);
+        
+        // Debug: Log campus analysis
+        \Illuminate\Support\Facades\Log::info('Campus Analysis Generated:', [
+            'campusIds' => $campusIds->toArray(),
+            'campusAnalysis' => $campusAnalysis,
+            'campusCount' => count($campusAnalysis)
+        ]);
 
         // Scholarship distribution analysis
         $scholarshipDistribution = self::generateScholarshipDistributionAnalysis($applicationsByScholarship, $scholarships);
@@ -289,6 +314,7 @@ class Report extends Model
             $rejected = $campusApplications->where('status', 'rejected')->count();
             $pending = $campusApplications->where('status', 'pending')->count();
 
+            // Always include campus in analysis, even if no applications
             $analysis[] = [
                 'campus_name' => $campus->name,
                 'campus_type' => $campus->type,

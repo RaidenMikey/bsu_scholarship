@@ -149,8 +149,28 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($id);
-        return view('central.scholarships.create_scholarship', compact('scholarship'));
+        try {
+            $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($id);
+            
+            Log::info('Accessing scholarship edit form:', [
+                'id' => $scholarship->id,
+                'name' => $scholarship->scholarship_name,
+                'accessed_by' => session('user_id')
+            ]);
+            
+            return view('central.scholarships.create_scholarship', compact('scholarship'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error accessing scholarship edit form:', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'accessed_by' => session('user_id')
+            ]);
+            
+            return redirect()
+                ->route('central.dashboard')
+                ->with('error', 'Scholarship not found or access denied.');
+        }
     }
 
     /**
@@ -230,15 +250,43 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $scholarship = Scholarship::findOrFail($id);
+        try {
+            $scholarship = Scholarship::findOrFail($id);
+            
+            // Log the deletion attempt
+            Log::info('Attempting to delete scholarship:', [
+                'id' => $scholarship->id,
+                'name' => $scholarship->scholarship_name,
+                'deleted_by' => session('user_id')
+            ]);
 
-        $scholarship->conditions()->delete();
-        $scholarship->requiredDocuments()->delete();
-        $scholarship->delete();
+            // Delete related data first
+            $scholarship->conditions()->delete();
+            $scholarship->requiredDocuments()->delete();
+            
+            // Delete the scholarship
+            $scholarship->delete();
 
-        return redirect()
-            ->route('central.dashboard')
-            ->with('success', 'Scholarship removed successfully.');
+            Log::info('Scholarship deleted successfully:', [
+                'id' => $id,
+                'name' => $scholarship->scholarship_name
+            ]);
+
+            return redirect()
+                ->route('central.dashboard')
+                ->with('success', 'Scholarship "' . $scholarship->scholarship_name . '" removed successfully.');
+                
+        } catch (\Exception $e) {
+            Log::error('Error deleting scholarship:', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()
+                ->route('central.dashboard')
+                ->with('error', 'Failed to delete scholarship: ' . $e->getMessage());
+        }
     }
 
     // =====================================================

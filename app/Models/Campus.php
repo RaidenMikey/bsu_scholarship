@@ -26,6 +26,12 @@ class Campus extends Model
         return $this->hasMany(User::class);
     }
 
+    // ✅ Each campus can have many reports
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
+
     // ✅ Parent campus relationship (for constituent campuses)
     public function parentCampus()
     {
