@@ -583,26 +583,73 @@ class ApplicationManagementController extends Controller
     }
 
     /**
+     * Get filtered analytics data for statistics dashboard
+     */
+    public function getFilteredAnalytics(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        
+        $filters = $request->input('filters', []);
+        $analytics = $this->generateAnalyticsData($filters);
+        
+        return response()->json([
+            'success' => true,
+            'analytics' => $analytics
+        ]);
+    }
+
+    /**
      * Generate comprehensive analytics data for the statistics dashboard
      */
-    private function generateAnalyticsData()
+    private function generateAnalyticsData($filters = [])
     {
+        // Extract filter values
+        $timePeriod = $filters['timePeriod'] ?? 'all';
+        $campusId = $filters['campus'] ?? 'all';
+        
+        // Build base query conditions
+        $applicationQuery = \App\Models\Application::query();
+        $userQuery = \App\Models\User::query();
+        $reportQuery = \App\Models\Report::query();
+        
+        // Apply time period filter
+        if ($timePeriod !== 'all') {
+            $dateCondition = $this->getDateCondition($timePeriod);
+            if ($dateCondition) {
+                $applicationQuery->whereBetween('created_at', $dateCondition);
+                $userQuery->whereBetween('created_at', $dateCondition);
+                $reportQuery->whereBetween('created_at', $dateCondition);
+            }
+        }
+        
+        
+        // Apply campus filter
+        if ($campusId !== 'all') {
+            $applicationQuery->whereHas('user', function($query) use ($campusId) {
+                $query->where('campus_id', $campusId);
+            });
+            $userQuery->where('campus_id', $campusId);
+            $reportQuery->where('campus_id', $campusId);
+        }
+        
         // Get basic report statistics
-        $totalReports = \App\Models\Report::count();
-        $submittedReports = \App\Models\Report::where('status', 'submitted')->count();
-        $approvedReports = \App\Models\Report::where('status', 'approved')->count();
-        $rejectedReports = \App\Models\Report::where('status', 'rejected')->count();
-        $draftReports = \App\Models\Report::where('status', 'draft')->count();
-        $pendingReviews = \App\Models\Report::where('status', 'submitted')->count();
+        $totalReports = $reportQuery->count();
+        $submittedReports = $reportQuery->where('status', 'submitted')->count();
+        $approvedReports = $reportQuery->where('status', 'approved')->count();
+        $rejectedReports = $reportQuery->where('status', 'rejected')->count();
+        $draftReports = $reportQuery->where('status', 'draft')->count();
+        $pendingReviews = $reportQuery->where('status', 'submitted')->count();
 
         // Get comprehensive application statistics
-        $totalApplications = \App\Models\Application::count();
-        $approvedApplications = \App\Models\Application::where('status', 'approved')->count();
-        $rejectedApplications = \App\Models\Application::where('status', 'rejected')->count();
-        $pendingApplications = \App\Models\Application::where('status', 'pending')->count();
-        $claimedApplications = \App\Models\Application::where('status', 'claimed')->count();
-        $newApplications = \App\Models\Application::where('type', 'new')->count();
-        $continuingApplications = \App\Models\Application::where('type', 'continuing')->count();
+        $totalApplications = $applicationQuery->count();
+        $approvedApplications = $applicationQuery->where('status', 'approved')->count();
+        $rejectedApplications = $applicationQuery->where('status', 'rejected')->count();
+        $pendingApplications = $applicationQuery->where('status', 'pending')->count();
+        $claimedApplications = $applicationQuery->where('status', 'claimed')->count();
+        $newApplications = $applicationQuery->where('type', 'new')->count();
+        $continuingApplications = $applicationQuery->where('type', 'continuing')->count();
 
         // Get scholarship statistics
         $totalScholarships = \App\Models\Scholarship::count();
@@ -805,6 +852,59 @@ class ApplicationManagementController extends Controller
                 ->whereHas('applications')
                 ->count();
 
+            // Get gender statistics for this campus
+            $campusMaleStudents = \App\Models\Form::whereHas('user', function($query) use ($campus) {
+                $query->where('role', 'student')->where('campus_id', $campus->id);
+            })->where('sex', 'male')->count();
+            
+            $campusFemaleStudents = \App\Models\Form::whereHas('user', function($query) use ($campus) {
+                $query->where('role', 'student')->where('campus_id', $campus->id);
+            })->where('sex', 'female')->count();
+
+            // Get year level statistics for this campus
+            $campusYearLevelStats = \App\Models\Form::whereHas('user', function($query) use ($campus) {
+                $query->where('role', 'student')->where('campus_id', $campus->id);
+            })->selectRaw('year_level, COUNT(*) as count')
+                ->groupBy('year_level')
+                ->get();
+
+            // Normalize year level data for this campus
+            $campusYearLevelMapping = [
+                '1st Year' => '1st Year',
+                'First Year' => '1st Year',
+                '1st' => '1st Year',
+                '2nd Year' => '2nd Year', 
+                'Second Year' => '2nd Year',
+                '2nd' => '2nd Year',
+                '3rd Year' => '3rd Year',
+                'Third Year' => '3rd Year', 
+                '3rd' => '3rd Year',
+                '4th Year' => '4th Year',
+                'Fourth Year' => '4th Year',
+                '4th' => '4th Year',
+                '5th Year' => '5th Year',
+                'Fifth Year' => '5th Year',
+                '5th' => '5th Year'
+            ];
+
+            $campusNormalizedYearLevels = [];
+            foreach ($campusYearLevelStats as $stat) {
+                $normalizedLabel = $campusYearLevelMapping[$stat->year_level] ?? $stat->year_level;
+                if (!isset($campusNormalizedYearLevels[$normalizedLabel])) {
+                    $campusNormalizedYearLevels[$normalizedLabel] = 0;
+                }
+                $campusNormalizedYearLevels[$normalizedLabel] += $stat->count;
+            }
+
+            // Sort by year level order
+            $campusYearLevelOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+            $campusSortedYearLevels = [];
+            foreach ($campusYearLevelOrder as $level) {
+                if (isset($campusNormalizedYearLevels[$level])) {
+                    $campusSortedYearLevels[$level] = $campusNormalizedYearLevels[$level];
+                }
+            }
+
             $campusApplicationStats[] = [
                 'campus_id' => $campus->id,
                 'campus_name' => $campus->name,
@@ -817,7 +917,13 @@ class ApplicationManagementController extends Controller
                 'students_with_applications' => $campusStudentsWithApplications,
                 'students_without_applications' => $campusStudents - $campusStudentsWithApplications,
                 'approval_rate' => $campusApplications->count() > 0 ? 
-                    round(($campusApplications->where('status', 'approved')->count() / $campusApplications->count()) * 100, 2) : 0
+                    round(($campusApplications->where('status', 'approved')->count() / $campusApplications->count()) * 100, 2) : 0,
+                // Add gender statistics
+                'male_students' => $campusMaleStudents,
+                'female_students' => $campusFemaleStudents,
+                // Add year level statistics
+                'year_level_labels' => array_keys($campusSortedYearLevels),
+                'year_level_counts' => array_values($campusSortedYearLevels)
             ];
         }
 
@@ -833,7 +939,7 @@ class ApplicationManagementController extends Controller
         $scholarshipPerformance = \App\Models\Scholarship::withCount(['applications', 'applications as approved_applications_count' => function($query) {
             $query->where('status', 'approved');
         }])->get()->map(function($scholarship) {
-            return [
+        return [
                 'name' => $scholarship->scholarship_name,
                 'type' => $scholarship->scholarship_type,
                 'total_applications' => $scholarship->applications_count,
@@ -1205,5 +1311,33 @@ class ApplicationManagementController extends Controller
             'evaluatedDocuments',
             'application'
         ));
+    }
+    
+    /**
+     * Get date condition for time period filter
+     */
+    private function getDateCondition($timePeriod)
+    {
+        $now = now();
+        
+        switch ($timePeriod) {
+            case 'this_month':
+                return [
+                    $now->copy()->startOfMonth(),
+                    $now->copy()->endOfMonth()
+                ];
+            case 'last_3_months':
+                return [
+                    $now->copy()->subMonths(3)->startOfMonth(),
+                    $now->copy()->endOfMonth()
+                ];
+            case 'this_year':
+                return [
+                    $now->copy()->startOfYear(),
+                    $now->copy()->endOfYear()
+                ];
+            default:
+                return null;
+        }
     }
 }

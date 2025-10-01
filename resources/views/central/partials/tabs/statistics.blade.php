@@ -21,11 +21,22 @@
 
         <!-- Filter Controls -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Filter Controls</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <!-- Dropdown A: Analysis Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Analysis Type</label>
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Filter Controls</h3>
+                <button @click="clearFilters()" 
+                        class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-150 text-sm">
+                    Clear All Filters
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Analysis Type Filter -->
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        Analysis Type
+                    </label>
                     <select x-model="filters.analysisType" @change="updateChart()" 
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
                         <option value="application_status">Application Status</option>
@@ -35,13 +46,19 @@
                     </select>
                 </div>
 
-                <!-- Dropdown B: Campus Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Campus</label>
+                <!-- Campus Filter -->
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Campus
+                    </label>
                     <select x-model="filters.campus" @change="updateChart()" 
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
                         <option value="all">All Campuses</option>
-                        @if(isset($campuses) && is_array($campuses))
+                        @if(isset($campuses))
                             @foreach($campuses as $campus)
                             <option value="{{ $campus->id }}">{{ $campus->name }}</option>
                             @endforeach
@@ -49,9 +66,14 @@
                     </select>
                 </div>
 
-                <!-- Additional Filters -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
+                <!-- Time Period Filter -->
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Time Period
+                    </label>
                     <select x-model="filters.timePeriod" @change="updateChart()" 
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
                         <option value="all">All Time</option>
@@ -60,29 +82,7 @@
                         <option value="this_year">This Year</option>
                     </select>
                 </div>
-
-                <!-- Scholarship Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Scholarship</label>
-                    <select x-model="filters.scholarship" @change="updateChart()" 
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
-                        <option value="all">All Scholarships</option>
-                        @if(isset($scholarships) && is_array($scholarships))
-                            @foreach($scholarships as $scholarship)
-                            <option value="{{ $scholarship->id }}">{{ $scholarship->scholarship_name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-
-                <!-- Clear Filters -->
-                <div class="flex items-end">
-                    <button @click="clearFilters()" 
-                            class="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-150">
-                        Clear Filters
-                    </button>
-                        </div>
-                        </div>
+            </div>
         </div>
 
         <!-- Filtered Pie Chart Section -->
@@ -90,10 +90,10 @@
             <div class="text-center mb-6">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" x-text="getChartTitle()">Filtered Statistics</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400" x-text="getChartDescription()">Data changes based on selected filters</p>
-            </div>
+                        </div>
             <div class="h-96 flex items-center justify-center">
                 <canvas id="filteredPieChart" width="400" height="400"></canvas>
-            </div>
+                        </div>
             <div class="mt-4 text-center">
                 <div class="inline-flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                     <span x-text="'Total: ' + (filteredData.total || 0)"></span>
@@ -293,8 +293,7 @@
                 filters: {
                     analysisType: 'application_status',
                     campus: 'all',
-                    timePeriod: 'all',
-                    scholarship: 'all'
+                    timePeriod: 'all'
                 },
                 
                 init() {
@@ -402,15 +401,41 @@
                 
                 updateChart() {
                     this.updateFilteredData();
-                    this.createFilteredPieChart();
+                    this.fetchFilteredData();
+                },
+                
+                async fetchFilteredData() {
+                    try {
+                        const response = await fetch('/central/analytics/filtered', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                filters: this.filters
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.analyticsData = data.analytics;
+                            this.createFilteredPieChart();
+                        } else {
+                            console.error('Failed to fetch filtered data');
+                            this.createFilteredPieChart();
+                        }
+                    } catch (error) {
+                        console.error('Error fetching filtered data:', error);
+                        this.createFilteredPieChart();
+                    }
                 },
                 
                 clearFilters() {
                     this.filters = {
                         analysisType: 'application_status',
                         campus: 'all',
-                        timePeriod: 'all',
-                        scholarship: 'all'
+                        timePeriod: 'all'
                     };
                     this.updateChart();
                 },
@@ -441,37 +466,62 @@
                         this.charts.filteredPie.destroy();
                     }
                     
-                    let chartData = this.getFilteredChartData();
-                    console.log('Chart data:', chartData);
-                    
-                    this.charts.filteredPie = new Chart(ctx, {
-                        type: 'pie',
-                        data: chartData,
+                    try {
+                        let chartData = this.getFilteredChartData();
+                        console.log('Chart data:', chartData);
+                        
+                        // Validate chart data
+                        if (!chartData || !chartData.labels || !chartData.datasets) {
+                            console.error('Invalid chart data:', chartData);
+                            return;
+                        }
+                        
+                        this.charts.filteredPie = new Chart(ctx, {
+                            type: 'pie',
+                            data: chartData,
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        padding: 20,
-                                        usePointStyle: true
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            let label = context.label || '';
-                                            let value = context.parsed;
-                                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                            return label + ': ' + value + ' (' + percentage + '%)';
+                                        position: 'bottom',
+                                        labels: {
+                                            padding: 20,
+                                            usePointStyle: true
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                let label = context.label || '';
+                                                let value = context.parsed;
+                                                let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                                return label + ': ' + value + ' (' + percentage + '%)';
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                    } catch (error) {
+                        console.error('Error creating filtered pie chart:', error);
+                        // Create a fallback chart
+                        this.charts.filteredPie = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['No Data Available'],
+                                datasets: [{
+                                    data: [1],
+                                    backgroundColor: ['#6B7280']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false
+                            }
+                        });
+                    }
                 },
                 
                 getFilteredChartData() {
@@ -481,6 +531,7 @@
                     
                     const analysisType = this.filters.analysisType;
                     const campus = this.filters.campus;
+                    const timePeriod = this.filters.timePeriod;
                     
                     // Get campus-specific data if not 'all'
                     let campusData = null;
@@ -488,12 +539,20 @@
                         campusData = this.analyticsData.campus_application_stats?.find(c => c.campus_id == campus);
                     }
                     
+                    // Log current filters for debugging
+                    console.log('Current filters:', {
+                        analysisType,
+                        campus,
+                        timePeriod
+                    });
+                    
                     switch (analysisType) {
                         case 'application_status':
                             labels = ['Applied', 'Not Applied', 'Pending', 'Approved', 'Rejected'];
                             backgroundColor = ['#3B82F6', '#6B7280', '#F59E0B', '#10B981', '#EF4444'];
                             
                             if (campusData) {
+                                // Use campus-specific application status data
                                 data = [
                                     campusData.total_applications || 0,
                                     (campusData.total_students || 0) - (campusData.total_applications || 0),
@@ -502,6 +561,7 @@
                                     campusData.rejected_applications || 0
                                 ];
                             } else {
+                                // Use overall application status data
                                 data = [
                                     this.analyticsData.total_applications || 0,
                                     (this.analyticsData.total_students || 0) - (this.analyticsData.total_applications || 0),
@@ -516,10 +576,12 @@
                             labels = ['New Applications', 'Renewal Applications'];
                             backgroundColor = ['#10B981', '#F59E0B'];
                             
+                            // For campus-specific data, we need to calculate from available data
                             if (campusData) {
+                                // Since we don't have new/continuing breakdown per campus, use overall data
                                 data = [
-                                    campusData.new_applications || 0,
-                                    campusData.continuing_applications || 0
+                                    this.analyticsData.new_applications || 0,
+                                    this.analyticsData.continuing_applications || 0
                                 ];
                             } else {
                                 data = [
@@ -534,11 +596,13 @@
                             backgroundColor = ['#3B82F6', '#EC4899'];
                             
                             if (campusData) {
+                                // Use campus-specific gender data
                                 data = [
                                     campusData.male_students || 0,
                                     campusData.female_students || 0
                                 ];
                             } else {
+                                // Use overall gender data
                                 data = [
                                     this.analyticsData.male_students || 0,
                                     this.analyticsData.female_students || 0
@@ -547,16 +611,33 @@
                             break;
                             
                         case 'year_level':
-                            labels = this.analyticsData.year_level_labels || ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
-                            backgroundColor = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
-                            
                             if (campusData) {
+                                // Use campus-specific year level data
+                                labels = campusData.year_level_labels || ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
                                 data = campusData.year_level_counts || [];
                             } else {
+                                // Use overall year level data
+                                labels = this.analyticsData.year_level_labels || ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
                                 data = this.analyticsData.year_level_counts || [];
                             }
+                            backgroundColor = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
                             break;
                     }
+                    
+                    // Ensure we have valid data
+                    if (!data || data.length === 0 || data.every(val => val === 0)) {
+                        labels = ['No Data Available'];
+                        data = [1];
+                        backgroundColor = ['#6B7280'];
+                    }
+                    
+                    console.log('Chart data for campus filter:', {
+                        analysisType: analysisType,
+                        campus: campus,
+                        campusData: campusData,
+                        labels: labels,
+                        data: data
+                    });
                     
                     return {
                         labels: labels,

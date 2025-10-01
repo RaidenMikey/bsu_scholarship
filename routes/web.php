@@ -131,6 +131,9 @@ Route::middleware(['web', 'checkUserExists:central'])
 
         // Dashboard
         Route::get('/', [ApplicationManagementController::class, 'centralDashboard'])->name('dashboard');
+        
+        // Analytics
+        Route::post('/analytics/filtered', [ApplicationManagementController::class, 'getFilteredAnalytics'])->name('analytics.filtered');
 
         // Scholarships
         Route::prefix('scholarships')->name('scholarships.')->group(function () {

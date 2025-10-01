@@ -20,7 +20,7 @@
   {{-- Email --}}
   <x-auth.input 
     type="email"
-    label="School Email"
+    label="Gsuite"
     name="email"
     placeholder="example@g.batstate-u.edu.ph"
     pattern="^[a-zA-Z0-9._%+-]+@g\.batstate-u\.edu\.ph$"
