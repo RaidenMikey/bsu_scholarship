@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Email Verification | Spartan Scholarship</title>
-  <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
 </head>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ isset($scholarship) ? 'Edit Scholarship' : 'Create Scholarship' }} - BSU</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->

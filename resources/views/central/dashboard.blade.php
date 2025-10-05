@@ -43,7 +43,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Central Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
   <script src="https://cdn.tailwindcss.com"></script>

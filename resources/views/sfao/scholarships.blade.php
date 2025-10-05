@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SFAO Scholarships - BSU</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
 </head>
