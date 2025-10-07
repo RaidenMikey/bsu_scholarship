@@ -172,6 +172,12 @@ Route::post('/sfao/password-setup', [UserManagementController::class, 'setupSFAO
 // TEST ROUTES (Forms)
 // --------------------------------------------------
 
+// Test scholarship edit functionality
+Route::get('/test-scholarship-edit/{id}', function ($id) {
+    $scholarship = \App\Models\Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($id);
+    return view('central.scholarships.create_scholarship', compact('scholarship'));
+});
+
 // Show raw HTML form
 Route::get('/application-form', function () {
     $existingApplication = Form::where('user_id', auth()->id())->first();

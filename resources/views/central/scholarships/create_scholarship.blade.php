@@ -1,3 +1,20 @@
+@php
+    // ✅ Precompute conditions and documents BEFORE head scripts
+    $conditionsData = old('conditions', isset($scholarship)
+        ? $scholarship->conditions->map(function($c){
+            return ['type' => $c->name, 'value' => $c->value];
+        })->toArray()
+        : []
+    );
+
+    $documentsData = old('documents', isset($scholarship)
+        ? $scholarship->requiredDocuments->map(function($r){
+            return ['name' => $r->document_name, 'type' => $r->document_type, 'mandatory' => $r->is_mandatory];
+        })->toArray()
+        : []
+    );
+
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,26 +25,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Data for Alpine.js (JSON blocks to avoid JS lint issues) -->
+    <script id="conditions-data" type="application/json">
+{!! json_encode($conditionsData, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) !!}
+    </script>
+    <script id="documents-data" type="application/json">
+{!! json_encode($documentsData, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) !!}
+    </script>
+    
 </head>
 <body class="bg-gray-100">
-
-@php
-    // ✅ Precompute conditions
-    $conditionsData = old('conditions', isset($scholarship)
-        ? $scholarship->conditions->map(function($c){
-            return ['type' => $c->name, 'value' => $c->value];
-        })->toArray()
-        : []
-    );
-
-    // ✅ Precompute documents
-    $documentsData = old('documents', isset($scholarship)
-        ? $scholarship->requiredDocuments->map(function($r){
-            return ['name' => $r->document_name, 'type' => $r->document_type, 'mandatory' => $r->is_mandatory];
-        })->toArray()
-        : []
-    );
-@endphp
 
 <div class="max-w-4xl mx-auto px-6 py-10 bg-white rounded-xl shadow-md border-2 border-red-700 mt-10">
 
@@ -92,8 +100,23 @@
                   class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700 focus:border-red-700">{{ old('description', $scholarship->description ?? '') }}</textarea>
 
         <!-- Conditions -->
-        <div x-data="{ conditions: @json($conditionsData) }" class="mt-6">
+        <div x-data="{ 
+            conditions: (function(){
+                try {
+                    const el = document.getElementById('conditions-data');
+                    return JSON.parse((el && el.textContent) || '[]');
+                } catch(e) { return []; }
+            })(),
+            init() {
+                // Conditions initialized
+            }
+        }" class="mt-6">
             <h3 class="text-md font-semibold text-gray-800 mb-2">Condition Requirements</h3>
+            
+
+            <div x-show="conditions.length === 0" class="text-gray-500 text-sm mb-2">
+                No conditions added yet. Click "Add Condition" to get started.
+            </div>
 
             <template x-for="(cond, index) in conditions" :key="index">
                 <div class="flex space-x-2 mt-2">
@@ -234,8 +257,23 @@
         </div>
 
         <!-- Requirements -->
-        <div x-data="{ documents: @json($documentsData) }" class="mt-6">
+        <div x-data="{ 
+            documents: (function(){
+                try {
+                    const el = document.getElementById('documents-data');
+                    return JSON.parse((el && el.textContent) || '[]');
+                } catch(e) { return []; }
+            })(),
+            init() {
+                // Documents initialized
+            }
+        }" class="mt-6">
             <h3 class="text-md font-semibold text-gray-800 mb-2">Document Requirements</h3>
+            
+
+            <div x-show="documents.length === 0" class="text-gray-500 text-sm mb-2">
+                No documents required yet. Click "Add Document" to get started.
+            </div>
 
             <template x-for="(doc, index) in documents" :key="index">
                 <div class="flex space-x-2 mt-2">
