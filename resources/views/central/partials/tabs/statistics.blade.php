@@ -85,7 +85,33 @@
             <div class="h-96 flex items-center justify-center">
                     <canvas id="applicationStatusChart" width="400" height="400"></canvas>
                         </div>
+                
+                <!-- Application Status Data Display -->
+                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="flex flex-wrap gap-4 text-sm justify-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600 dark:text-blue-400">Applied:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_status').datasets[0].data[0] || 0"></span>
                     </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-600 dark:text-gray-400">Not Applied:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_status').datasets[0].data[1] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-orange-600 dark:text-orange-400">Pending:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_status').datasets[0].data[2] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-600 dark:text-green-400">Approved:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_status').datasets[0].data[3] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-red-600 dark:text-red-400">Rejected:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_status').datasets[0].data[4] || 0"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Application Type Chart -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -95,6 +121,20 @@
                 </div>
                 <div class="h-96 flex items-center justify-center">
                     <canvas id="applicationTypeChart" width="400" height="400"></canvas>
+                </div>
+                
+                <!-- Application Type Data Display -->
+                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="flex flex-wrap gap-4 text-sm justify-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-600 dark:text-green-400">New:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_type').datasets[0].data[0] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-orange-600 dark:text-orange-400">Continuing:</span>
+                            <span class="font-medium" x-text="getChartDataForType('application_type').datasets[0].data[1] || 0"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -107,6 +147,20 @@
                 <div class="h-96 flex items-center justify-center">
                     <canvas id="genderChart" width="400" height="400"></canvas>
                 </div>
+                
+                <!-- Gender Data Display -->
+                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="flex flex-wrap gap-4 text-sm justify-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600 dark:text-blue-400">Male:</span>
+                            <span class="font-medium" x-text="getChartDataForType('gender').datasets[0].data[0] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-pink-600 dark:text-pink-400">Female:</span>
+                            <span class="font-medium" x-text="getChartDataForType('gender').datasets[0].data[1] || 0"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Year Level Chart -->
@@ -118,7 +172,29 @@
                 <div class="h-96 flex items-center justify-center">
                     <canvas id="yearLevelChart" width="400" height="400"></canvas>
                 </div>
+                
+                <!-- Year Level Data Display -->
+                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="flex flex-wrap gap-4 text-sm justify-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-600 dark:text-green-400">1st Year:</span>
+                            <span class="font-medium" x-text="getChartDataForType('year_level').datasets[0].data[0] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-600 dark:text-blue-400">2nd Year:</span>
+                            <span class="font-medium" x-text="getChartDataForType('year_level').datasets[0].data[1] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-orange-600 dark:text-orange-400">3rd Year:</span>
+                            <span class="font-medium" x-text="getChartDataForType('year_level').datasets[0].data[2] || 0"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-red-600 dark:text-red-400">4th Year:</span>
+                            <span class="font-medium" x-text="getChartDataForType('year_level').datasets[0].data[3] || 0"></span>
+                        </div>
+                    </div>
                 </div>
+            </div>
             </div>
 
         <!-- Additional Analytics Charts -->
