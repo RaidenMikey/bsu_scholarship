@@ -728,9 +728,6 @@ class ApplicationManagementController extends Controller
             '4th Year' => '4th Year',
             'Fourth Year' => '4th Year',
             '4th' => '4th Year',
-            '5th Year' => '5th Year',
-            'Fifth Year' => '5th Year',
-            '5th' => '5th Year'
         ];
 
         // Group and normalize the data
@@ -744,7 +741,7 @@ class ApplicationManagementController extends Controller
         }
 
         // Sort by year level order
-        $yearLevelOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+        $yearLevelOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
         $sortedYearLevels = [];
         foreach ($yearLevelOrder as $level) {
             if (isset($normalizedYearLevels[$level])) {
@@ -769,7 +766,7 @@ class ApplicationManagementController extends Controller
 
         // Get application status by year level (using forms table)
         $yearLevelApplicationStats = [];
-        $standardYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+        $standardYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
         
         foreach ($standardYearLevels as $standardYearLevel) {
             // Get all possible variations for this year level
@@ -882,9 +879,6 @@ class ApplicationManagementController extends Controller
                 '4th Year' => '4th Year',
                 'Fourth Year' => '4th Year',
                 '4th' => '4th Year',
-                '5th Year' => '5th Year',
-                'Fifth Year' => '5th Year',
-                '5th' => '5th Year'
             ];
 
             $campusNormalizedYearLevels = [];
@@ -897,12 +891,32 @@ class ApplicationManagementController extends Controller
             }
 
             // Sort by year level order
-            $campusYearLevelOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+            $campusYearLevelOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
             $campusSortedYearLevels = [];
             foreach ($campusYearLevelOrder as $level) {
                 if (isset($campusNormalizedYearLevels[$level])) {
                     $campusSortedYearLevels[$level] = $campusNormalizedYearLevels[$level];
                 }
+            }
+
+            // Generate campus-specific monthly trends
+            $campusMonthlyTrends = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $monthKey = $date->format('M');
+                
+                $campusMonthlyApplications = \App\Models\Application::whereHas('user', function($query) use ($campus) {
+                    $query->where('campus_id', $campus->id);
+                })->whereYear('created_at', $date->year)
+                  ->whereMonth('created_at', $date->month)
+                  ->get();
+                
+                $campusMonthlyTrends[strtolower($monthKey)] = [
+                    'total_applications' => $campusMonthlyApplications->count(),
+                    'approved_applications' => $campusMonthlyApplications->where('status', 'approved')->count(),
+                    'rejected_applications' => $campusMonthlyApplications->where('status', 'rejected')->count(),
+                    'pending_applications' => $campusMonthlyApplications->where('status', 'pending')->count(),
+                ];
             }
 
             $campusApplicationStats[] = [
@@ -926,6 +940,8 @@ class ApplicationManagementController extends Controller
                 'female_students' => $campusFemaleStudents,
                 // Add year level statistics
                 'year_level_labels' => array_keys($campusSortedYearLevels),
+                // Add campus-specific monthly trends
+                'monthly_trends' => $campusMonthlyTrends,
                 'year_level_counts' => array_values($campusSortedYearLevels)
             ];
         }

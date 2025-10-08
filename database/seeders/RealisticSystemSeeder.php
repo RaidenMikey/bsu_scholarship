@@ -77,7 +77,7 @@ class RealisticSystemSeeder extends Seeder
         
         $applicationStatuses = ['not_applied', 'applied', 'approved', 'pending', 'rejected'];
         $genders = ['male', 'female'];
-        $yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+        $yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
         $programs = [
             'Bachelor of Science in Computer Engineering',
             'Bachelor of Science in Civil Engineering',
@@ -360,7 +360,7 @@ class RealisticSystemSeeder extends Seeder
             $additionalNeeded = $count - $studentsWithoutApplications->count();
             for ($i = 1; $i <= $additionalNeeded; $i++) {
                 $gender = ['male', 'female'][array_rand([0, 1])];
-                $yearLevel = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'][array_rand([0, 1, 2, 3, 4])];
+                $yearLevel = ['1st Year', '2nd Year', '3rd Year', '4th Year'][array_rand([0, 1, 2, 3])];
                 $program = 'Bachelor of Science in Computer Engineering';
                 
                 $email = 'additional' . $i . '.' . strtolower(str_replace([' ', '(', ')', '–'], ['', '', '', ''], $campus->name)) . '@g.batstate-u.edu.ph';
