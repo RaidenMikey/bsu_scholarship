@@ -94,13 +94,13 @@
       <button @click="tab = 'scholarships'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        🎓 Scholarship Lists
+        🎓 Scholarships
       </button>
 
       <button @click="tab = 'applicants'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        👥 Applicants Lists
+        👥 Applicants
       </button>
 
       <button @click="tab = 'reports'; sidebarOpen = false"
