@@ -36,8 +36,7 @@
   <!-- Scholarships Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @forelse($scholarships as $scholarship)
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 flex flex-col justify-between h-full min-h-[200px] hover:shadow-xl transition cursor-pointer scholarship-card"
-           data-scholarship-id="{{ $scholarship->id }}">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 flex flex-col justify-between h-full min-h-[200px] hover:shadow-xl transition scholarship-card">
         
         <div>
           <div class="flex justify-between items-start mb-2">
@@ -170,13 +169,5 @@
       bar.style.width = width + '%';
     });
 
-    // Handle scholarship card clicks
-    const scholarshipCards = document.querySelectorAll('.scholarship-card');
-    scholarshipCards.forEach(card => {
-      card.addEventListener('click', function() {
-        const scholarshipId = this.getAttribute('data-scholarship-id');
-        window.location.href = `/sfao/scholarships/${scholarshipId}`;
-      });
-    });
   });
 </script>
