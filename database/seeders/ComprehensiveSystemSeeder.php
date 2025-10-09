@@ -72,9 +72,12 @@ class ComprehensiveSystemSeeder extends Seeder
 
         // Create Students
         for ($i = 1; $i <= 50; $i++) {
+            $studentId = $faker->unique()->numberBetween(100000, 999999);
+            $studentEmail = sprintf("99-%06d@g.batstate-u.edu.ph", $studentId);
+            
             $student = User::create([
                 'name' => $faker->name,
-                'email' => "student{$i}@bsu.edu",
+                'email' => $studentEmail,
                 'password' => Hash::make('password'),
                 'role' => 'student',
                 'campus_id' => $faker->numberBetween(1, 3),

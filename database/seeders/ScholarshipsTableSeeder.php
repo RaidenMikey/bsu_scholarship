@@ -14,6 +14,18 @@ class ScholarshipsTableSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create a central admin user if it doesn't exist
+        $centralAdmin = \App\Models\User::firstOrCreate(
+            ['email' => 'central-admin@bsu.edu'],
+            [
+                'name' => 'Central Administrator',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'central',
+                'campus_id' => 1,
+                'email_verified_at' => now(),
+            ]
+        );
+
         $scholarships = [
             [
                 'scholarship_name' => 'Academic Excellence Scholarship',
@@ -25,7 +37,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'high',
                 'eligibility_notes' => 'Must maintain excellent academic standing throughout the scholarship period.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '1.50', 'is_mandatory' => true],
                     ['name' => 'year_level', 'value' => 'Second Year', 'is_mandatory' => true],
@@ -42,7 +54,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'medium',
                 'eligibility_notes' => 'Must be an active member of a university sports team.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.50', 'is_mandatory' => true],
                     ['name' => 'age', 'value' => '18', 'is_mandatory' => true],
@@ -58,7 +70,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => false,
                 'priority_level'   => 'high',
                 'eligibility_notes' => 'Must provide evidence of leadership roles in student organizations.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.00', 'is_mandatory' => true],
                     ['name' => 'income', 'value' => '15000', 'is_mandatory' => true],
@@ -75,7 +87,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'medium',
                 'eligibility_notes' => 'Must be actively involved in cultural or performing arts activities.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.75', 'is_mandatory' => true],
                     ['name' => 'program', 'value' => 'BS Computer Science', 'is_mandatory' => true],
@@ -92,7 +104,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'high',
                 'eligibility_notes' => 'Income verification documents required.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'income', 'value' => '10000', 'is_mandatory' => true],
                     ['name' => 'disability', 'value' => 'no', 'is_mandatory' => false],
@@ -108,7 +120,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'high',
                 'eligibility_notes' => 'Open to all STEM programs including Computer Science, Engineering, and Mathematics.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '1.75', 'is_mandatory' => true],
                     ['name' => 'program', 'value' => 'BS Computer Science', 'is_mandatory' => true],
@@ -126,7 +138,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'medium',
                 'eligibility_notes' => 'Must provide documentation of community service hours.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.25', 'is_mandatory' => true],
                     ['name' => 'year_level', 'value' => 'Third Year', 'is_mandatory' => true],
@@ -143,7 +155,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'high',
                 'eligibility_notes' => 'For students whose parents did not complete college education.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.50', 'is_mandatory' => true],
                     ['name' => 'year_level', 'value' => 'First Year', 'is_mandatory' => true],
@@ -160,7 +172,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'high',
                 'eligibility_notes' => 'Must provide research proposal and faculty recommendation.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '1.25', 'is_mandatory' => true],
                     ['name' => 'year_level', 'value' => 'Third Year', 'is_mandatory' => true],
@@ -178,7 +190,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'renewal_allowed'  => true,
                 'priority_level'   => 'medium',
                 'eligibility_notes' => 'Open to all international students with valid student visa.',
-                'created_by'       => 1,
+                'created_by'       => $centralAdmin->id,
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.00', 'is_mandatory' => true],
                     ['name' => 'citizenship', 'value' => 'foreign', 'is_mandatory' => true],

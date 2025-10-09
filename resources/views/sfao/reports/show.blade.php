@@ -466,7 +466,7 @@
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <!-- Back to Dashboard Button -->
-                            <a href="{{ route('sfao.dashboard') }}"
+                            <a href="/sfao"
                                class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200 h-12">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>

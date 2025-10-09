@@ -77,7 +77,7 @@
                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition">
                         👁️ View Details
                     </a>
-                    <a href="{{ route('sfao.dashboard') }}?tab=applicants" 
+                    <a href="/sfao?tab=applicants" 
                        class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition">
                         👥 View Applicants
                     </a>
@@ -88,7 +88,7 @@
                 <div class="text-gray-400 text-6xl mb-4">📚</div>
                 <h3 class="text-xl font-medium text-gray-900 mb-2">No scholarships available</h3>
                 <p class="text-gray-600 mb-6">There are currently no scholarships available for your campus.</p>
-                <a href="{{ route('sfao.dashboard') }}" 
+                <a href="/sfao" 
                    class="bg-bsu-red hover:bg-bsu-redDark text-white px-6 py-3 rounded-lg font-medium transition">
                     Back to Dashboard
                 </a>

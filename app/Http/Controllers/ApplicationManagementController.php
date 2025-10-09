@@ -175,6 +175,7 @@ class ApplicationManagementController extends Controller
         $sortBy = $request->get('sort_by', 'name');
         $sortOrder = $request->get('sort_order', 'asc');
         $campusFilter = $request->get('campus_filter', 'all');
+        $statusFilter = $request->get('status_filter', 'all');
 
         // Build the query
         $query = User::where('role', 'student')
@@ -190,27 +191,6 @@ class ApplicationManagementController extends Controller
             $query->where('users.campus_id', $campusFilter);
         }
 
-        // Apply sorting
-        switch ($sortBy) {
-            case 'name':
-                $query->orderBy('users.name', $sortOrder);
-                break;
-            case 'email':
-                $query->orderBy('users.email', $sortOrder);
-                break;
-            case 'date_joined':
-                $query->orderBy('users.created_at', $sortOrder);
-                break;
-            case 'last_uploaded':
-                $query->orderBy(DB::raw('MAX(student_submitted_documents.updated_at)'), $sortOrder);
-                break;
-            case 'documents_count':
-                $query->orderBy(DB::raw('COUNT(DISTINCT student_submitted_documents.id)'), $sortOrder);
-                break;
-            default:
-                $query->orderBy('users.name', 'asc');
-        }
-
         $students = $query->select(
                 'users.id as student_id',
                 'users.name',
@@ -222,6 +202,28 @@ class ApplicationManagementController extends Controller
             )
             ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at', 'users.campus_id')
             ->get();
+
+        // Apply sorting after getting the data
+        $students = $students->sortBy(function($student) use ($sortBy) {
+            switch ($sortBy) {
+                case 'name':
+                    return $student->name;
+                case 'email':
+                    return $student->email;
+                case 'date_joined':
+                    return $student->created_at;
+                case 'last_uploaded':
+                    return $student->last_uploaded;
+                case 'documents_count':
+                    return $student->documents_count;
+                default:
+                    return $student->name;
+            }
+        });
+
+        if ($sortOrder === 'desc') {
+            $students = $students->reverse();
+        }
 
         // Load applications for each student separately to ensure relationships are loaded
         $studentIds = $students->pluck('student_id');
@@ -252,6 +254,17 @@ class ApplicationManagementController extends Controller
                 ];
             });
         });
+
+        // Apply status filtering
+        if ($statusFilter !== 'all') {
+            $students = $students->filter(function($student) use ($statusFilter) {
+                if ($statusFilter === 'not_applied') {
+                    return !$student->has_applications;
+                } else {
+                    return in_array($statusFilter, $student->application_status ?? []);
+                }
+            });
+        }
 
         // Get applications only from students under this SFAO admin's jurisdiction
         $applications = Application::with('user', 'scholarship')
@@ -297,7 +310,17 @@ class ApplicationManagementController extends Controller
         // Get the active tab from session, query parameter, or default to 'students'
         $activeTab = session('active_tab', $request->get('tab', 'students'));
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'reports', 'activeTab'));
+        // Debug: Log the filtering parameters
+        \Illuminate\Support\Facades\Log::info('SFAO Dashboard Filtering', [
+            'sort_by' => $sortBy,
+            'sort_order' => $sortOrder,
+            'campus_filter' => $campusFilter,
+            'status_filter' => $statusFilter,
+            'students_count' => $students->count(),
+            'active_tab' => $activeTab
+        ]);
+
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab'));
     }
 
     /**

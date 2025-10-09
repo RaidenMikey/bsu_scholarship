@@ -29,7 +29,7 @@
   <x-sorting-controls 
     :currentSort="request('sort_by', 'created_at')" 
     :currentOrder="request('sort_order', 'desc')"
-    :baseUrl="route('sfao.dashboard')"
+    :baseUrl="'{{ request()->getSchemeAndHttpHost() }}/BSU_scholarship/public/sfao'"
     role="sfao"
   />
 

@@ -21,7 +21,7 @@
 
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-            <form method="GET" class="flex flex-wrap gap-4" data-dashboard-url="{{ route('sfao.dashboard') }}">
+            <form method="GET" class="flex flex-wrap gap-4" data-dashboard-url="{{ request()->getSchemeAndHttpHost() }}/BSU_scholarship/public/sfao">
                 <input type="hidden" name="tab" value="reports">
                 <div class="flex-1 min-w-0">
                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>

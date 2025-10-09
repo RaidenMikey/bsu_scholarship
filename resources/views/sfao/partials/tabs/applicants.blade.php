@@ -11,25 +11,28 @@
 
     <!-- Sorting and Filtering Controls -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-        <form method="GET" action="{{ route('sfao.dashboard') }}" class="space-y-4">
+        <form method="GET" class="space-y-4" data-dashboard-url="{{ request()->getSchemeAndHttpHost() }}/BSU_scholarship/public/sfao">
+            <!-- Hidden field to maintain tab -->
+            <input type="hidden" name="tab" value="applicants">
+            
             <!-- Filter Row -->
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div class="flex items-center space-x-2">
                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Sort:</label>
                     <select name="sort_by" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        <option value="name" {{ $sortBy === 'name' ? 'selected' : '' }}>Name</option>
-                        <option value="email" {{ $sortBy === 'email' ? 'selected' : '' }}>Email</option>
-                        <option value="date_joined" {{ $sortBy === 'date_joined' ? 'selected' : '' }}>Date Joined</option>
-                        <option value="last_uploaded" {{ $sortBy === 'last_uploaded' ? 'selected' : '' }}>Last Upload</option>
-                        <option value="documents_count" {{ $sortBy === 'documents_count' ? 'selected' : '' }}>Document Count</option>
+                        <option value="name" {{ ($sortBy ?? 'name') === 'name' ? 'selected' : '' }}>Name</option>
+                        <option value="email" {{ ($sortBy ?? 'name') === 'email' ? 'selected' : '' }}>Email</option>
+                        <option value="date_joined" {{ ($sortBy ?? 'name') === 'date_joined' ? 'selected' : '' }}>Date Joined</option>
+                        <option value="last_uploaded" {{ ($sortBy ?? 'name') === 'last_uploaded' ? 'selected' : '' }}>Last Upload</option>
+                        <option value="documents_count" {{ ($sortBy ?? 'name') === 'documents_count' ? 'selected' : '' }}>Document Count</option>
                     </select>
                 </div>
 
                 <div class="flex items-center space-x-2">
                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Order:</label>
                     <select name="sort_order" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        <option value="asc" {{ $sortOrder === 'asc' ? 'selected' : '' }}>Ascending</option>
-                        <option value="desc" {{ $sortOrder === 'desc' ? 'selected' : '' }}>Descending</option>
+                        <option value="asc" {{ ($sortOrder ?? 'asc') === 'asc' ? 'selected' : '' }}>Ascending</option>
+                        <option value="desc" {{ ($sortOrder ?? 'asc') === 'desc' ? 'selected' : '' }}>Descending</option>
                     </select>
                 </div>
 
@@ -37,7 +40,7 @@
                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Campus:</label>
                     <select name="campus_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
                         @foreach($campusOptions as $campus)
-                            <option value="{{ $campus['id'] }}" {{ $campusFilter == $campus['id'] ? 'selected' : '' }}>
+                            <option value="{{ $campus['id'] }}" {{ ($campusFilter ?? 'all') == $campus['id'] ? 'selected' : '' }}>
                                 {{ $campus['name'] }}
                             </option>
                         @endforeach
@@ -45,10 +48,22 @@
                 </div>
 
                 <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
+                    <select name="status_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
+                        <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>All Statuses</option>
+                        <option value="not_applied" {{ ($statusFilter ?? 'all') === 'not_applied' ? 'selected' : '' }}>Not Applied</option>
+                        <option value="pending" {{ ($statusFilter ?? 'all') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="approved" {{ ($statusFilter ?? 'all') === 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="rejected" {{ ($statusFilter ?? 'all') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        <option value="claimed" {{ ($statusFilter ?? 'all') === 'claimed' ? 'selected' : '' }}>Claimed</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2">
                     <button type="submit" class="bg-bsu-red text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
                         Apply
                     </button>
-                    <a href="{{ route('sfao.dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
+                    <a href="/sfao?tab=applicants" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
                         Clear
                     </a>
                 </div>
@@ -305,3 +320,30 @@
         </div>
     @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle filter form submission
+    const filterForm = document.querySelector('form[method="GET"]');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const params = new URLSearchParams();
+            
+            // Add all form data to params
+            for (let [key, value] of formData.entries()) {
+                params.append(key, value);
+            }
+            
+            // Ensure tab parameter is set
+            params.set('tab', 'applicants');
+            
+            // Redirect to dashboard with parameters
+            const dashboardUrl = this.dataset.dashboardUrl;
+            window.location.href = dashboardUrl + '?' + params.toString();
+        });
+    }
+});
+</script>

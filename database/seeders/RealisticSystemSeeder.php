@@ -12,6 +12,7 @@ use App\Models\Report;
 use App\Models\Form;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Faker\Factory as Faker;
 
 class RealisticSystemSeeder extends Seeder
 {
@@ -23,6 +24,8 @@ class RealisticSystemSeeder extends Seeder
     public function run()
     {
         $this->command->info('🌱 Creating realistic system data...');
+        
+        $faker = Faker::create();
         
         // Get all campuses
         $campuses = Campus::all();
@@ -37,7 +40,7 @@ class RealisticSystemSeeder extends Seeder
         $this->createSfaoUsers($campuses);
         
         // Create students for each campus (10 per campus)
-        $this->createStudents($campuses, $scholarships);
+        $this->createStudents($campuses, $scholarships, $faker);
         
         // Create reports for SFAO users
         $this->createReports($campuses);
@@ -71,7 +74,7 @@ class RealisticSystemSeeder extends Seeder
         }
     }
     
-    private function createStudents($campuses, $scholarships)
+    private function createStudents($campuses, $scholarships, $faker)
     {
         $this->command->info('🎓 Creating students with realistic application patterns...');
         
@@ -100,7 +103,8 @@ class RealisticSystemSeeder extends Seeder
                 $yearLevel = $yearLevels[array_rand($yearLevels)];
                 $program = $programs[array_rand($programs)];
                 
-                $email = 'student' . $i . '.' . strtolower(str_replace([' ', '(', ')', '–'], ['', '', '', ''], $campus->name)) . '@g.batstate-u.edu.ph';
+                $studentId = $faker->unique()->numberBetween(100000, 999999);
+                $email = sprintf("99-%06d@g.batstate-u.edu.ph", $studentId);
                 
                 // Check if student already exists
                 $existingStudent = User::where('email', $email)->first();
