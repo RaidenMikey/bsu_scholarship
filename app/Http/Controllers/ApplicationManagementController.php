@@ -11,6 +11,7 @@ use App\Models\Scholarship;
 use App\Models\SfaoRequirement;
 use App\Models\StudentSubmittedDocument;
 use App\Models\Campus;
+use App\Models\Notification;
 use App\Services\NotificationService;
 
 /**
@@ -222,13 +223,22 @@ class ApplicationManagementController extends Controller
             ->groupBy('users.id', 'users.name', 'users.email', 'users.created_at', 'users.campus_id')
             ->get();
 
+        // Load applications for each student separately to ensure relationships are loaded
+        $studentIds = $students->pluck('student_id');
+        $applicationsData = Application::with('scholarship')
+            ->whereIn('user_id', $studentIds)
+            ->get()
+            ->groupBy('user_id');
+
         // Add application status information to each student
-        $students->each(function($student) {
-            $student->has_applications = $student->applications->count() > 0;
+        $students->each(function($student) use ($applicationsData) {
+            $studentApplications = $applicationsData->get($student->student_id, collect());
+            $student->applications = $studentApplications;
+            $student->has_applications = $studentApplications->count() > 0;
             $student->has_documents = $student->documents_count > 0;
-            $student->application_status = $student->applications->pluck('status')->unique()->toArray();
-            $student->applied_scholarships = $student->applications->pluck('scholarship.scholarship_name')->toArray();
-            $student->applications_with_types = $student->applications->map(function($app) {
+            $student->application_status = $studentApplications->pluck('status')->unique()->toArray();
+            $student->applied_scholarships = $studentApplications->pluck('scholarship.scholarship_name')->toArray();
+            $student->applications_with_types = $studentApplications->map(function($app) {
                 return [
                     'id' => $app->id,
                     'scholarship_name' => $app->scholarship->scholarship_name,
@@ -504,11 +514,68 @@ class ApplicationManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        // Only show SFAO-approved applications to Central admin
-        $applications = Application::with(['user', 'scholarship'])
-            ->where('status', 'approved') // Only SFAO-approved applications
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get filtering parameters
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $statusFilter = $request->get('status_filter', 'all');
+        $campusFilter = $request->get('campus_filter', 'all');
+        $scholarshipFilter = $request->get('scholarship_filter', 'all');
+        $applicantTypeFilter = $request->get('applicant_type_filter', 'all');
+
+        // Build applications query with filtering
+        $applicationsQuery = Application::with(['user', 'scholarship', 'user.campus'])
+            ->whereHas('user', function($query) {
+                $query->where('role', 'student');
+            });
+
+        // Apply status filter
+        if ($statusFilter !== 'all') {
+            $applicationsQuery->where('status', $statusFilter);
+        }
+        // If 'all' is selected, don't apply any status filter to show all statuses
+
+        // Apply campus filter
+        if ($campusFilter !== 'all') {
+            $applicationsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply scholarship filter
+        if ($scholarshipFilter !== 'all') {
+            $applicationsQuery->where('scholarship_id', $scholarshipFilter);
+        }
+
+        // Apply applicant type filter
+        if ($applicantTypeFilter !== 'all') {
+            $applicationsQuery->where('type', $applicantTypeFilter);
+        }
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'name':
+                $applicationsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $applicationsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.email', $sortOrder);
+                break;
+            case 'scholarship':
+                $applicationsQuery->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'status':
+                $applicationsQuery->orderBy('applications.status', $sortOrder);
+                break;
+            case 'type':
+                $applicationsQuery->orderBy('applications.type', $sortOrder);
+                break;
+            default:
+                $applicationsQuery->orderBy('applications.created_at', $sortOrder);
+        }
+
+        $applications = $applicationsQuery->get();
 
         $scholarships = Scholarship::with(['conditions', 'requiredDocuments'])->get();
         
@@ -573,13 +640,42 @@ class ApplicationManagementController extends Controller
         // Get all campuses for filter
         $campuses = \App\Models\Campus::all();
         
+        // Get filter options for applications
+        $campusOptions = $campuses->map(function($campus) {
+            return [
+                'id' => $campus->id,
+                'name' => $campus->name
+            ];
+        })->toArray();
+        
+        $scholarshipOptions = $scholarships->map(function($scholarship) {
+            return [
+                'id' => $scholarship->id,
+                'name' => $scholarship->scholarship_name
+            ];
+        })->toArray();
+        
+        $statusOptions = [
+            ['value' => 'approved', 'label' => 'Approved'],
+            ['value' => 'rejected', 'label' => 'Rejected'],
+            ['value' => 'pending', 'label' => 'Pending'],
+            ['value' => 'claimed', 'label' => 'Claimed'],
+            ['value' => 'all', 'label' => 'All Statuses']
+        ];
+        
+        $applicantTypeOptions = [
+            ['value' => 'new', 'label' => 'New Applicant'],
+            ['value' => 'continuing', 'label' => 'Continuing Applicant'],
+            ['value' => 'all', 'label' => 'All Types']
+        ];
+        
         // Apply sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         
         $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
-        return view('central.dashboard', compact('applications', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics'));
+        return view('central.dashboard', compact('applications', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'applicantTypeOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'applicantTypeFilter'));
     }
 
     /**
@@ -1147,10 +1243,10 @@ class ApplicationManagementController extends Controller
             return redirect()->route('sfao.dashboard')->with('error', 'You do not have permission to evaluate this student.');
         }
 
-        // Get scholarships the student has applied to
-        $appliedScholarships = $student->applications->pluck('scholarship')->unique('id');
+        // Get applications with scholarship data
+        $applications = $student->applications()->with('scholarship')->get();
         
-        return view('sfao.evaluation.stage1-scholarship-selection', compact('student', 'appliedScholarships'));
+        return view('sfao.evaluation.stage1-scholarship-selection', compact('student', 'applications'));
     }
 
     /**
@@ -1234,7 +1330,6 @@ class ApplicationManagementController extends Controller
             'evaluations' => 'required|array',
             'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
             'evaluations.*.status' => 'required|in:approved,rejected',
-            'evaluations.*.notes' => 'nullable|string|max:1000',
         ]);
 
         $evaluatorId = session('user_id');
@@ -1247,7 +1342,6 @@ class ApplicationManagementController extends Controller
                 ->where('document_category', 'sfao_required')
                 ->update([
                     'evaluation_status' => $evaluation['status'],
-                    'evaluation_notes' => $evaluation['notes'] ?? null,
                     'evaluated_by' => $evaluatorId,
                     'evaluated_at' => $evaluatedAt,
                 ]);
@@ -1270,7 +1364,6 @@ class ApplicationManagementController extends Controller
             'evaluations' => 'required|array',
             'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
             'evaluations.*.status' => 'required|in:approved,rejected',
-            'evaluations.*.notes' => 'nullable|string|max:1000',
         ]);
 
         $evaluatorId = session('user_id');
@@ -1283,7 +1376,6 @@ class ApplicationManagementController extends Controller
                 ->where('document_category', 'scholarship_required')
                 ->update([
                     'evaluation_status' => $evaluation['status'],
-                    'evaluation_notes' => $evaluation['notes'] ?? null,
                     'evaluated_by' => $evaluatorId,
                     'evaluated_at' => $evaluatedAt,
                 ]);
@@ -1330,6 +1422,57 @@ class ApplicationManagementController extends Controller
             'evaluatedDocuments',
             'application'
         ));
+    }
+
+    /**
+     * Submit final evaluation with remarks
+     */
+    public function submitFinalEvaluation(Request $request, $userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'action' => 'required|in:approve,reject',
+            'remarks' => 'nullable|string|max:1000',
+        ]);
+
+        // Get the application
+        $application = Application::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->first();
+
+        if (!$application) {
+            return redirect()->back()->with('error', 'Application not found.');
+        }
+
+        // Update application with remarks and status
+        $application->update([
+            'status' => $request->action === 'approve' ? 'approved' : 'rejected',
+            'remarks' => $request->remarks,
+        ]);
+
+        // Create notification for student
+        Notification::create([
+            'user_id' => $userId,
+            'type' => 'application_status',
+            'title' => 'Application ' . ucfirst($request->action),
+            'message' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been ' . $request->action . 'd.',
+            'data' => [
+                'application_id' => $application->id,
+                'scholarship_id' => $scholarshipId,
+                'status' => $request->action,
+                'remarks' => $request->remarks,
+            ]
+        ]);
+
+        $message = $request->action === 'approve' 
+            ? 'Application approved successfully.' 
+            : 'Application rejected successfully.';
+
+        return redirect()->route('sfao.dashboard')
+            ->with('success', $message);
     }
     
     /**

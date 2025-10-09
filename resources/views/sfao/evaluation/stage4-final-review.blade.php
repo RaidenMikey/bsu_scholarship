@@ -6,8 +6,20 @@
         <!-- Header -->
         <div class="mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Document Evaluation</h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">Stage 4: Final Review & Application Decision</p>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    @if(request('from_status'))
+                        Evaluation Details
+                    @else
+                        Document Evaluation
+                    @endif
+                </h1>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                    @if(request('from_status'))
+                        View application evaluation details and status
+                    @else
+                        Stage 4: Final Review & Application Decision
+                    @endif
+                </p>
             </div>
         </div>
 
@@ -34,27 +46,43 @@
 
         <!-- Progress Indicator -->
         <div class="mb-8">
-            <div class="flex items-center justify-center space-x-2">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                    <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Select Scholarship</span>
+            @if(request('from_status'))
+                <!-- Simplified progress for status view -->
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                        <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Evaluation Complete</span>
+                    </div>
+                    <div class="w-12 h-1 bg-green-500"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-bsu-red text-white rounded-full flex items-center justify-center text-sm font-bold">📋</div>
+                        <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">View Details</span>
+                    </div>
                 </div>
-                <div class="w-12 h-1 bg-green-500"></div>
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                    <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">SFAO Documents</span>
+            @else
+                <!-- Full progress indicator for normal evaluation flow -->
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                        <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Select Scholarship</span>
+                    </div>
+                    <div class="w-12 h-1 bg-green-500"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                        <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">SFAO Documents</span>
+                    </div>
+                    <div class="w-12 h-1 bg-green-500"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                        <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Scholarship Documents</span>
+                    </div>
+                    <div class="w-12 h-1 bg-bsu-red"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-bsu-red text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
+                        <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Final Review</span>
+                    </div>
                 </div>
-                <div class="w-12 h-1 bg-green-500"></div>
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
-                    <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Scholarship Documents</span>
-                </div>
-                <div class="w-12 h-1 bg-bsu-red"></div>
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-bsu-red text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
-                    <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Final Review</span>
-                </div>
-            </div>
+            @endif
         </div>
 
         <!-- Evaluation Summary -->
@@ -199,37 +227,90 @@
             </div>
         </div>
 
+        <!-- Final Evaluation Form -->
+        @if($application && $application->status === 'pending')
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Final Evaluation & Decision</h3>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Make your final decision and provide remarks for the student.</p>
+            </div>
+            
+            <div class="p-6">
+                <!-- Remarks Section -->
+                <div class="mb-6">
+                    <label for="remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Evaluation Remarks <span class="text-gray-500">(Optional)</span>
+                    </label>
+                    <textarea 
+                        id="remarks" 
+                        name="remarks" 
+                        rows="4" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white"
+                        placeholder="Provide any additional comments or feedback for the student..."
+                        maxlength="1000"
+                    >{{ old('remarks', $application->remarks) }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Maximum 1000 characters. This will be visible to the student.
+                    </p>
+                    @error('remarks')
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4">
+                    <button 
+                        type="button" 
+                        onclick="showConfirmationModal('reject')"
+                        class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        Reject Application
+                    </button>
+                    
+                    <button 
+                        type="button" 
+                        onclick="showConfirmationModal('approve')"
+                        class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                        Approve Application
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Action Buttons -->
         <div class="flex justify-between items-center">
-            <a href="{{ route('sfao.evaluation.sfao-documents', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id]) }}" 
-               class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
-                ← Back to Document Evaluation
-            </a>
+            @if(request('from_status'))
+                <a href="{{ route('sfao.evaluation.show', $student->id) }}" 
+                   class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    ← Back to Select Scholarship
+                </a>
+            @else
+                <a href="{{ route('sfao.evaluation.sfao-documents', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id]) }}" 
+                   class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    ← Back to Document Evaluation
+                </a>
+            @endif
             
             <div class="flex space-x-4">
                 @if($application)
                     @if($application->status === 'pending')
-                        <form method="POST" action="{{ route('sfao.applications.reject', $application->id) }}" class="inline">
-                            @csrf
-                            <button type="submit" 
-                                    class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                                    onclick="return confirm('Are you sure you want to reject this application?')">
-                                Reject Application
-                            </button>
-                        </form>
-                        
-                        <form method="POST" action="{{ route('sfao.applications.approve', $application->id) }}" class="inline">
-                            @csrf
-                            <button type="submit" 
-                                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                                    onclick="return confirm('Are you sure you want to approve this application?')">
-                                Approve Application
-                            </button>
-                        </form>
-                    @else
                         <span class="text-gray-500 dark:text-gray-400 px-6 py-2">
-                            Application already {{ $application->status }}
+                            Use the form above to make your decision
                         </span>
+                    @else
+                        <div class="text-center">
+                            <span class="text-gray-500 dark:text-gray-400 px-6 py-2 block">
+                                Application {{ $application->status }}
+                            </span>
+                            @if($application->remarks)
+                                <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">SFAO Remarks:</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $application->remarks }}</p>
+                                </div>
+                            @endif
+                        </div>
                     @endif
                 @else
                     <span class="text-gray-500 dark:text-gray-400 px-6 py-2">
@@ -240,4 +321,146 @@
         </div>
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 transition-opacity duration-300" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0;">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+            <div class="p-6 text-center">
+                <!-- Modal Icon -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4" id="modalIcon">
+                    <!-- Icon will be set by JavaScript -->
+                </div>
+                
+                <!-- Modal Title -->
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2" id="modalTitle">
+                    <!-- Title will be set by JavaScript -->
+                </h3>
+                
+                <!-- Modal Message -->
+                <div class="mb-6">
+                    <p class="text-sm text-gray-500 dark:text-gray-400" id="modalMessage">
+                        <!-- Message will be set by JavaScript -->
+                    </p>
+                </div>
+                
+                <!-- Modal Actions -->
+                <div class="flex justify-center space-x-4">
+                    <button 
+                        id="cancelButton"
+                        onclick="hideConfirmationModal()"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        id="confirmButton"
+                        onclick="confirmAction()"
+                        class="px-4 py-2 rounded-md text-sm font-medium text-white transition-colors"
+                    >
+                        <!-- Button text and color will be set by JavaScript -->
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for submission -->
+<form id="hiddenForm" method="POST" action="" style="display: none;">
+    @csrf
+    <input type="hidden" name="action" id="hiddenAction" value="">
+    <textarea name="remarks" id="hiddenRemarks"></textarea>
+</form>
+
+<script>
+let currentAction = '';
+
+function showConfirmationModal(action) {
+    currentAction = action;
+    const modal = document.getElementById('confirmationModal');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmButton = document.getElementById('confirmButton');
+    
+    if (action === 'approve') {
+        // Approve styling
+        modalIcon.innerHTML = `
+            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        `;
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-green-100';
+        modalTitle.textContent = 'Approve Application';
+        modalMessage.textContent = 'Are you sure you want to approve this application? This action will notify the student and update the application status.';
+        confirmButton.textContent = 'Approve';
+        confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-green-600 hover:bg-green-700';
+    } else if (action === 'reject') {
+        // Reject styling
+        modalIcon.innerHTML = `
+            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        `;
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-red-100';
+        modalTitle.textContent = 'Reject Application';
+        modalMessage.textContent = 'Are you sure you want to reject this application? This action will notify the student and update the application status.';
+        confirmButton.textContent = 'Reject';
+        confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-red-600 hover:bg-red-700';
+    }
+    
+    modal.classList.remove('hidden');
+    
+    // Trigger smooth animation
+    setTimeout(() => {
+        const modalContent = document.getElementById('modalContent');
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function hideConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    // Animate out
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+    
+    // Hide modal after animation
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+function confirmAction() {
+    // Set the hidden form values
+    document.getElementById('hiddenAction').value = currentAction;
+    document.getElementById('hiddenRemarks').value = document.getElementById('remarks').value;
+    
+    // Set the form action
+    const form = document.getElementById('hiddenForm');
+    form.action = "{{ route('sfao.evaluation.final-submit', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id]) }}";
+    
+    // Submit the form
+    form.submit();
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('confirmationModal');
+    if (event.target === modal) {
+        hideConfirmationModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        hideConfirmationModal();
+    }
+});
+</script>
+
 @endsection

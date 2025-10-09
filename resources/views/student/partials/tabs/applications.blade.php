@@ -41,6 +41,65 @@
       </div>
     </div>
 
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 bg-blue-100 dark:bg-blue-700 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Applications</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.length"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 bg-green-100 dark:bg-green-700 rounded-lg">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.filter(app => app.status === 'approved').length"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-700 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.filter(app => app.status === 'pending').length"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="p-3 bg-blue-100 dark:bg-blue-700 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Claimed</p>
+            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.filter(app => app.status === 'claimed').length"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Applications Count -->
     <div class="mb-6">
       <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -66,9 +125,9 @@
         </a>
       </div>
     @else
-      <!-- Applications Grid -->
-      <div x-data="applicationData()" x-init="init()" class="space-y-6">
-        <template x-for="application in filteredApplications" :key="application.id">
+       <!-- Applications Grid -->
+       <div x-data="applicationData()" x-init="init()" class="space-y-6">
+         <template x-for="application in filteredApplications" :key="application.id">
           <div class="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
             <!-- Application Header -->
             <div class="p-6 border-b border-gray-200 dark:border-gray-600">
@@ -123,26 +182,15 @@
                   <span class="font-medium">Last Updated:</span> <span x-text="formatDate(application.updated_at)"></span>
                 </div>
                 
-                <div class="flex gap-2">
-                  <button @click="viewDetails(application)" 
-                          class="px-3 py-1 text-xs font-medium text-bsu-red hover:text-bsu-redDark border border-bsu-red hover:bg-bsu-red hover:text-white rounded-md transition">
-                    View Details
-                  </button>
-                  
-                  <button @click="unapply(application.id)" 
-                          class="px-3 py-1 text-xs font-medium text-red-600 hover:text-red-800 border border-red-300 hover:bg-red-50 rounded-md transition"
-                          x-show="application.status === 'pending'">
-                    Withdraw
-                  </button>
-                </div>
               </div>
             </div>
           </div>
-        </template>
-      </div>
-    @endif
-  </div>
-</div>
+         </template>
+       </div>
+     @endif
+   </div>
+
+ </div>
 
 <script>
 function applicationData() {
@@ -216,32 +264,6 @@ function applicationData() {
       });
     },
     
-    viewDetails(application) {
-      // Implement view details functionality
-      console.log('View details for:', application);
-    },
-    
-    unapply(applicationId) {
-      if (confirm('Are you sure you want to withdraw this application?')) {
-        // Implement unapply functionality
-        fetch(`/student/unapply`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-          },
-          body: JSON.stringify({
-            scholarship_id: applicationId
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            location.reload();
-          }
-        });
-      }
-    }
   }
 }
 </script>

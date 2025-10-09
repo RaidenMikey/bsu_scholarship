@@ -113,16 +113,6 @@
                                         </select>
                                         <input type="hidden" name="evaluations[{{ $document->id }}][document_id]" value="{{ $document->id }}">
                                     </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Evaluation Notes
-                                        </label>
-                                        <textarea name="evaluations[{{ $document->id }}][notes]" 
-                                                  rows="3" 
-                                                  class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-bsu-red focus:border-bsu-red"
-                                                  placeholder="Add evaluation notes...">{{ $document->evaluation_notes }}</textarea>
-                                    </div>
                                 </div>
                                 
                                 @if($document->evaluated_at)

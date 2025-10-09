@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        @if($appliedScholarships->count() > 0)
+        @if($applications->count() > 0)
             <!-- Applied Scholarships -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -62,8 +62,12 @@
                 
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($appliedScholarships as $scholarship)
-                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        @foreach($applications as $application)
+                            @php
+                                $scholarship = $application->scholarship;
+                                $isEvaluated = in_array($application->status, ['approved', 'rejected']);
+                            @endphp
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow {{ $isEvaluated ? 'opacity-75' : '' }}">
                                 <div class="flex items-start justify-between mb-3">
                                     <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $scholarship->scholarship_name }}</h4>
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $scholarship->getStatusBadge()['color'] }}">
@@ -86,12 +90,56 @@
                                         <span class="text-gray-500 dark:text-gray-400">Grant Amount:</span>
                                         <span class="font-medium">₱{{ number_format($scholarship->grant_amount, 2) }}</span>
                                     </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500 dark:text-gray-400">Application Type:</span>
+                                        <span class="font-medium">{{ $application->getApplicantTypeDisplayName() }}</span>
+                                    </div>
                                 </div>
                                 
-                                <a href="{{ route('sfao.evaluation.sfao-documents', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id]) }}" 
-                                   class="w-full bg-bsu-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-center block">
-                                    Start Evaluation
-                                </a>
+                                @if($isEvaluated)
+                                    <!-- Show evaluation status -->
+                                    <div class="text-center">
+                                        <div class="mb-2">
+                                            @if($application->status === 'approved')
+                                                <div class="inline-flex items-center px-3 py-2 rounded-lg bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <span class="font-semibold">Accepted</span>
+                                                </div>
+                                            @elseif($application->status === 'rejected')
+                                                <div class="inline-flex items-center px-3 py-2 rounded-lg bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    <span class="font-semibold">Rejected</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        
+                                        @if($application->remarks)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded p-2 mb-2">
+                                                <strong>Remarks:</strong> {{ Str::limit($application->remarks, 80) }}
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="text-xs text-gray-400 dark:text-gray-500">
+                                            Evaluated on {{ $application->updated_at->format('M d, Y g:i A') }}
+                                        </div>
+                                        
+                                        <!-- View Details Button -->
+                                        <a href="{{ route('sfao.evaluation.final', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id, 'from_status' => 'true']) }}" 
+                                           class="mt-2 inline-block text-xs text-bsu-red hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                                            View Details →
+                                        </a>
+                                    </div>
+                                @else
+                                    <!-- Show evaluation button for pending applications -->
+                                    <a href="{{ route('sfao.evaluation.sfao-documents', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id]) }}" 
+                                       class="w-full bg-bsu-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-center block">
+                                        Start Evaluation
+                                    </a>
+                                @endif
                             </div>
                         @endforeach
                     </div>

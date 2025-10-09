@@ -1,7 +1,7 @@
 <!-- Staff Management Tab -->
 <div x-show="tab === 'staff'" x-cloak class="space-y-6">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">👨‍💼 Manage Staff</h2>
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">👨‍💼 Manage Admins</h2>
     
     <!-- Create New SFAO Admin -->
     <div class="mb-8">

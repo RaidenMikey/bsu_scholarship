@@ -642,21 +642,15 @@ if (!$user) {
         Submit Application
       </button>
 
-      <!-- Download Button (separate form) -->
-      <form method="POST" action="{{ url('/application-form/download') }}">
-        @csrf
-        <input type="hidden" name="form_id" value="{{ $existingApplication?->id ?? '' }}">
-        <button type="submit"
-          class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
-          <!-- Download Icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M3 14.5a.5.5 0 01.5-.5h13a.5.5 0 010 1h-13a.5.5 0 01-.5-.5zm5.354-3.354a.5.5 0 01.708 0L10 12.293V3.5a.5.5 0 011 0v8.793l.938-.938a.5.5 0 11.707.707l-2 2a.5.5 0 01-.707 0l-2-2a.5.5 0 010-.707z"
-              clip-rule="evenodd" />
-          </svg>
-          Download
-        </button>
-      </form>
+      <!-- Print Button -->
+      <button type="button" onclick="printApplication()"
+        class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">
+        <!-- Print Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
+        </svg>
+        Print Application
+      </button>
     </div>
   <style>
     .form-input {
@@ -750,6 +744,12 @@ if (!$user) {
         handleTransportationChange(transportationSelect);
       }
     });
+
+    // Print Application Function
+    function printApplication() {
+      // Open the PDF in a new window for printing
+      window.open('{{ url("/student/print-application") }}', '_blank');
+    }
   </script>
 </body>
 </html>

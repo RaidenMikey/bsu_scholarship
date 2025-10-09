@@ -97,6 +97,7 @@ Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.'
     Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents', [ApplicationManagementController::class, 'evaluateScholarshipDocuments'])->name('evaluation.scholarship-documents');
     Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents/evaluate', [ApplicationManagementController::class, 'submitScholarshipEvaluation'])->name('evaluation.scholarship-submit');
     Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/final', [ApplicationManagementController::class, 'finalEvaluation'])->name('evaluation.final');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/final/submit', [ApplicationManagementController::class, 'submitFinalEvaluation'])->name('evaluation.final-submit');
     
     // Application Management
     Route::post('/applications/{id}/approve', [ApplicationManagementController::class, 'sfaoApproveApplication'])->name('applications.approve');
@@ -240,4 +241,19 @@ Route::post('/notifications/mark-all-read', function () {
         ]);
     
     return response()->json(['success' => true]);
+});
+
+// Debug route for testing applications
+Route::get('/debug/applications', function() {
+    $students = App\Models\User::where('role', 'student')->with('applications.scholarship')->take(5)->get();
+    $result = [];
+    foreach($students as $student) {
+        $result[] = [
+            'name' => $student->name,
+            'applications_count' => $student->applications->count(),
+            'application_statuses' => $student->applications->pluck('status')->toArray(),
+            'has_applications' => $student->applications->count() > 0
+        ];
+    }
+    return response()->json($result);
 });

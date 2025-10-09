@@ -311,9 +311,9 @@ class UserManagementController extends Controller
         }
 
         $user = User::find(session('user_id'));
-        $application = Application::where('user_id', $user->id)->first();
+        $form = Form::where('user_id', $user->id)->first();
 
-        $pdf = Pdf::loadView('student.forms.application_form_pdf', compact('user', 'application'))
+        $pdf = Pdf::loadView('student.forms.application_form_pdf', compact('user', 'form'))
                   ->setPaper('A4', 'portrait');
         return $pdf->stream('application_form.pdf');
     }

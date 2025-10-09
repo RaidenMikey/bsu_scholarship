@@ -141,7 +141,7 @@
       <button @click="tab = 'staff'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'staff' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        👨‍💼 Manage Staff
+        👨‍💼 Manage Admins
       </button>
 
       <button @click="tab = 'settings'; sidebarOpen = false"

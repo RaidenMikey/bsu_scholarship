@@ -26,6 +26,9 @@ return new class extends Migration
 
             // Application lifecycle
             $table->enum('status', ['pending', 'approved', 'rejected', 'claimed'])->default('pending');
+            
+            // SFAO evaluation remarks
+            $table->text('remarks')->nullable();
 
             $table->timestamps();
         });
