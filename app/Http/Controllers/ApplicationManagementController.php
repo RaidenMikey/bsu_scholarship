@@ -307,8 +307,8 @@ class ApplicationManagementController extends Controller
 
         $reports = $reportsQuery->orderBy('created_at', 'desc')->paginate(10);
 
-        // Get the active tab from session, query parameter, or default to 'students'
-        $activeTab = session('active_tab', $request->get('tab', 'students'));
+        // Get the active tab from session, query parameter, or default to 'scholarships'
+        $activeTab = session('active_tab', $request->get('tab', 'scholarships'));
 
         // Debug: Log the filtering parameters
         \Illuminate\Support\Facades\Log::info('SFAO Dashboard Filtering', [

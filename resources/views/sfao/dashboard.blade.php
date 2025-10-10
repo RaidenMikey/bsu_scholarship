@@ -21,7 +21,7 @@
   :class="{ 'dark': darkMode }"
   x-data="{
     sidebarOpen: false,
-    tab: localStorage.getItem('sfaoTab') || 'scholarships',
+    tab: localStorage.getItem('sfaoTab') || '{{ $activeTab ?? "scholarships" }}',
     darkMode: localStorage.getItem('darkMode') === 'true'
   }"
   x-init="
@@ -167,6 +167,7 @@
         window.location.reload();
       }
     });
+    
   </script>
 </body>
 </html>

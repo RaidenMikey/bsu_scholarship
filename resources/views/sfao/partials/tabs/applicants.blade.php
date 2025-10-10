@@ -11,7 +11,7 @@
 
     <!-- Sorting and Filtering Controls -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-        <form method="GET" class="space-y-4" data-dashboard-url="{{ request()->getSchemeAndHttpHost() }}/BSU_scholarship/public/sfao">
+        <form method="GET" action="{{ route('sfao.dashboard') }}" class="space-y-4">
             <!-- Hidden field to maintain tab -->
             <input type="hidden" name="tab" value="applicants">
             
@@ -321,29 +321,3 @@
     @endif
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle filter form submission
-    const filterForm = document.querySelector('form[method="GET"]');
-    if (filterForm) {
-        filterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const params = new URLSearchParams();
-            
-            // Add all form data to params
-            for (let [key, value] of formData.entries()) {
-                params.append(key, value);
-            }
-            
-            // Ensure tab parameter is set
-            params.set('tab', 'applicants');
-            
-            // Redirect to dashboard with parameters
-            const dashboardUrl = this.dataset.dashboardUrl;
-            window.location.href = dashboardUrl + '?' + params.toString();
-        });
-    }
-});
-</script>

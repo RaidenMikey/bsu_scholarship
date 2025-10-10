@@ -26,10 +26,13 @@
   </div>
 
   <!-- Sorting Controls -->
+  @php
+    $baseUrl = url('/sfao');
+  @endphp
   <x-sorting-controls 
     :currentSort="request('sort_by', 'created_at')" 
     :currentOrder="request('sort_order', 'desc')"
-    :baseUrl="'{{ request()->getSchemeAndHttpHost() }}/BSU_scholarship/public/sfao'"
+    :baseUrl="$baseUrl"
     role="sfao"
   />
 

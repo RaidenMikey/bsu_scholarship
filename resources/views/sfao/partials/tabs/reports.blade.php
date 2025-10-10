@@ -21,7 +21,7 @@
 
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-            <form method="GET" class="flex flex-wrap gap-4" data-dashboard-url="{{ request()->getSchemeAndHttpHost() }}/BSU_scholarship/public/sfao">
+            <form method="GET" action="{{ route('sfao.dashboard') }}" class="flex flex-wrap gap-4">
                 <input type="hidden" name="tab" value="reports">
                 <div class="flex-1 min-w-0">
                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
@@ -231,29 +231,3 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle filter form submission
-    const filterForm = document.querySelector('form[method="GET"]');
-    if (filterForm) {
-        filterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const params = new URLSearchParams();
-            
-            // Add all form data to params
-            for (let [key, value] of formData.entries()) {
-                params.append(key, value);
-            }
-            
-            // Ensure tab parameter is set
-            params.set('tab', 'reports');
-            
-            // Redirect to dashboard with parameters
-            const dashboardUrl = this.dataset.dashboardUrl;
-            window.location.href = dashboardUrl + '?' + params.toString();
-        });
-    }
-});
-</script>
