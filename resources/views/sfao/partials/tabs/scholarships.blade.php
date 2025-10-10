@@ -55,7 +55,7 @@
           </div>
           
           <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-            {{ Str::limit($scholarship->description, 100) }}
+            {{ \Illuminate\Support\Str::limit($scholarship->description, 100) }}
           </p>
 
           <!-- Priority and Renewal Badges -->

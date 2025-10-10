@@ -74,7 +74,7 @@
                                             </p>
                                             @if($report->description)
                                                 <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                                    {{ Str::limit($report->description, 100) }}
+                                                    {{ \Illuminate\Support\Str::limit($report->description, 100) }}
                                                 </p>
                                             @endif
                                         </div>

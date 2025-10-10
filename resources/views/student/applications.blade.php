@@ -146,7 +146,7 @@
                                 </span>
                             </div>
                             <p class="text-gray-600 mb-4">
-                                {{ Str::limit($application->scholarship->description, 200) }}
+                                {{ \Illuminate\Support\Str::limit($application->scholarship->description, 200) }}
                             </p>
                         </div>
                         <div class="text-right ml-4">

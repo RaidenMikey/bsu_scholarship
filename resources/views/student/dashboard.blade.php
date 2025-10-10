@@ -506,7 +506,7 @@
                   <span class="text-gray-600 dark:text-gray-300">Other Sources:</span>
                   <span class="font-medium text-gray-800 dark:text-gray-200">
                     @if($form && $form->other_income_sources)
-                      {{ Str::limit($form->other_income_sources, 20) }}
+                      {{ \Illuminate\Support\Str::limit($form->other_income_sources, 20) }}
                     @else
                       <span class="text-gray-400">Not provided</span>
                     @endif

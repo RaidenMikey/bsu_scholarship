@@ -33,7 +33,7 @@ class Invitation extends Model
     public static function generateToken()
     {
         do {
-            $token = Str::random(64);
+            $token = \Illuminate\Support\Str::random(64);
         } while (self::where('token', $token)->exists());
 
         return $token;

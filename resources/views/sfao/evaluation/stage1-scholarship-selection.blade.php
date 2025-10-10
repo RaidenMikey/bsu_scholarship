@@ -75,7 +75,7 @@
                                     </span>
                                 </div>
                                 
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ Str::limit($scholarship->description, 100) }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ \Illuminate\Support\Str::limit($scholarship->description, 100) }}</p>
                                 
                                 <div class="space-y-2 mb-4">
                                     <div class="flex justify-between text-sm">
@@ -119,7 +119,7 @@
                                         
                                         @if($application->remarks)
                                             <div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded p-2 mb-2">
-                                                <strong>Remarks:</strong> {{ Str::limit($application->remarks, 80) }}
+                                                <strong>Remarks:</strong> {{ \Illuminate\Support\Str::limit($application->remarks, 80) }}
                                             </div>
                                         @endif
                                         

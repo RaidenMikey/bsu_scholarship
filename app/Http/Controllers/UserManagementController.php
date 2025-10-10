@@ -806,7 +806,7 @@ class UserManagementController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make(Str::random(16)), // Temporary password
+                'password' => Hash::make(\Illuminate\Support\Str::random(16)), // Temporary password
                 'role' => 'sfao',
                 'campus_id' => $request->campus_id,
                 'email_verified_at' => null, // Not verified yet

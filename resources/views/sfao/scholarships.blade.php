@@ -46,7 +46,7 @@
                 </div>
 
                 <p class="text-gray-600 mb-4 line-clamp-3">
-                    {{ Str::limit($scholarship->description, 100) }}
+                    {{ \Illuminate\Support\Str::limit($scholarship->description, 100) }}
                 </p>
 
                 <div class="space-y-2 mb-4">

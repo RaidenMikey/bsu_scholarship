@@ -27,7 +27,7 @@ class UserFactory extends Factory
             'email'             => $studentEmail,
             'email_verified_at' => now(),
             'password'          => bcrypt('password123'), // default password for all seeded users
-            'remember_token'    => Str::random(10),
+            'remember_token'    => \Illuminate\Support\Str::random(10),
             'role'              => $this->faker->randomElement(['student', 'sfao', 'central']),
             'campus_id'         => $this->faker->numberBetween(1, 11), // adjust to match your 11 seeded campuses
         ];

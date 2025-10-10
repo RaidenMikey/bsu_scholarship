@@ -44,7 +44,7 @@
                         </div>
 
                         <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
-                            {{ Str::limit($scholarship->description, 120) }}
+                            {{ \Illuminate\Support\Str::limit($scholarship->description, 120) }}
                         </p>
                     </div>
 
@@ -121,7 +121,7 @@
                     @if($scholarship->eligibility_notes)
                       <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p class="text-xs text-blue-800 dark:text-blue-200 font-medium">
-                          <span class="font-semibold">Notes:</span> {{ Str::limit($scholarship->eligibility_notes, 80) }}
+                          <span class="font-semibold">Notes:</span> {{ \Illuminate\Support\Str::limit($scholarship->eligibility_notes, 80) }}
                         </p>
                       </div>
                     @endif
