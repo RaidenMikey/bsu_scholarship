@@ -213,20 +213,17 @@
                         <select x-model="cond.value" :name="'conditions['+index+'][value]'" 
                                 class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
                             <option value="">-- Select Campus --</option>
-                            <option value="BatStateU Alangilan">BatStateU Alangilan</option>
-                            <option value="BatStateU Main">BatStateU Main</option>
-                            <option value="BatStateU Lipa">BatStateU Lipa</option>
-                            <option value="BatStateU Malvar">BatStateU Malvar</option>
-                            <option value="BatStateU Lemery">BatStateU Lemery</option>
-                            <option value="BatStateU San Juan">BatStateU San Juan</option>
-                            <option value="BatStateU Lobo">BatStateU Lobo</option>
-                            <option value="BatStateU Rosario">BatStateU Rosario</option>
-                            <option value="BatStateU Balayan">BatStateU Balayan</option>
-                            <option value="BatStateU Calaca">BatStateU Calaca</option>
-                            <option value="BatStateU Calatagan">BatStateU Calatagan</option>
-                            <option value="BatStateU Mabini">BatStateU Mabini</option>
-                            <option value="BatStateU Nasugbu">BatStateU Nasugbu</option>
-                            <option value="BatStateU Tuy">BatStateU Tuy</option>
+                            <option value="Pablo Borbon">Pablo Borbon</option>
+                            <option value="Alangilan">Alangilan</option>
+                            <option value="Lipa">Lipa</option>
+                            <option value="Nasugbu">Nasugbu</option>
+                            <option value="Malvar">Malvar</option>
+                            <option value="Lemery">Lemery</option>
+                            <option value="Rosario">Rosario</option>
+                            <option value="San Juan">San Juan</option>
+                            <option value="Lobo">Lobo</option>
+                            <option value="Mabini">Mabini</option>
+                            <option value="Balayan">Balayan</option>
                         </select>
                     </template>
 

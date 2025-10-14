@@ -91,7 +91,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.75', 'is_mandatory' => true],
                     ['name' => 'program', 'value' => 'BS Computer Science', 'is_mandatory' => true],
-                    ['name' => 'campus', 'value' => 'BatStateU Alangilan', 'is_mandatory' => false],
+                    ['name' => 'campus', 'value' => 'Alangilan', 'is_mandatory' => false],
                 ],
             ],
             [
@@ -142,7 +142,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'conditions' => [
                     ['name' => 'gwa', 'value' => '2.25', 'is_mandatory' => true],
                     ['name' => 'year_level', 'value' => 'Third Year', 'is_mandatory' => true],
-                    ['name' => 'campus', 'value' => 'BatStateU Main', 'is_mandatory' => false],
+                    ['name' => 'campus', 'value' => 'Pablo Borbon', 'is_mandatory' => false],
                 ],
             ],
             [

@@ -65,7 +65,7 @@ class FormsTableSeeder extends Seeder
                 ]),
                 'college' => fake()->randomElement(['CICS', 'CTE', 'CABEIHM', 'CAS']),
                 'year_level' => fake()->randomElement(['First Year', 'Second Year', 'Third Year', 'Fourth Year']),
-                'campus' => $user->campus ? $user->campus->name : 'BatStateU Alangilan', // Use user's assigned campus
+                'campus' => $user->campus ? $user->campus->name : 'Alangilan', // Use user's assigned campus
                 'gwa' => fake()->randomFloat(2, 1.00, 3.00),
                 'honors' => fake()->optional(0.3)->randomElement(['Dean\'s Lister', 'Honor Student', 'Summa Cum Laude', 'Magna Cum Laude', 'Cum Laude']),
                 'units_enrolled' => fake()->numberBetween(18, 30),

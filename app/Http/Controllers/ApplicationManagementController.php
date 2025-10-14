@@ -683,7 +683,7 @@ class ApplicationManagementController extends Controller
             ['value' => 'rejected', 'label' => 'Rejected'],
             ['value' => 'pending', 'label' => 'Pending'],
             ['value' => 'claimed', 'label' => 'Claimed'],
-            ['value' => 'all', 'label' => 'All Statuses']
+            ['value' => 'all', 'label' => 'All Status']
         ];
         
         $applicantTypeOptions = [

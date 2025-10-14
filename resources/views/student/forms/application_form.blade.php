@@ -299,7 +299,7 @@ if (!$user) {
             <label class="block mb-1 font-medium text-gray-700">Campus</label>
             <select name="campus" class="w-full border border-red-500 rounded-md p-2">
                 <option value="">-- Select Campus --</option>
-                @foreach (['BatStateU Alangilan', 'BatStateU Main', 'BatStateU Lipa', 'BatStateU Malvar', 'BatStateU Lemery', 'BatStateU San Juan', 'BatStateU Lobo', 'BatStateU Rosario', 'BatStateU Balayan', 'BatStateU Calaca', 'BatStateU Calatagan', 'BatStateU Mabini', 'BatStateU Nasugbu', 'BatStateU Tuy'] as $campus)
+                @foreach (['Pablo Borbon', 'Alangilan', 'Lipa', 'Nasugbu', 'Malvar', 'Lemery', 'Rosario', 'San Juan', 'Lobo', 'Mabini', 'Balayan'] as $campus)
                     <option value="{{ $campus }}" 
                         {{ old('campus', $existingApplication->campus ?? '') == $campus ? 'selected' : '' }}
                         {{ (auth()->user()->campus_id ?? '') == $campus ? 'selected' : '' }}>

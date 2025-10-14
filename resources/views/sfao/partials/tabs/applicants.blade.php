@@ -50,7 +50,7 @@
                 <div class="flex items-center space-x-2">
                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
                     <select name="status_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>All Statuses</option>
+                        <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>All Status</option>
                         <option value="not_applied" {{ ($statusFilter ?? 'all') === 'not_applied' ? 'selected' : '' }}>Not Applied</option>
                         <option value="pending" {{ ($statusFilter ?? 'all') === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="approved" {{ ($statusFilter ?? 'all') === 'approved' ? 'selected' : '' }}>Approved</option>
