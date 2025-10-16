@@ -156,34 +156,92 @@
                       <span class="inline-flex items-center px-2 py-1 rounded 
                         @if($notification->data['status'] === 'approved') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                         @elseif($notification->data['status'] === 'rejected') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                        @elseif($notification->data['status'] === 'in_progress') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
                         @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
                         @endif">
-                        {{ ucfirst($notification->data['status']) }}
+                        {{ ucfirst(str_replace('_', ' ', $notification->data['status'])) }}
                       </span>
                     @endif
                   </div>
+
+                  <!-- SFAO Remarks -->
+                  @if(isset($notification->data['remarks']) && !empty($notification->data['remarks']))
+                    <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-400">
+                      <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                          <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                          </svg>
+                        </div>
+                        <div class="ml-3">
+                          <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">SFAO Comments:</h4>
+                          <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">{{ $notification->data['remarks'] }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  @endif
+
+                  <!-- Document Status Details -->
+                  @if(isset($notification->data['document_status']) && $notification->data['document_status'])
+                    <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Document Status:</h4>
+                      <div class="grid grid-cols-3 gap-2 text-xs">
+                        @if($notification->data['document_status']['approved'] > 0)
+                          <div class="flex items-center">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            <span class="text-gray-600 dark:text-gray-400">{{ $notification->data['document_status']['approved'] }} Approved</span>
+                          </div>
+                        @endif
+                        @if($notification->data['document_status']['pending'] > 0)
+                          <div class="flex items-center">
+                            <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                            <span class="text-gray-600 dark:text-gray-400">{{ $notification->data['document_status']['pending'] }} Pending</span>
+                          </div>
+                        @endif
+                        @if($notification->data['document_status']['rejected'] > 0)
+                          <div class="flex items-center">
+                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                            <span class="text-gray-600 dark:text-gray-400">{{ $notification->data['document_status']['rejected'] }} Rejected</span>
+                          </div>
+                        @endif
+                      </div>
+                    </div>
+                  @endif
+
+                  <!-- Specific Document Lists -->
+                  @if(isset($notification->data['pending_documents']) && count($notification->data['pending_documents']) > 0)
+                    <div class="mt-2">
+                      <span class="text-xs font-medium text-yellow-600 dark:text-yellow-400">⏳ Pending Documents:</span>
+                      <div class="mt-1 flex flex-wrap gap-1">
+                        @foreach($notification->data['pending_documents'] as $doc)
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                            {{ $doc }}
+                          </span>
+                        @endforeach
+                      </div>
+                    </div>
+                  @endif
+
+                  @if(isset($notification->data['rejected_documents']) && count($notification->data['rejected_documents']) > 0)
+                    <div class="mt-2">
+                      <span class="text-xs font-medium text-red-600 dark:text-red-400">❌ Rejected Documents:</span>
+                      <div class="mt-1 flex flex-wrap gap-1">
+                        @foreach($notification->data['rejected_documents'] as $doc)
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                            {{ $doc }}
+                          </span>
+                        @endforeach
+                      </div>
+                    </div>
+                  @endif
                 @endif
 
                 <!-- Action Buttons -->
                 <div class="mt-3 flex space-x-2">
-                  @if(!$notification->is_read)
-                    <button @click="markAsRead({{ $notification->id }})" 
-                            class="text-xs px-3 py-1 bg-bsu-red hover:bg-bsu-redDark text-white rounded transition">
-                      Mark as Read
-                    </button>
-                  @endif
-                  
                   @if($notification->type === 'scholarship_created' && isset($notification->data['scholarship_id']))
                     <a href="{{ route('student.scholarships') }}#scholarship-{{ $notification->data['scholarship_id'] }}" 
                        class="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition">
                       View Scholarship
-                    </a>
-                  @endif
-                  
-                  @if($notification->type === 'application_status' && isset($notification->data['application_id']))
-                    <a href="{{ route('student.dashboard') }}#application-tracking" 
-                       class="text-xs px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition">
-                      View Application
                     </a>
                   @endif
                 </div>

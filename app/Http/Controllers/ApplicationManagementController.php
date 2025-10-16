@@ -679,6 +679,7 @@ class ApplicationManagementController extends Controller
         })->toArray();
         
         $statusOptions = [
+            ['value' => 'in_progress', 'label' => 'In Progress'],
             ['value' => 'approved', 'label' => 'Approved'],
             ['value' => 'rejected', 'label' => 'Rejected'],
             ['value' => 'pending', 'label' => 'Pending'],
@@ -1352,7 +1353,7 @@ class ApplicationManagementController extends Controller
         $request->validate([
             'evaluations' => 'required|array',
             'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
-            'evaluations.*.status' => 'required|in:approved,rejected',
+            'evaluations.*.status' => 'required|in:approved,pending,rejected',
         ]);
 
         $evaluatorId = session('user_id');
@@ -1386,7 +1387,7 @@ class ApplicationManagementController extends Controller
         $request->validate([
             'evaluations' => 'required|array',
             'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
-            'evaluations.*.status' => 'required|in:approved,rejected',
+            'evaluations.*.status' => 'required|in:approved,pending,rejected',
         ]);
 
         $evaluatorId = session('user_id');
@@ -1457,7 +1458,7 @@ class ApplicationManagementController extends Controller
         }
 
         $request->validate([
-            'action' => 'required|in:approve,reject',
+            'action' => 'required|in:approve,reject,pending',
             'remarks' => 'nullable|string|max:1000',
         ]);
 
@@ -1470,29 +1471,83 @@ class ApplicationManagementController extends Controller
             return redirect()->back()->with('error', 'Application not found.');
         }
 
-        // Update application with remarks and status
+        // Update application with remarks and status (including pending)
+        $newStatus = match($request->action) {
+            'approve' => 'approved',
+            'reject' => 'rejected',
+            'pending' => 'pending',
+            default => $application->status,
+        };
+
         $application->update([
-            'status' => $request->action === 'approve' ? 'approved' : 'rejected',
+            'status' => $newStatus,
             'remarks' => $request->remarks,
         ]);
 
+        // Get document evaluation status for this application
+        $documents = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->get();
+
+        $documentStatus = [
+            'pending' => $documents->where('evaluation_status', 'pending')->count(),
+            'rejected' => $documents->where('evaluation_status', 'rejected')->count(),
+            'approved' => $documents->where('evaluation_status', 'approved')->count(),
+        ];
+
+        $pendingDocuments = $documents->where('evaluation_status', 'pending')->pluck('document_name')->toArray();
+        $rejectedDocuments = $documents->where('evaluation_status', 'rejected')->pluck('document_name')->toArray();
+
         // Create notification for student
+        $notificationTitle = match($request->action) {
+            'approve' => 'Application Approved',
+            'reject' => 'Application Rejected', 
+            'pending' => 'Application Status Updated',
+            default => 'Application Status Updated'
+        };
+
+        $notificationMessage = match($request->action) {
+            'approve' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been approved.',
+            'reject' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been rejected.',
+            'pending' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been set back to pending for further review.',
+            default => 'Your application status has been updated.'
+        };
+
+        // Add document information to message if there are pending or rejected documents
+        if ($request->action === 'pending' && (count($pendingDocuments) > 0 || count($rejectedDocuments) > 0)) {
+            $documentInfo = [];
+            if (count($pendingDocuments) > 0) {
+                $documentInfo[] = 'Pending documents: ' . implode(', ', $pendingDocuments);
+            }
+            if (count($rejectedDocuments) > 0) {
+                $documentInfo[] = 'Rejected documents: ' . implode(', ', $rejectedDocuments);
+            }
+            $notificationMessage .= ' ' . implode('. ', $documentInfo) . '.';
+        }
+
         Notification::create([
             'user_id' => $userId,
             'type' => 'application_status',
-            'title' => 'Application ' . ucfirst($request->action),
-            'message' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been ' . $request->action . 'd.',
+            'title' => $notificationTitle,
+            'message' => $notificationMessage,
             'data' => [
                 'application_id' => $application->id,
                 'scholarship_id' => $scholarshipId,
-                'status' => $request->action,
+                'scholarship_name' => $application->scholarship->scholarship_name,
+                'status' => $newStatus,
                 'remarks' => $request->remarks,
+                'document_status' => $documentStatus,
+                'pending_documents' => $pendingDocuments,
+                'rejected_documents' => $rejectedDocuments,
             ]
         ]);
 
-        $message = $request->action === 'approve' 
-            ? 'Application approved successfully.' 
-            : 'Application rejected successfully.';
+        $message = match($request->action) {
+            'approve' => 'Application approved successfully.',
+            'reject' => 'Application rejected successfully.',
+            'pending' => 'Application set to pending successfully.',
+            default => 'Application status updated successfully.'
+        };
 
         return redirect()->route('sfao.dashboard')
             ->with('success', $message);

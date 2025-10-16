@@ -228,7 +228,7 @@
         </div>
 
         <!-- Final Evaluation Form -->
-        @if($application && $application->status === 'pending')
+        @if($application && in_array($application->status, ['in_progress', 'pending']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Final Evaluation & Decision</h3>
@@ -259,6 +259,13 @@
 
                 <!-- Action Buttons -->
                 <div class="flex justify-end space-x-4">
+                    <button 
+                        type="button" 
+                        onclick="showConfirmationModal('pending')"
+                        class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                    >
+                        Mark as Pending
+                    </button>
                     <button 
                         type="button" 
                         onclick="showConfirmationModal('reject')"
@@ -408,6 +415,18 @@ function showConfirmationModal(action) {
         modalMessage.textContent = 'Are you sure you want to reject this application? This action will notify the student and update the application status.';
         confirmButton.textContent = 'Reject';
         confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-red-600 hover:bg-red-700';
+    } else if (action === 'pending') {
+        // Pending styling
+        modalIcon.innerHTML = `
+            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        `;
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-yellow-100';
+        modalTitle.textContent = 'Mark as Pending';
+        modalMessage.textContent = 'Set this application back to pending for further review? The student will be notified.';
+        confirmButton.textContent = 'Mark Pending';
+        confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-yellow-600 hover:bg-yellow-700';
     }
     
     modal.classList.remove('hidden');

@@ -109,6 +109,7 @@
                                                 class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-bsu-red focus:border-bsu-red" required>
                                             <option value="">Select Status</option>
                                             <option value="approved" {{ $document->evaluation_status === 'approved' ? 'selected' : '' }}>✅ Approved</option>
+                                            <option value="pending" {{ $document->evaluation_status === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
                                             <option value="rejected" {{ $document->evaluation_status === 'rejected' ? 'selected' : '' }}>❌ Rejected</option>
                                         </select>
                                         <input type="hidden" name="evaluations[{{ $document->id }}][document_id]" value="{{ $document->id }}">
