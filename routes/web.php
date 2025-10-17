@@ -257,3 +257,73 @@ Route::get('/debug/applications', function() {
     }
     return response()->json($result);
 });
+
+// Test route for creating a test notification
+Route::get('/debug/create-test-notification', function() {
+    $user = App\Models\User::where('role', 'student')->first();
+    if (!$user) {
+        return response()->json(['error' => 'No student user found']);
+    }
+    
+    $notification = App\Models\Notification::create([
+        'user_id' => $user->id,
+        'type' => 'application_status',
+        'title' => 'Document Evaluation Update',
+        'message' => 'Your scholarship application documents have been evaluated. Please review the details below for any required actions.',
+        'data' => [
+            'scholarship_name' => 'Academic Excellence Scholarship',
+            'status' => 'pending', // Change to 'rejected' to test rejected documents
+            'remarks' => 'Your application is under review. Please ensure all documents are clear and legible. Some documents may require resubmission if quality is insufficient.',
+            'evaluated_by' => 'Dr. Maria Santos - SFAO Director',
+            'document_status' => [
+                'approved' => 3,
+                'pending' => 2,
+                'rejected' => 1
+            ],
+            'pending_documents' => ['Transcript of Records', 'Certificate of Good Moral Character'],
+            'rejected_documents' => ['Birth Certificate (expired)']
+        ],
+        'is_read' => false
+    ]);
+    
+    return response()->json([
+        'success' => true,
+        'notification' => $notification,
+        'message' => 'Test notification created successfully'
+    ]);
+});
+
+// Test route for creating a rejected notification
+Route::get('/debug/create-rejected-notification', function() {
+    $user = App\Models\User::where('role', 'student')->first();
+    if (!$user) {
+        return response()->json(['error' => 'No student user found']);
+    }
+    
+    $notification = App\Models\Notification::create([
+        'user_id' => $user->id,
+        'type' => 'application_status',
+        'title' => 'Document Evaluation - Rejected Documents',
+        'message' => 'Some of your submitted documents have been rejected and require resubmission. Please review the details below.',
+        'data' => [
+            'scholarship_name' => 'Merit Scholarship Program',
+            'status' => 'rejected',
+            'remarks' => 'Several documents were rejected due to poor quality, incorrect format, or missing information. Please resubmit the corrected documents as soon as possible.',
+            'evaluated_by' => 'Prof. Juan Dela Cruz - SFAO Evaluator',
+            'document_status' => [
+                'approved' => 2,
+                'pending' => 0,
+                'rejected' => 3
+            ],
+            'pending_documents' => [],
+            'rejected_documents' => ['Birth Certificate (blurry)', 'Transcript of Records (incomplete)', 'Certificate of Good Moral Character (expired)']
+        ],
+        'is_read' => false
+    ]);
+    
+    return response()->json([
+        'success' => true,
+        'notification' => $notification,
+        'message' => 'Rejected notification created successfully'
+    ]);
+});
