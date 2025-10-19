@@ -139,8 +139,6 @@
                         <option value="income">Maximum Income</option>
                         <option value="disability">Disability</option>
                         <option value="program">Program</option>
-                        <option value="campus">Campus</option>
-                        <option value="age">Minimum Age</option>
                         <option value="sex">Gender</option>
                     </select>
 
@@ -221,30 +219,6 @@
                         </select>
                     </template>
 
-                    <template x-if="cond.type === 'campus'">
-                        <select x-model="cond.value" :name="'conditions['+index+'][value]'" 
-                                class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
-                            <option value="">-- Select Campus --</option>
-                            <option value="Pablo Borbon">Pablo Borbon</option>
-                            <option value="Alangilan">Alangilan</option>
-                            <option value="Lipa">Lipa</option>
-                            <option value="Nasugbu">Nasugbu</option>
-                            <option value="Malvar">Malvar</option>
-                            <option value="Lemery">Lemery</option>
-                            <option value="Rosario">Rosario</option>
-                            <option value="San Juan">San Juan</option>
-                            <option value="Lobo">Lobo</option>
-                            <option value="Mabini">Mabini</option>
-                            <option value="Balayan">Balayan</option>
-                        </select>
-                    </template>
-
-                    <template x-if="cond.type === 'age'">
-                        <input type="number" x-model="cond.value" 
-                               :name="'conditions['+index+'][value]'" 
-                               placeholder="e.g. 18"
-                               class="w-2/3 border rounded-lg p-2 focus:ring focus:ring-red-700">
-                    </template>
 
                     <template x-if="cond.type === 'sex'">
                         <select x-model="cond.value" :name="'conditions['+index+'][value]'" 

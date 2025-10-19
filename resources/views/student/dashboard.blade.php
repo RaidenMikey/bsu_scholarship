@@ -23,12 +23,17 @@
   x-data="{
     sidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
-    subTab: localStorage.getItem('activeSubTab') || 'available',
+    subTab: localStorage.getItem('activeSubTab') || 'all',
     darkMode: localStorage.getItem('darkMode') === 'true',
     scholarshipsDropdownOpen: false,
     applicationsDropdownOpen: false
   }"
   x-init="
+    // Set initial tab based on scholarship type parameter
+    @if(isset($scholarshipType) && $scholarshipType !== 'all')
+      subTab = '{{ $scholarshipType }}';
+    @endif
+    
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
     $watch('subTab', val => localStorage.setItem('activeSubTab', val));
@@ -118,10 +123,34 @@
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
              class="ml-4 space-y-1">
-          <button @click="tab = 'scholarships'; subTab = 'available'; sidebarOpen = false"
+          <button @click="tab = 'scholarships'; subTab = 'all'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships') }}'"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="(tab === 'scholarships' && subTab === 'available') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            📋 Available Scholarships
+                  :class="(tab === 'scholarships' && subTab === 'all') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🎓 All Scholarships
+          </button>
+          
+          <button @click="tab = 'scholarships'; subTab = 'internal'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'internal']) }}'"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="(tab === 'scholarships' && subTab === 'internal') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🏫 Internal
+          </button>
+          
+          <button @click="tab = 'scholarships'; subTab = 'external'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'external']) }}'"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="(tab === 'scholarships' && subTab === 'external') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🌐 External
+          </button>
+          
+          <button @click="tab = 'scholarships'; subTab = 'public'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'public']) }}'"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="(tab === 'scholarships' && subTab === 'public') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🏛️ Public
+          </button>
+          
+          <button @click="tab = 'scholarships'; subTab = 'government'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'government']) }}'"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="(tab === 'scholarships' && subTab === 'government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🏛️ Government
           </button>
           
           <button @click="tab = 'scholarships'; subTab = 'form'; sidebarOpen = false"
@@ -217,10 +246,10 @@
     @endif
 
     <!-- Tabs -->
-    <!-- Scholarships Tab with Sub-tabs -->
-    <div x-show="tab === 'scholarships'">
-      <!-- Available Scholarships Sub-tab -->
-      <div x-show="subTab === 'available'" x-transition>
+    <!-- Scholarships Tab -->
+    <div x-show="tab === 'scholarships'" x-transition>
+      <!-- Scholarships Content -->
+      <div x-show="subTab !== 'form'" x-transition>
         @include('student.partials.tabs.scholarships')
       </div>
       

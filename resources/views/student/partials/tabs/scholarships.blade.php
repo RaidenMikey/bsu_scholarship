@@ -1,5 +1,4 @@
-<div x-show="tab === 'scholarships' && subTab === 'available'" 
-     x-data="{
+<div x-data="{
        openWarning: false,
        appliedScholarship: @js($scholarships->firstWhere('applied', true)),
        selected: null,
@@ -13,9 +12,31 @@
      }">
 
   @if ($hasApplication)
-    <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
-      Available Scholarships
-    </h1>
+    @php
+      $currentType = $scholarshipType ?? 'all';
+      $typeLabels = [
+        'all' => ['title' => '🎓 All Scholarships', 'description' => 'All available scholarship programs'],
+        'internal' => ['title' => '🏫 Internal Scholarships', 'description' => 'Internal university scholarship programs'],
+        'external' => ['title' => '🌐 External Scholarships', 'description' => 'External partner scholarship programs'],
+        'public' => ['title' => '🏛️ Public Scholarships', 'description' => 'Public scholarship programs'],
+        'government' => ['title' => '🏛️ Government Scholarships', 'description' => 'Government scholarship programs']
+      ];
+      $currentLabel = $typeLabels[$currentType] ?? $typeLabels['all'];
+    @endphp
+    
+    <!-- Header with Type Filter -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {{ $currentLabel['title'] }}
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    {{ $currentLabel['description'] }}
+                </p>
+            </div>
+        </div>
+    </div>
 
     @if ($scholarships->count())
       <!-- Sorting Controls -->
@@ -26,25 +47,221 @@
         role="student"
       />
 
-      <div class="bg-bsu-light dark:bg-gray-800 p-5 rounded-lg shadow-sm">
+      <!-- Scholarships List -->
+      <div class="space-y-8">
         <p class="text-gray-800 dark:text-gray-200 text-sm mb-4">
           Scholarships matched to your profile:
         </p>
 
-        <div class="space-y-5">
           @foreach ($scholarships as $scholarship)
-            <div class="relative rounded-lg shadow border-2 p-5 transition flex flex-col
-                        {{ $scholarship->applied 
-                          ? 'bg-gray-200 dark:bg-gray-800 border-gray-400' 
-                          : 'bg-white dark:bg-gray-900 border-bsu-red hover:bg-bsu-light dark:hover:bg-gray-800' }}">
-
-              <h3 class="text-lg font-bold {{ $scholarship->applied ? 'text-gray-700 dark:text-white' : 'text-bsu-red dark:text-white' }} mb-2">
+          <div x-data="{ open: false }" 
+               class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 hover:shadow-xl transition scholarship-card relative overflow-hidden
+                      {{ $scholarship->applied ? 'opacity-75' : '' }}"
+               @if($scholarship->background_image)
+               style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
+               @endif>
+        
+        <!-- Scholarship Content -->
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+          <!-- Main Content -->
+          <div class="flex-1">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-bsu-red dark:text-white">
                 {{ $scholarship->scholarship_name }}
               </h3>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getScholarshipTypeBadgeColor() }}">
+                    {{ ucfirst($scholarship->scholarship_type) }}
+                  </span>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
+                    {{ ucfirst($scholarship->priority_level) }}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-              <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                {{ $scholarship->description }}
-              </p>
+            <!-- Description Preview -->
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+              {{ \Illuminate\Support\Str::limit($scholarship->description, 150) }}
+            </p>
+          </div>
+
+          <!-- Quick Info & Actions -->
+          <div class="flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[200px]">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 text-sm">
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Deadline:</span>
+                <div class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
+                  {{ $scholarship->submission_deadline?->format('M d, Y') }}
+                </div>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Amount:</span>
+                <div class="font-semibold text-green-600">
+                  @if($scholarship->grant_amount)
+                    ₱{{ number_format((float) $scholarship->grant_amount, 0) }}
+                  @else
+                    TBD
+                  @endif
+                </div>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Status:</span>
+                <div class="font-semibold {{ $scholarship->is_active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                  {{ $scholarship->is_active ? 'Active' : 'Inactive' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Slots Information -->
+            @if($scholarship->slots_available)
+            @php
+              $applicationsCount = $scholarship->getApplicationCount();
+              $slotsAvailable = $scholarship->slots_available;
+              $fillPercentage = min(100, ($applicationsCount / $slotsAvailable) * 100);
+            @endphp
+            <div class="mt-2">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Available Slots:</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ $applicationsCount }} / {{ $slotsAvailable }}
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-bsu-redDark h-2 rounded-full transition-all duration-300" 
+                     data-width="{{ $fillPercentage }}"
+                     x-bind:style="'width: ' + $el.dataset.width + '%'"></div>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {{ number_format($fillPercentage, 1) }}% filled
+              </div>
+            </div>
+            @endif
+
+            <!-- Application Status -->
+            @if($scholarship->applied)
+              <div class="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-sm font-medium">Applied</span>
+              </div>
+            @endif
+
+            <!-- Dropdown Toggle Button -->
+            <button @click="open = !open" 
+                    class="flex items-center justify-center gap-2 px-4 py-2 bg-bsu-redDark hover:bg-bsu-red text-white rounded-lg transition-colors">
+                <span class="text-sm font-medium">View Details</span>
+                <svg class="w-4 h-4 transition-transform" 
+                     :class="{ 'rotate-180': open }" 
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <!-- Apply / Applied / Unapply Buttons -->
+            <div>
+                @if($scholarship->applied)
+                    <!-- Unapply Button (opens modal) -->
+                    <button type="button" 
+                            onclick="openUnapplyModal('{{ $scholarship->id }}')"
+                            class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow transition-colors">
+                        ❌ Unapply
+                    </button>
+                @else
+                    <form method="GET" action="{{ route('student.upload-documents', ['scholarship_id' => $scholarship->id]) }}">
+                        <button type="submit" 
+                                class="w-full px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow transition-colors">
+                            🎓 Apply
+                        </button>
+                    </form>
+                @endif
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Dropdown Content -->
+        <div x-show="open" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2"
+             class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+            <!-- Additional Eligibility Information -->
+            <div>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Information</h4>
+              <div class="space-y-2">
+                @if($scholarship->grant_type)
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Grant Type:</span>
+                  <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $scholarship->grant_type)) }}</span>
+                </div>
+                @endif
+                @if($scholarship->slots_available)
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Total Slots:</span>
+                  <span class="font-medium">{{ $scholarship->slots_available }}</span>
+                </div>
+                @endif
+                @if($scholarship->application_start_date)
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Application Opens:</span>
+                  <span class="font-medium">{{ $scholarship->application_start_date?->format('M d, Y') }}</span>
+                </div>
+                @endif
+              </div>
+            </div>
+
+            <!-- Detailed Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Key Information</h4>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Type:</span>
+                    <span class="font-medium">{{ ucfirst($scholarship->scholarship_type) }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Priority:</span>
+                    <span class="font-medium">{{ ucfirst($scholarship->priority_level) }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Renewable:</span>
+                    <span class="font-medium">{{ $scholarship->renewal_allowed ? 'Yes' : 'No' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Timeline & Amount</h4>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Deadline:</span>
+                    <span class="font-medium">{{ $scholarship->submission_deadline?->format('M d, Y') }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Amount:</span>
+                    <span class="font-medium text-green-600">
+                      @if($scholarship->grant_amount)
+                        ₱{{ number_format((float) $scholarship->grant_amount, 0) }}
+                      @else
+                        TBD
+                      @endif
+                    </span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 dark:text-gray-400">Applications:</span>
+                    <span class="font-medium">{{ $scholarship->getApplicationCount() }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
               <!-- Matching Criteria Display -->
               @php
@@ -52,8 +269,8 @@
               @endphp
               
               @if(count($matchingCriteria) > 0)
-                <div class="mb-4">
-                  <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Matching Criteria:</h4>
+              <div>
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Your Profile Match</h4>
                   <div class="flex flex-wrap gap-2">
                     @foreach($matchingCriteria as $criteria)
                       <div class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium
@@ -77,134 +294,15 @@
                 </div>
               @endif
 
-              <!-- Scholarship Status and Priority -->
-              <div class="mb-4 flex flex-wrap gap-2">
-                @php
-                  $statusBadge = $scholarship->getStatusBadge();
-                @endphp
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusBadge['color'] }}">
-                  {{ $statusBadge['text'] }}
-                </span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scholarship->getScholarshipTypeBadgeColor() }}">
-                  {{ ucfirst($scholarship->scholarship_type) }}
-                </span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
-                  {{ ucfirst($scholarship->priority_level) }} Priority
-                </span>
-                @if($scholarship->renewal_allowed)
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    🔄 Renewable
-                  </span>
-                @endif
-              </div>
-
-              <!-- Scholarship Details -->
-              <div class="text-sm text-gray-600 dark:text-gray-400 space-y-2 mb-4">
-                <div class="flex justify-between items-center">
-                  <span><strong>Submission Deadline:</strong></span>
-                  <span class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-600' }}">
-                    {{ $scholarship->submission_deadline?->format('M d, Y') }}
-                    @if($scholarship->getDaysUntilDeadline() > 0)
-                      <span class="text-xs">({{ $scholarship->getDaysUntilDeadline() }} days left)</span>
-                    @elseif($scholarship->getDaysUntilDeadline() == 0)
-                      <span class="text-xs text-red-600">(Today!)</span>
-                    @else
-                      <span class="text-xs text-red-600">(Expired)</span>
-                    @endif
-                  </span>
-                </div>
-
-                @if($scholarship->application_start_date)
-                  <div class="flex justify-between items-center">
-                    <span><strong>Application Opens:</strong></span>
-                    <span class="{{ now()->gte($scholarship->application_start_date) ? 'text-green-600 font-semibold' : 'text-gray-600' }}">
-                      {{ $scholarship->application_start_date?->format('M d, Y') }}
-                      @if(now()->lt($scholarship->application_start_date))
-                        <span class="text-xs">({{ now()->diffInDays($scholarship->application_start_date) }} days to go)</span>
-                      @else
-                        <span class="text-xs text-green-600">(Open)</span>
-                      @endif
-                    </span>
-                  </div>
-                @endif
-
-                <div class="flex justify-between items-center">
-                  <span><strong>Available Slots:</strong></span>
-                  <span class="{{ $scholarship->isFull() ? 'text-red-600' : 'text-gray-600' }}">
-                    @if($scholarship->slots_available === null)
-                      <span class="text-green-600 font-semibold">Unlimited</span>
-                    @else
-                      {{ $scholarship->slots_available - $scholarship->getApplicationCount() }} / {{ $scholarship->slots_available }}
-                      @if($scholarship->isFull())
-                        <span class="text-xs text-red-600">(Full)</span>
-                      @endif
-                    @endif
-                  </span>
-                </div>
-
-                @if($scholarship->grant_amount)
-                  <div class="flex justify-between items-center">
-                    <span><strong>Grant Amount:</strong></span>
-                    <span class="font-semibold text-green-600">₱{{ number_format((float) $scholarship->grant_amount, 2) }}</span>
-                  </div>
-                @endif
-
-                <!-- Application Statistics -->
-                <div class="flex justify-between items-center">
-                  <span><strong>Total Applications:</strong></span>
-                  <span class="font-semibold">{{ $scholarship->getApplicationCount() }}</span>
-                </div>
-
-                @if($scholarship->eligibility_notes)
-                  <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <p class="text-xs text-blue-800 dark:text-blue-200">
-                      <strong>Additional Notes:</strong> {{ $scholarship->eligibility_notes }}
-                    </p>
-                  </div>
-                @endif
-              </div>
-
-              <!-- Progress Bar for Slots -->
-              @if($scholarship->slots_available)
-                <div class="mb-4">
-                  <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    <span>Applications</span>
-                    <span>{{ $scholarship->getApplicationCount() }} / {{ $scholarship->slots_available }}</span>
-                  </div>
-                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-bsu-red h-2 rounded-full transition-all duration-300 progress-bar" 
-                         data-width="{{ $scholarship->getFillPercentage() }}"></div>
-                  </div>
-                </div>
-              @endif
-
-              <!-- Apply / Applied / Unapply Buttons -->
-              <div class="mt-auto pt-4 flex justify-start">
-                  @if($scholarship->applied)
-                      <!-- Unapply Button (opens modal) -->
-                      <button type="button" 
-                              onclick="openUnapplyModal('{{ $scholarship->id }}')"
-                              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow transition-colors">
-                          ❌ Unapply
-                      </button>
-                  @else
-                      <form method="GET" action="{{ route('student.upload-documents', ['scholarship_id' => $scholarship->id]) }}">
-                          <button type="submit" 
-                                  class="px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow transition-colors">
-                              🎓 Apply
-                          </button>
-                      </form>
-                  @endif
-              </div>
-
             </div>
+          </div>
+
           @endforeach
-        </div>
       </div>
     @else
       <div class="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-lg shadow-sm">
         <p class="text-blue-800 font-medium">
-          No scholarships currently match your profile criteria.
+          No {{ strtolower($currentLabel['title']) }} currently match your profile criteria.
         </p>
         <p class="mt-1 text-blue-700 text-sm">
           Keep improving to unlock more opportunities!
@@ -267,14 +365,7 @@
           document.getElementById('unapplyModal').classList.add('hidden');
       }
 
-      // Set progress bar widths
-      document.addEventListener('DOMContentLoaded', function() {
-          const progressBars = document.querySelectorAll('.progress-bar');
-          progressBars.forEach(bar => {
-              const width = bar.getAttribute('data-width');
-              bar.style.width = width + '%';
-          });
-      });
+      // Progress bars are now handled by Alpine.js x-bind:style
   </script>
 
   <!-- Warning Modal -->

@@ -55,23 +55,27 @@ class UsersTableSeeder extends Seeder
             }
         }
 
-        // Create 1 SFAO Admin per constituent campus
-        foreach ($constituentCampuses as $campus) {
-            User::updateOrCreate(
-                ['email' => "test-sfao{$campus->id}@g.batstate-u.edu.ph"],
-                [
-                    'name' => "SFAO Admin - {$campus->name}",
-                    'password' => Hash::make('password123'),
-                    'role' => 'sfao',
-                    'campus_id' => $campus->id,
-                    'email_verified_at' => now(),
-                ]
-            );
+        // Create 5 SFAO Admins (one for each constituent campus)
+        $sfaoCampuses = ['Pablo Borbon', 'Alangilan', 'Lipa', 'Nasugbu', 'Malvar'];
+        foreach ($sfaoCampuses as $index => $campusName) {
+            $campus = \App\Models\Campus::where('name', $campusName)->first();
+            if ($campus) {
+                User::updateOrCreate(
+                    ['email' => "sfao-" . ($index + 1) . "@g.batstate-u.edu.ph"],
+                    [
+                        'name' => "SFAO Admin - {$campusName}",
+                        'password' => Hash::make('password123'),
+                        'role' => 'sfao',
+                        'campus_id' => $campus->id,
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
         }
 
-        // Permanent Central Admin
+        // Create 1 Central Admin
         User::updateOrCreate(
-            ['email' => 'test-central@g.batstate-u.edu.ph'],
+            ['email' => 'central-admin@g.batstate-u.edu.ph'],
             [
                 'name' => 'Central Admin',
                 'password' => Hash::make('password123'),

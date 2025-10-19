@@ -36,11 +36,9 @@ class RealisticSystemSeeder extends Seeder
             return;
         }
         
-        // Create SFAO users for each campus
-        $this->createSfaoUsers($campuses);
-        
-        // Create students for each campus (10 per campus)
-        $this->createStudents($campuses, $scholarships, $faker);
+        // Skip user creation - handled by UsersTableSeeder
+        // $this->createSfaoUsers($campuses);
+        // $this->createStudents($campuses, $scholarships, $faker);
         
         // Create reports for SFAO users
         $this->createReports($campuses);

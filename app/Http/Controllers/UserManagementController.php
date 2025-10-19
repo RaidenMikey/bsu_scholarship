@@ -334,10 +334,19 @@ class UserManagementController extends Controller
         $scholarships = collect();
 
         if ($form) {
-            // Get all scholarships that allow new applications and filter by all conditions
-            $allScholarships = Scholarship::where('is_active', true)
-                ->with('conditions')
-                ->get();
+            // Get scholarship type filter from request or view parameter
+            $scholarshipTypeFilter = $request->get('type', 'all');
+            
+            // Build scholarships query
+            $scholarshipsQuery = Scholarship::where('is_active', true)
+                ->with('conditions');
+            
+            // Apply scholarship type filter
+            if ($scholarshipTypeFilter !== 'all') {
+                $scholarshipsQuery->where('scholarship_type', $scholarshipTypeFilter);
+            }
+            
+            $allScholarships = $scholarshipsQuery->get();
 
             // Filter scholarships based on grant type and all requirements
             $scholarships = $allScholarships->filter(function ($scholarship) use ($form) {
@@ -363,7 +372,44 @@ class UserManagementController extends Controller
             $scholarship->applied = in_array($scholarship->id, $appliedIds);
         }
 
-        return view('student.partials.tabs.scholarships', compact('scholarships', 'gwa', 'form'));
+        // Get scholarship type from request for view
+        $scholarshipType = $request->get('type', 'all');
+        
+        // Check if student has an application form
+        $hasApplication = $form !== null;
+        
+        // Get applications data
+        $applications = $user ? $user->appliedScholarships : collect();
+        
+        // Get detailed application tracking data with enhanced information
+        $applicationTracking = \App\Models\Application::where('user_id', $user->id)
+            ->with(['scholarship' => function($query) {
+                $query->with(['conditions', 'requiredDocuments']);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Add additional data to each application
+        $applicationTracking->each(function($application) {
+            $application->scholarship->status_badge = $this->getStatusBadge($application->status);
+            $application->scholarship->type_badge = $this->getTypeBadge($application->type);
+            $application->scholarship->days_remaining = $this->getDaysRemaining($application->scholarship->submission_deadline);
+            $application->scholarship->grant_amount_formatted = $application->scholarship->grant_amount ? '₱' . number_format($application->scholarship->grant_amount, 2) : 'Not specified';
+        });
+
+        // Get notifications
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get unread notifications count
+        $unreadCount = \App\Models\Notification::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->count();
+
+        // Return the full dashboard with scholarships data
+        return view('student.dashboard', compact('scholarships', 'gwa', 'form', 'scholarshipType', 'hasApplication', 'unreadCount', 'applications', 'applicationTracking', 'notifications'));
     }
 
     /**

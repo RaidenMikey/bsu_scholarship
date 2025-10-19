@@ -14,17 +14,8 @@ class ScholarshipsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a central admin user if it doesn't exist
-        $centralAdmin = \App\Models\User::firstOrCreate(
-            ['email' => 'central-admin@bsu.edu'],
-            [
-                'name' => 'Central Administrator',
-                'password' => \Illuminate\Support\Facades\Hash::make('password'),
-                'role' => 'central',
-                'campus_id' => 1,
-                'email_verified_at' => now(),
-            ]
-        );
+        // Get existing central admin
+        $centralAdmin = \App\Models\User::where('role', 'central')->first();
 
         $scholarships = [
             [
