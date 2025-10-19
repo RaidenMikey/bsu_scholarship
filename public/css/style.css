@@ -38,7 +38,7 @@
   box-shadow: 0 10px 15px -3px rgba(185, 28, 28, 0.2), 0 4px 6px -2px rgba(185, 28, 28, 0.1);
 }
 
-/* Fix button height consistency */
+/* Fix button height consistency - only apply to specific scholarship action buttons */
 .scholarship-action-buttons form {
   margin: 0;
   padding: 0;
@@ -57,10 +57,19 @@
   overflow: hidden;
 }
 
+/* Only apply these styles to buttons specifically within scholarship-action-buttons containers */
 .scholarship-action-buttons button {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Ensure our dropdown action buttons use their Tailwind classes properly */
+.flex.justify-end.gap-3 button,
+.flex.justify-end.gap-3 a {
+  /* Allow Tailwind utility classes to take precedence */
+  width: auto !important;
+  height: auto !important;
 }

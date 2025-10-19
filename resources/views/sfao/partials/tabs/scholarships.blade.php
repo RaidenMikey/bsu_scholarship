@@ -58,8 +58,8 @@
     role="sfao"
   />
 
-  <!-- Scholarships Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <!-- Scholarships List -->
+  <div>
     @forelse($scholarships as $scholarship)
       <div x-data="{ open: false }" 
            x-show="tab === 'scholarships' || 
@@ -67,32 +67,96 @@
                    (tab === 'scholarships-external' && '{{ $scholarship->scholarship_type }}' === 'external') ||
                    (tab === 'scholarships-public' && '{{ $scholarship->scholarship_type }}' === 'public') ||
                    (tab === 'scholarships-government' && '{{ $scholarship->scholarship_type }}' === 'government')"
-           class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 hover:shadow-xl transition scholarship-card relative overflow-hidden"
+           class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 hover:shadow-xl transition scholarship-card relative overflow-hidden mb-8"
            @if($scholarship->background_image)
            style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
            @endif>
         
         <!-- Scholarship Content -->
-        <div class="flex flex-col h-full">
-          <!-- Header -->
-          <div class="flex justify-between items-start mb-3">
-            <div class="flex-1">
-              <h3 class="text-xl font-bold text-bsu-red dark:text-white">
-                {{ $scholarship->scholarship_name }}
-              </h3>
-              <div class="flex items-center gap-2 mt-2">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getScholarshipTypeBadgeColor() }}">
-                  {{ ucfirst($scholarship->scholarship_type) }}
-                </span>
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
-                  {{ ucfirst($scholarship->priority_level) }}
-                </span>
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+          <!-- Main Content -->
+          <div class="flex-1">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-bsu-red dark:text-white">
+                  {{ $scholarship->scholarship_name }}
+                </h3>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getScholarshipTypeBadgeColor() }}">
+                    {{ ucfirst($scholarship->scholarship_type) }}
+                  </span>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
+                    {{ ucfirst($scholarship->priority_level) }}
+                  </span>
+                </div>
               </div>
             </div>
+
+            <!-- Description Preview -->
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+              {{ \Illuminate\Support\Str::limit($scholarship->description, 150) }}
+            </p>
+          </div>
+
+          <!-- Quick Info & Actions -->
+          <div class="flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[200px]">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 text-sm">
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Deadline:</span>
+                <div class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
+                  {{ $scholarship->submission_deadline?->format('M d, Y') }}
+                </div>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Amount:</span>
+                <div class="font-semibold text-green-600">
+                  @if($scholarship->grant_amount)
+                    ₱{{ number_format((float) $scholarship->grant_amount, 0) }}
+                  @else
+                    TBD
+                  @endif
+                </div>
+              </div>
+              <div>
+                <span class="text-gray-500 dark:text-gray-400">Status:</span>
+                <div class="font-semibold {{ $scholarship->is_active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                  {{ $scholarship->is_active ? 'Active' : 'Inactive' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Slots Information -->
+            @if($scholarship->slots_available)
+            @php
+              $applicationsCount = $scholarship->applications()->count();
+              $slotsAvailable = $scholarship->slots_available;
+              $fillPercentage = min(100, ($applicationsCount / $slotsAvailable) * 100);
+            @endphp
+            <div class="mt-2">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Available Slots:</span>
+                <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ $applicationsCount }} / {{ $slotsAvailable }}
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-bsu-redDark h-2 rounded-full transition-all duration-300" 
+                     data-width="{{ $fillPercentage }}"
+                     x-bind:style="'width: ' + $el.dataset.width + '%'"></div>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {{ number_format($fillPercentage, 1) }}% filled
+              </div>
+            </div>
+            @endif
+
             <!-- Dropdown Toggle Button -->
             <button @click="open = !open" 
-                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <svg class="w-5 h-5 text-gray-400 transition-transform" 
+                    class="flex items-center justify-center gap-2 px-4 py-2 bg-bsu-redDark hover:bg-bsu-red text-white rounded-lg transition-colors">
+                <span class="text-sm font-medium">View Details</span>
+                <svg class="w-4 h-4 transition-transform" 
                      :class="{ 'rotate-180': open }" 
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -100,46 +164,41 @@
             </button>
           </div>
 
-          <!-- Basic Info -->
-          <div class="flex-1 space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Deadline:</span>
-              <span class="text-sm font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
-                {{ $scholarship->submission_deadline?->format('M d, Y') }}
-              </span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Amount:</span>
-              <span class="text-sm font-semibold text-green-600">
-                @if($scholarship->grant_amount)
-                  ₱{{ number_format((float) $scholarship->grant_amount, 0) }}
-                @else
-                  TBD
-                @endif
-              </span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-400">Status:</span>
-              <span class="text-sm font-semibold {{ $scholarship->is_active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                {{ $scholarship->is_active ? 'Active' : 'Inactive' }}
-              </span>
-            </div>
-          </div>
+        </div>
 
-          <!-- Dropdown Content -->
-          <div x-show="open" 
-               x-transition:enter="transition ease-out duration-200"
-               x-transition:enter-start="opacity-0 transform -translate-y-2"
-               x-transition:enter-end="opacity-100 transform translate-y-0"
-               x-transition:leave="transition ease-in duration-150"
-               x-transition:leave-start="opacity-100 transform translate-y-0"
-               x-transition:leave-end="opacity-0 transform -translate-y-2"
-               class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+        <!-- Dropdown Content -->
+        <div x-show="open" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform -translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-2"
+             class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
             
-            <!-- Description -->
+            <!-- Additional Eligibility Information -->
             <div>
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Description</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ $scholarship->description }}</p>
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Information</h4>
+              <div class="space-y-2">
+                @if($scholarship->grant_type)
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Grant Type:</span>
+                  <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $scholarship->grant_type)) }}</span>
+                </div>
+                @endif
+                @if($scholarship->slots_available)
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Total Slots:</span>
+                  <span class="font-medium">{{ $scholarship->slots_available }}</span>
+                </div>
+                @endif
+                @if($scholarship->application_start_date)
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Application Opens:</span>
+                  <span class="font-medium">{{ $scholarship->application_start_date?->format('M d, Y') }}</span>
+                </div>
+                @endif
+              </div>
             </div>
 
             <!-- Detailed Information -->
