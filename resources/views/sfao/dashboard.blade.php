@@ -22,11 +22,17 @@
   x-data="{
     sidebarOpen: false,
     tab: localStorage.getItem('sfaoTab') || '{{ $activeTab ?? "scholarships" }}',
-    darkMode: localStorage.getItem('darkMode') === 'true'
+    darkMode: localStorage.getItem('darkMode') === 'true',
+    scholarshipsDropdownOpen: false
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
     $watch('tab', val => localStorage.setItem('sfaoTab', val));
+    
+    // Handle dropdown states
+    if (localStorage.getItem('sfaoTab') === 'scholarships' || localStorage.getItem('sfaoTab') === 'scholarships-internal' || localStorage.getItem('sfaoTab') === 'scholarships-external' || localStorage.getItem('sfaoTab') === 'scholarships-public' || localStorage.getItem('sfaoTab') === 'scholarships-government') {
+      this.scholarshipsDropdownOpen = true;
+    }
   ">
 
 <head>
@@ -91,11 +97,53 @@
 
     <!-- Navigation -->
     <nav class="mt-6 space-y-2 px-4">
-      <button @click="tab = 'scholarships'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        🎓 Scholarships
-      </button>
+      <!-- Scholarships Dropdown -->
+      <div class="space-y-1">
+        <button @click="scholarshipsDropdownOpen = !scholarshipsDropdownOpen; tab = 'scholarships'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
+                :class="tab === 'scholarships' || tab === 'scholarships-internal' || tab === 'scholarships-external' || tab === 'scholarships-public' || tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <span>🎓 Scholarships</span>
+          <svg class="w-4 h-4 transition-transform" :class="scholarshipsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div x-show="scholarshipsDropdownOpen" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="ml-4 space-y-1">
+          <button @click="tab = 'scholarships'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            📚 All Scholarships
+          </button>
+          <button @click="tab = 'scholarships-internal'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholarships-internal' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🔵 Internal
+          </button>
+          <button @click="tab = 'scholarships-external'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholarships-external' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🟣 External
+          </button>
+          <button @click="tab = 'scholarships-public'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholarships-public' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🟢 Public
+          </button>
+          <button @click="tab = 'scholarships-government'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🟠 Government
+          </button>
+        </div>
+      </div>
 
       <button @click="tab = 'applicants'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"

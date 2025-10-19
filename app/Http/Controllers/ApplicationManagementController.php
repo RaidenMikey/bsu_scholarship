@@ -273,11 +273,29 @@ class ApplicationManagementController extends Controller
             })
             ->get();
             
-        $scholarships = Scholarship::withCount(['applications' => function($query) use ($campusIds) {
+        // Get scholarship type filter from tab parameter
+        $scholarshipTypeFilter = $request->get('tab', 'scholarships');
+        
+        // Build scholarships query
+        $scholarshipsQuery = Scholarship::withCount(['applications' => function($query) use ($campusIds) {
             $query->whereHas('user', function($userQuery) use ($campusIds) {
                 $userQuery->whereIn('campus_id', $campusIds);
             });
-        }])->get();
+        }]);
+        
+        // Apply scholarship type filter
+        if ($scholarshipTypeFilter === 'scholarships-internal') {
+            $scholarshipsQuery->where('scholarship_type', 'internal');
+        } elseif ($scholarshipTypeFilter === 'scholarships-external') {
+            $scholarshipsQuery->where('scholarship_type', 'external');
+        } elseif ($scholarshipTypeFilter === 'scholarships-public') {
+            $scholarshipsQuery->where('scholarship_type', 'public');
+        } elseif ($scholarshipTypeFilter === 'scholarships-government') {
+            $scholarshipsQuery->where('scholarship_type', 'government');
+        }
+        // If 'scholarships' (all), don't apply any type filter
+        
+        $scholarships = $scholarshipsQuery->get();
 
         // Apply sorting
         $sortBy = $request->get('sort_by', 'created_at');
@@ -600,7 +618,25 @@ class ApplicationManagementController extends Controller
 
         $applications = $applicationsQuery->get();
 
-        $scholarships = Scholarship::with(['conditions', 'requiredDocuments'])->get();
+        // Get scholarship type filter from tab parameter
+        $scholarshipTypeFilter = $request->get('tab', 'scholarships');
+        
+        // Build scholarships query
+        $scholarshipsQuery = Scholarship::with(['conditions', 'requiredDocuments']);
+        
+        // Apply scholarship type filter
+        if ($scholarshipTypeFilter === 'scholarships-internal') {
+            $scholarshipsQuery->where('scholarship_type', 'internal');
+        } elseif ($scholarshipTypeFilter === 'scholarships-external') {
+            $scholarshipsQuery->where('scholarship_type', 'external');
+        } elseif ($scholarshipTypeFilter === 'scholarships-public') {
+            $scholarshipsQuery->where('scholarship_type', 'public');
+        } elseif ($scholarshipTypeFilter === 'scholarships-government') {
+            $scholarshipsQuery->where('scholarship_type', 'government');
+        }
+        // If 'scholarships' (all), don't apply any type filter
+        
+        $scholarships = $scholarshipsQuery->get();
         
         // Get all reports with relationships for full functionality
         $query = \App\Models\Report::with(['sfaoUser', 'campus', 'reviewer']);

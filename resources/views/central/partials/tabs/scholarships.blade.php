@@ -1,6 +1,28 @@
 <!-- central/partials/tabs/scholarships.blade.php -->
 
-<div x-show="tab === 'scholarships'" x-transition x-cloak>
+<div x-show="tab === 'scholarships' || tab === 'scholarships-internal' || tab === 'scholarships-external' || tab === 'scholarships-public' || tab === 'scholarships-government'" x-transition x-cloak>
+
+    <!-- Header with Type Filter -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <span x-show="tab === 'scholarships'">📚 All Scholarships</span>
+                    <span x-show="tab === 'scholarships-internal'">🔵 Internal Scholarships</span>
+                    <span x-show="tab === 'scholarships-external'">🟣 External Scholarships</span>
+                    <span x-show="tab === 'scholarships-public'">🟢 Public Scholarships</span>
+                    <span x-show="tab === 'scholarships-government'">🟠 Government Scholarships</span>
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    <span x-show="tab === 'scholarships'">Manage all scholarship programs</span>
+                    <span x-show="tab === 'scholarships-internal'">Internal university scholarship programs</span>
+                    <span x-show="tab === 'scholarships-external'">External partner scholarship programs</span>
+                    <span x-show="tab === 'scholarships-public'">Public scholarship programs</span>
+                    <span x-show="tab === 'scholarships-government'">Government scholarship programs</span>
+                </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Sorting Controls -->
     <x-sorting-controls 
@@ -26,7 +48,12 @@
 
         <!-- Scholarships List -->
         @forelse($scholarships as $scholarship)
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 flex flex-col justify-between h-full min-h-[320px] hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 transform hover:-translate-y-1 group">
+            <div x-show="tab === 'scholarships' || 
+                         (tab === 'scholarships-internal' && '{{ $scholarship->scholarship_type }}' === 'internal') ||
+                         (tab === 'scholarships-external' && '{{ $scholarship->scholarship_type }}' === 'external') ||
+                         (tab === 'scholarships-public' && '{{ $scholarship->scholarship_type }}' === 'public') ||
+                         (tab === 'scholarships-government' && '{{ $scholarship->scholarship_type }}' === 'government')"
+                 class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 flex flex-col justify-between h-full min-h-[320px] hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 transform hover:-translate-y-1 group">
 
                 <div>
                     <!-- Header Section -->
@@ -162,10 +189,45 @@
         @endforelse
     </div>
 
+    <!-- Empty State for Filtered Types -->
+    <div x-show="tab === 'scholarships-internal' && !hasVisibleScholarships('internal')" 
+         class="col-span-full text-center py-12">
+        <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🔵</div>
+        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Internal Scholarships</h3>
+        <p class="text-gray-500 dark:text-gray-500">There are currently no internal scholarship programs available.</p>
+    </div>
+
+    <div x-show="tab === 'scholarships-external' && !hasVisibleScholarships('external')" 
+         class="col-span-full text-center py-12">
+        <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🟣</div>
+        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No External Scholarships</h3>
+        <p class="text-gray-500 dark:text-gray-500">There are currently no external scholarship programs available.</p>
+    </div>
+
+    <div x-show="tab === 'scholarships-public' && !hasVisibleScholarships('public')" 
+         class="col-span-full text-center py-12">
+        <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🟢</div>
+        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Public Scholarships</h3>
+        <p class="text-gray-500 dark:text-gray-500">There are currently no public scholarship programs available.</p>
+    </div>
+
+    <div x-show="tab === 'scholarships-government' && !hasVisibleScholarships('government')" 
+         class="col-span-full text-center py-12">
+        <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🟠</div>
+        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Government Scholarships</h3>
+        <p class="text-gray-500 dark:text-gray-500">There are currently no government scholarship programs available.</p>
+    </div>
+
     <!-- JavaScript for form handling -->
     <script>
         function confirmDelete(scholarshipName) {
             return confirm('⚠️ WARNING: This will permanently delete the scholarship "' + scholarshipName + '" and all associated applications. This action cannot be undone. Are you sure you want to proceed?');
+        }
+
+        // Function to check if there are visible scholarships of a specific type
+        function hasVisibleScholarships(type) {
+            const scholarships = document.querySelectorAll('[x-show*="' + type + '"]');
+            return scholarships.length > 0;
         }
 
         // Handle form submission with loading state
