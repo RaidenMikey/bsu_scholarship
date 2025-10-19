@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Scholarship;
 use App\Models\Application;
 use App\Models\User;
@@ -85,9 +86,19 @@ class ScholarshipManagementController extends Controller
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'priority_level'   => 'required|in:high,medium,low',
             'eligibility_notes' => 'nullable|string',
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
+            // Handle background image upload
+            $backgroundImagePath = null;
+            if ($request->hasFile('background_image')) {
+                $file = $request->file('background_image');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('scholarship_images', $filename, 'public');
+                $backgroundImagePath = $filename;
+            }
+
             $scholarship = Scholarship::create([
                 'scholarship_name' => $request->scholarship_name,
                 'scholarship_type' => $request->scholarship_type,
@@ -100,6 +111,7 @@ class ScholarshipManagementController extends Controller
                 'grant_type'       => $request->grant_type,
                 'priority_level'   => $request->priority_level,
                 'eligibility_notes' => $request->eligibility_notes,
+                'background_image' => $backgroundImagePath,
                 'is_active'        => true, // Set as active by default
                 'created_by'       => session('user_id'),
             ]);
@@ -194,9 +206,24 @@ class ScholarshipManagementController extends Controller
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'priority_level'   => 'required|in:high,medium,low',
             'eligibility_notes' => 'nullable|string',
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $scholarship = Scholarship::findOrFail($id);
+
+        // Handle background image upload
+        $backgroundImagePath = $scholarship->background_image; // Keep existing image
+        if ($request->hasFile('background_image')) {
+            // Delete old image if exists
+            if ($scholarship->background_image && Storage::disk('public')->exists('scholarship_images/' . $scholarship->background_image)) {
+                Storage::disk('public')->delete('scholarship_images/' . $scholarship->background_image);
+            }
+            
+            $file = $request->file('background_image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('scholarship_images', $filename, 'public');
+            $backgroundImagePath = $filename;
+        }
 
         $scholarship->update([
             'scholarship_name' => $request->scholarship_name,
@@ -210,6 +237,7 @@ class ScholarshipManagementController extends Controller
             'grant_type'       => $request->grant_type,
             'priority_level'   => $request->priority_level,
             'eligibility_notes' => $request->eligibility_notes,
+            'background_image' => $backgroundImagePath,
         ]);
 
         // Refresh conditions

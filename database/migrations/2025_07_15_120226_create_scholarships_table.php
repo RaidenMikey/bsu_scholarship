@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->boolean('is_active')->default(true);
             $table->enum('priority_level', ['high', 'medium', 'low'])->default('medium'); // Scholarship priority
             $table->text('eligibility_notes')->nullable(); // Additional eligibility information
+            $table->string('background_image')->nullable(); // Background image for scholarship display
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

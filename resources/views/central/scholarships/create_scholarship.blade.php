@@ -43,7 +43,7 @@
         {{ isset($scholarship) ? 'Edit Scholarship' : 'Add New Scholarship' }}
     </h2>
 
-    <form method="POST"
+    <form method="POST" enctype="multipart/form-data"
           action="{{ isset($scholarship) 
                     ? route('central.scholarships.update', $scholarship->id) 
                     : route('central.scholarships.store') }}">
@@ -354,6 +354,19 @@
         <textarea id="eligibility_notes" name="eligibility_notes" rows="3"
                   class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">{{ old('eligibility_notes', $scholarship->eligibility_notes ?? '') }}</textarea>
         <p class="text-xs text-gray-500 mt-1">Additional information about eligibility requirements</p>
+
+        <!-- Background Image Upload -->
+        <label for="background_image" class="block text-sm font-medium text-gray-700 mt-2">Background Image (Optional)</label>
+        <input type="file" id="background_image" name="background_image" accept="image/*"
+               class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
+        <p class="text-xs text-gray-500 mt-1">Upload a background image for this scholarship (JPEG, PNG, JPG, GIF - Max 2MB)</p>
+        
+        @if(isset($scholarship) && $scholarship->background_image)
+            <div class="mt-2">
+                <p class="text-sm text-gray-600">Current image:</p>
+                <img src="{{ $scholarship->getBackgroundImageUrl() }}" alt="Current background" class="w-32 h-20 object-cover rounded border">
+            </div>
+        @endif
 
         <!-- Renewal Allowed -->
         <div class="flex items-center mt-2">

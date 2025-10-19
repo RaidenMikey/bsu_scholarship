@@ -22,6 +22,7 @@ class Scholarship extends Model
         'is_active',
         'priority_level',
         'eligibility_notes',
+        'background_image',
         'created_by',
     ];
 
@@ -511,6 +512,35 @@ class Scholarship extends Model
             'recurring' => 'Multiple grants allowed. Semester-based or as announced.',
             'discontinued' => 'Scholarship has been cancelled or discontinued.',
             default => 'Unknown grant type.'
+        };
+    }
+
+    /**
+     * Get the background image URL
+     */
+    public function getBackgroundImageUrl()
+    {
+        if ($this->background_image) {
+            return asset('storage/scholarship_images/' . $this->background_image);
+        }
+        return null;
+    }
+
+    /**
+     * Get the background image URL with fallback
+     */
+    public function getBackgroundImageUrlWithFallback()
+    {
+        if ($this->background_image) {
+            return asset('storage/scholarship_images/' . $this->background_image);
+        }
+        // Return a default background based on scholarship type
+        return match($this->scholarship_type) {
+            'internal' => asset('images/scholarship-bg-internal.jpg'),
+            'external' => asset('images/scholarship-bg-external.jpg'),
+            'public' => asset('images/scholarship-bg-public.jpg'),
+            'government' => asset('images/scholarship-bg-government.jpg'),
+            default => asset('images/scholarship-bg-default.jpg')
         };
     }
 }

@@ -48,137 +48,145 @@
 
         <!-- Scholarships List -->
         @forelse($scholarships as $scholarship)
-            <div x-show="tab === 'scholarships' || 
-                         (tab === 'scholarships-internal' && '{{ $scholarship->scholarship_type }}' === 'internal') ||
-                         (tab === 'scholarships-external' && '{{ $scholarship->scholarship_type }}' === 'external') ||
-                         (tab === 'scholarships-public' && '{{ $scholarship->scholarship_type }}' === 'public') ||
-                         (tab === 'scholarships-government' && '{{ $scholarship->scholarship_type }}' === 'government')"
-                 class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 flex flex-col justify-between h-full min-h-[320px] hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 transform hover:-translate-y-1 group">
+        <div x-data="{ open: false }" 
+             x-show="tab === 'scholarships' || 
+                     (tab === 'scholarships-internal' && '{{ $scholarship->scholarship_type }}' === 'internal') ||
+                     (tab === 'scholarships-external' && '{{ $scholarship->scholarship_type }}' === 'external') ||
+                     (tab === 'scholarships-public' && '{{ $scholarship->scholarship_type }}' === 'public') ||
+                     (tab === 'scholarships-government' && '{{ $scholarship->scholarship_type }}' === 'government')"
+             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden"
+             @if($scholarship->background_image)
+             style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
+             @endif>
 
-                <div>
-                    <!-- Header Section -->
-                    <div class="mb-4">
-                        <div class="flex justify-between items-start mb-3">
+                <!-- Scholarship Content -->
+                <div class="flex flex-col h-full">
+                    <!-- Header -->
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
                             <h3 class="text-xl font-bold text-bsu-red dark:text-white group-hover:text-bsu-redDark dark:group-hover:text-bsu-red transition-colors duration-200">
                                 {{ $scholarship->scholarship_name }}
                             </h3>
-                            @php
-                              $statusBadge = $scholarship->getStatusBadge();
-                            @endphp
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $statusBadge['color'] }} shadow-sm">
-                              {{ $statusBadge['text'] }}
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getScholarshipTypeBadgeColor() }} shadow-sm">
+                                  {{ ucfirst($scholarship->scholarship_type) }}
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getPriorityBadgeColor() }} shadow-sm">
+                                  {{ ucfirst($scholarship->priority_level) }} Priority
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Dropdown Toggle Button -->
+                        <button @click="open = !open" 
+                                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <svg class="w-5 h-5 text-gray-400 transition-transform" 
+                                 :class="{ 'rotate-180': open }" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="flex-1 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Deadline:</span>
+                            <span class="text-sm font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
+                                {{ $scholarship->submission_deadline?->format('M d, Y') }}
                             </span>
                         </div>
-
-                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
-                            {{ \Illuminate\Support\Str::limit($scholarship->description, 120) }}
-                        </p>
-                    </div>
-
-                    <!-- Badges Section -->
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getScholarshipTypeBadgeColor() }} shadow-sm">
-                          {{ ucfirst($scholarship->scholarship_type) }}
-                        </span>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getPriorityBadgeColor() }} shadow-sm">
-                          {{ ucfirst($scholarship->priority_level) }} Priority
-                        </span>
-                        @if($scholarship->renewal_allowed)
-                          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-bsu-red/10 text-bsu-red border border-bsu-red/20 shadow-sm">
-                            🔄 Renewable
-                          </span>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Details Section -->
-                <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 space-y-3 border border-red-100 dark:border-red-800">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Submission Deadline</span>
-                        <span class="text-sm font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
-                          {{ $scholarship->submission_deadline?->format('M d, Y') }}
-                          @if($scholarship->getDaysUntilDeadline() > 0)
-                            <span class="text-xs ml-1 {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-500' : 'text-gray-500' }}">({{ $scholarship->getDaysUntilDeadline() }}d left)</span>
-                          @elseif($scholarship->getDaysUntilDeadline() == 0)
-                            <span class="text-xs ml-1 text-red-600 font-bold">(Today!)</span>
-                          @else
-                            <span class="text-xs ml-1 text-red-600">(Expired)</span>
-                          @endif
-                        </span>
-                    </div>
-
-                    @if($scholarship->application_start_date)
-                      <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Application Opens</span>
-                        <span class="text-sm font-semibold {{ now()->gte($scholarship->application_start_date) ? 'text-green-600' : 'text-gray-900 dark:text-white' }}">
-                          {{ $scholarship->application_start_date?->format('M d, Y') }}
-                          @if(now()->lt($scholarship->application_start_date))
-                            <span class="text-xs ml-1 text-gray-500">({{ now()->diffInDays($scholarship->application_start_date) }}d to go)</span>
-                          @else
-                            <span class="text-xs ml-1 text-green-600">(Open)</span>
-                          @endif
-                        </span>
-                      </div>
-                    @endif
-
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Applications</span>
-                        <span class="text-sm font-semibold {{ $scholarship->isFull() ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
-                          {{ $scholarship->getApplicationCount() }} / {{ $scholarship->slots_available ?? '∞' }}
-                          @if($scholarship->isFull() && $scholarship->slots_available)
-                            <span class="text-xs ml-1 text-red-600 font-bold">(Full)</span>
-                          @endif
-                        </span>
-                    </div>
-
-                    @if ($scholarship->grant_amount)
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Grant Amount</span>
-                            <span class="text-sm font-bold text-green-600">₱{{ number_format((float) $scholarship->grant_amount, 0) }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Amount:</span>
+                            <span class="text-sm font-semibold text-green-600">
+                                @if($scholarship->grant_amount)
+                                    ₱{{ number_format((float) $scholarship->grant_amount, 0) }}
+                                @else
+                                    TBD
+                                @endif
+                            </span>
                         </div>
-                    @endif
-
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Status</span>
-                        <span class="text-sm font-semibold {{ $scholarship->isAcceptingApplications() ? 'text-green-600' : 'text-red-600' }}">
-                          {{ $scholarship->isAcceptingApplications() ? 'Accepting Applications' : 'Closed' }}
-                        </span>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Status:</span>
+                            <span class="text-sm font-semibold {{ $scholarship->is_active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                {{ $scholarship->is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
                     </div>
 
-                    @if($scholarship->eligibility_notes)
-                      <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p class="text-xs text-blue-800 dark:text-blue-200 font-medium">
-                          <span class="font-semibold">Notes:</span> {{ \Illuminate\Support\Str::limit($scholarship->eligibility_notes, 80) }}
-                        </p>
-                      </div>
-                    @endif
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="mt-6 pt-4 border-t border-bsu-red/30 dark:border-bsu-red/50">
-                    <div class="flex gap-3 scholarship-action-buttons">
-                        <!-- Edit Button -->
-                        <a href="{{ route('central.scholarships.edit', $scholarship->id) }}"
-                           class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-bsu-red hover:bg-bsu-redDark text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                            Edit
-                        </a>
+                    <!-- Dropdown Content -->
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 transform -translate-y-2"
+                         x-transition:enter-end="opacity-100 transform translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 transform translate-y-0"
+                         x-transition:leave-end="opacity-0 transform -translate-y-2"
+                         class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
                         
-                        <!-- Remove Button -->
-                        <form action="{{ route('central.scholarships.destroy', $scholarship->id) }}" method="POST" class="flex-1 m-0 p-0"
-                              onsubmit="return confirmDelete('{{ $scholarship->scholarship_name }}')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-bsu-redDark hover:bg-red-800 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-bsu-redDark focus:ring-offset-2 border-0">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                Remove
-                            </button>
-                        </form>
+                        <!-- Description -->
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Description</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $scholarship->description }}</p>
+                        </div>
+
+                        <!-- Detailed Information -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Key Information</h4>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Type:</span>
+                                        <span class="font-medium">{{ ucfirst($scholarship->scholarship_type) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Priority:</span>
+                                        <span class="font-medium">{{ ucfirst($scholarship->priority_level) }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Renewable:</span>
+                                        <span class="font-medium">{{ $scholarship->renewal_allowed ? 'Yes' : 'No' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Timeline & Amount</h4>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Deadline:</span>
+                                        <span class="font-medium">{{ $scholarship->submission_deadline?->format('M d, Y') }}</span>
+                                    </div>
+                                    @if($scholarship->application_start_date)
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Application Opens:</span>
+                                        <span class="font-medium">{{ $scholarship->application_start_date?->format('M d, Y') }}</span>
+                                    </div>
+                                    @endif
+                                    @if($scholarship->grant_amount)
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">Grant Amount:</span>
+                                        <span class="font-medium text-green-600 dark:text-green-400">₱{{ number_format((float) $scholarship->grant_amount, 2) }}</span>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Eligibility Notes -->
+                        @if($scholarship->eligibility_notes)
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Eligibility Notes</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $scholarship->eligibility_notes }}</p>
+                        </div>
+                        @endif
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end gap-2 pt-2">
+                            <a href="{{ route('central.scholarships.edit', $scholarship->id) }}" 
+                               class="px-3 py-1 text-xs bg-bsu-red hover:bg-bsu-redDark text-white rounded transition-colors">
+                                Edit
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -218,6 +226,7 @@
         <p class="text-gray-500 dark:text-gray-500">There are currently no government scholarship programs available.</p>
     </div>
 
+
     <!-- JavaScript for form handling -->
     <script>
         function confirmDelete(scholarshipName) {
@@ -230,19 +239,5 @@
             return scholarships.length > 0;
         }
 
-        // Handle form submission with loading state
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteForms = document.querySelectorAll('form[action*="destroy"]');
-            
-            deleteForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const button = this.querySelector('button[type="submit"]');
-                    if (button) {
-                        button.disabled = true;
-                        button.innerHTML = '<svg class="w-4 h-4 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Deleting...';
-                    }
-                });
-            });
-        });
     </script>
 </div>
