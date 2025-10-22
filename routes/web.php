@@ -158,6 +158,19 @@ Route::middleware(['web', 'checkUserExists:central'])
         // Reports Management
         Route::get('/reports/{id}', [ReportController::class, 'centralShowReport'])->name('reports.show');
         Route::post('/reports/{id}/review', [ReportController::class, 'reviewReport'])->name('reports.review');
+        
+        // Scholars Management
+        Route::prefix('scholars')->name('scholars.')->group(function () {
+            Route::get('/', [App\Http\Controllers\ScholarController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\ScholarController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\ScholarController::class, 'store'])->name('store');
+            Route::get('/{scholar}', [App\Http\Controllers\ScholarController::class, 'show'])->name('show');
+            Route::get('/{scholar}/edit', [App\Http\Controllers\ScholarController::class, 'edit'])->name('edit');
+            Route::put('/{scholar}', [App\Http\Controllers\ScholarController::class, 'update'])->name('update');
+            Route::delete('/{scholar}', [App\Http\Controllers\ScholarController::class, 'destroy'])->name('destroy');
+            Route::get('/statistics', [App\Http\Controllers\ScholarController::class, 'statistics'])->name('statistics');
+            Route::post('/{scholar}/add-grant', [App\Http\Controllers\ScholarController::class, 'addGrant'])->name('add-grant');
+        });
     });
 
 

@@ -83,6 +83,14 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
     }
 
     /**
+     * User has many scholar records (for students who have been accepted for scholarships)
+     */
+    public function scholars()
+    {
+        return $this->hasMany(Scholar::class);
+    }
+
+    /**
      * Note: isSfaoActive() method removed since deactivated SFAO staff are now completely deleted from the users table.
      * Only active SFAO staff will exist in the users table.
      */

@@ -50,6 +50,12 @@ class Application extends Model
         return $this->belongsTo(Scholarship::class);
     }
 
+    // Application can have one scholar record (when approved)
+    public function scholar()
+    {
+        return $this->hasOne(Scholar::class);
+    }
+
     /**
      * Check if this application is from a new applicant
      */

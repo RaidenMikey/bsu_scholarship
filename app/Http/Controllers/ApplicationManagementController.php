@@ -735,7 +735,58 @@ class ApplicationManagementController extends Controller
         
         $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
-        return view('central.dashboard', compact('applications', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'applicantTypeOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'applicantTypeFilter'));
+        // Get scholars data for the scholars tab
+        $scholarsQuery = \App\Models\Scholar::with(['user', 'scholarship', 'user.campus']);
+
+        // Apply scholars filtering
+        if ($statusFilter !== 'all') {
+            $scholarsQuery->where('status', $statusFilter);
+        }
+
+        // Apply campus filter for scholars
+        if ($campusFilter !== 'all') {
+            $scholarsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply scholarship filter for scholars
+        if ($scholarshipFilter !== 'all') {
+            $scholarsQuery->where('scholarship_id', $scholarshipFilter);
+        }
+
+        // Apply applicant type filter for scholars (new/old)
+        if ($applicantTypeFilter !== 'all') {
+            $scholarsQuery->where('type', $applicantTypeFilter);
+        }
+
+        // Apply scholars sorting
+        switch ($sortBy) {
+            case 'name':
+                $scholarsQuery->join('users', 'scholars.user_id', '=', 'users.id')
+                    ->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $scholarsQuery->join('users', 'scholars.user_id', '=', 'users.id')
+                    ->orderBy('users.email', $sortOrder);
+                break;
+            case 'scholarship':
+                $scholarsQuery->join('scholarships', 'scholars.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'status':
+                $scholarsQuery->orderBy('scholars.status', $sortOrder);
+                break;
+            case 'type':
+                $scholarsQuery->orderBy('scholars.type', $sortOrder);
+                break;
+            default:
+                $scholarsQuery->orderBy('scholars.created_at', $sortOrder);
+        }
+
+        $scholars = $scholarsQuery->get();
+
+        return view('central.dashboard', compact('applications', 'scholars', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'applicantTypeOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'applicantTypeFilter'));
     }
 
     /**

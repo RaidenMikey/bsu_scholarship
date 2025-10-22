@@ -18,15 +18,15 @@ class UsersTableSeeder extends Seeder
         // Get all constituent campuses and their extensions
         $constituentCampuses = \App\Models\Campus::constituent()->with(['extensionCampuses'])->get();
         
-        // Create 10 student users for each constituent campus and its extensions
+        // Create 20 student users for each constituent campus and its extensions
         foreach ($constituentCampuses as $constituent) {
             // Get all campuses under this constituent (constituent + extensions)
             $allCampuses = $constituent->getAllCampusesUnder();
             
-            // Calculate how many students per campus to get 10 total
+            // Calculate how many students per campus to get 20 total
             $totalCampuses = $allCampuses->count();
-            $studentsPerCampus = $totalCampuses > 0 ? intval(10 / $totalCampuses) : 0;
-            $remainingStudents = 10 % $totalCampuses;
+            $studentsPerCampus = $totalCampuses > 0 ? intval(20 / $totalCampuses) : 0;
+            $remainingStudents = 20 % $totalCampuses;
             
             $studentCount = 0;
             foreach ($allCampuses as $index => $campus) {

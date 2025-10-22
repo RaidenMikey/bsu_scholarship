@@ -64,6 +64,12 @@ class Scholarship extends Model
         return $this->hasMany(ScholarshipRequiredDocument::class);
     }
 
+    // Scholars who have been accepted for this scholarship
+    public function scholars()
+    {
+        return $this->hasMany(Scholar::class);
+    }
+
 
     // Get GWA requirement from conditions
     public function getGwaRequirement()

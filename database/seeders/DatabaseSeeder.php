@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             FormsTableSeeder::class,
             ScholarshipsTableSeeder::class,
             NotificationSeeder::class,
-            RealisticSystemSeeder::class,
+            ApplicationsAndScholarsSeeder::class,
         ]);
         
         // Re-enable foreign key checks

@@ -145,10 +145,10 @@
         </div>
       </div>
 
-      <button @click="tab = 'applicants'; sidebarOpen = false"
+      <button @click="tab = 'scholars'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        👥 Applicants
+              :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        🎓 Scholars
       </button>
 
       <!-- Reports Dropdown -->
@@ -237,7 +237,7 @@
 
     <!-- Tabs -->
     @include('central.partials.tabs.scholarships')
-    @include('central.partials.tabs.applicants', ['applications' => $applications])
+    @include('central.partials.tabs.scholars', ['scholars' => $scholars])
     @include('central.partials.tabs.reports')
     @include('central.partials.tabs.statistics')
     @include('central.partials.tabs.staff')
