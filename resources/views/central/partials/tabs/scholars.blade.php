@@ -1,7 +1,7 @@
-<div x-show="tab === 'scholars'" x-cloak x-data="{ showModal: false, showFormModal: false, selectedScholar: null }">
+<div x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" x-cloak x-data="{ showModal: false, showFormModal: false, selectedScholar: null }">
     <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold text-bsu-red dark:text-red-400 mb-6">Scholars</h1>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">Students who have been accepted for scholarships and their grant information.</p>
+        <h1 class="text-3xl font-bold text-bsu-red dark:text-red-400 mb-6" x-text="tab === 'scholars-new' ? 'New Scholars' : tab === 'scholars-old' ? 'Old Scholars' : 'Scholars'"></h1>
+        <p class="text-gray-600 dark:text-gray-300 mb-6" x-text="tab === 'scholars-new' ? 'Students who have been accepted for scholarships but haven\'t received any grants yet.' : tab === 'scholars-old' ? 'Students who have been accepted for scholarships and have already received grants.' : 'Students who have been accepted for scholarships and their grant information.'"></p>
 
         <!-- Filtering and Sorting Controls -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
@@ -97,8 +97,8 @@
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Scholars</p>
-                        <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $scholars->count() }}</p>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400" x-text="tab === 'scholars-new' ? 'New Scholars' : tab === 'scholars-old' ? 'Old Scholars' : 'Total Scholars'"></p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="tab === 'scholars-new' ? '{{ $scholars->where('type', 'new')->count() }}' : tab === 'scholars-old' ? '{{ $scholars->where('type', 'old')->count() }}' : '{{ $scholars->count() }}'"></p>
                     </div>
                 </div>
             </div>
@@ -112,12 +112,12 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Scholars</p>
-                        <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $scholars->where('status', 'active')->count() }}</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="tab === 'scholars-new' ? '{{ $scholars->where('type', 'new')->where('status', 'active')->count() }}' : tab === 'scholars-old' ? '{{ $scholars->where('type', 'old')->where('status', 'active')->count() }}' : '{{ $scholars->where('status', 'active')->count() }}'"></p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4" x-show="tab === 'scholars' || tab === 'scholars-new'">
                 <div class="flex items-center">
                     <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                         <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4" x-show="tab === 'scholars' || tab === 'scholars-old'">
                 <div class="flex items-center">
                     <div class="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
                         <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,14 +146,25 @@
             </div>
         </div>
 
-        @if ($scholars->isEmpty())
-            <div class="text-center py-12">
-                <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🎓</div>
-                <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">No Scholars Found</h3>
-                <p class="text-gray-600 dark:text-gray-400">There are currently no scholars in the system.</p>
-            </div>
-        @else
-            <div class="overflow-x-auto">
+        <div x-show="tab === 'scholars' && {{ $scholars->isEmpty() ? 'true' : 'false' }}" class="text-center py-12">
+            <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🎓</div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">No Scholars Found</h3>
+            <p class="text-gray-600 dark:text-gray-400">There are currently no scholars in the system.</p>
+        </div>
+        
+        <div x-show="tab === 'scholars-new' && {{ $scholars->where('type', 'new')->isEmpty() ? 'true' : 'false' }}" class="text-center py-12">
+            <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🆕</div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">No New Scholars Found</h3>
+            <p class="text-gray-600 dark:text-gray-400">There are currently no new scholars in the system.</p>
+        </div>
+        
+        <div x-show="tab === 'scholars-old' && {{ $scholars->where('type', 'old')->isEmpty() ? 'true' : 'false' }}" class="text-center py-12">
+            <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">👴</div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">No Old Scholars Found</h3>
+            <p class="text-gray-600 dark:text-gray-400">There are currently no old scholars in the system.</p>
+        </div>
+        
+        <div x-show="(tab === 'scholars' && !{{ $scholars->isEmpty() ? 'true' : 'false' }}) || (tab === 'scholars-new' && !{{ $scholars->where('type', 'new')->isEmpty() ? 'true' : 'false' }}) || (tab === 'scholars-old' && !{{ $scholars->where('type', 'old')->isEmpty() ? 'true' : 'false' }})" class="overflow-x-auto">
                 <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 shadow-lg rounded-lg">
                     <thead class="bg-bsu-red text-white">
                         <tr>
@@ -173,6 +184,9 @@
                         <tr 
                             class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
                             @click="selectedScholar = {{ $scholar->toJson() }}; showModal = true"
+                            x-show="tab === 'scholars' || 
+                                     (tab === 'scholars-new' && '{{ $scholar->type }}' === 'new') ||
+                                     (tab === 'scholars-old' && '{{ $scholar->type }}' === 'old')"
                         >
                             <td class="px-4 py-2 text-gray-900 dark:text-gray-100">{{ $index + 1 }}</td>
                             <td class="px-4 py-2 text-gray-900 dark:text-gray-100">{{ $scholar->user->name ?? '-' }}</td>
@@ -204,7 +218,6 @@
                     </tbody>
                 </table>
             </div>
-        @endif
     </div>
 
     <!-- Scholar Details Modal -->

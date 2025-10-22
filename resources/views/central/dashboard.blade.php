@@ -24,7 +24,8 @@
     tab: localStorage.getItem('activeTab') || 'scholarships',
     darkMode: localStorage.getItem('darkMode') === 'true',
     reportsDropdownOpen: false,
-    scholarshipsDropdownOpen: false
+    scholarshipsDropdownOpen: false,
+    scholarsDropdownOpen: false
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
@@ -145,11 +146,43 @@
         </div>
       </div>
 
-      <button @click="tab = 'scholars'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        🎓 Scholars
-      </button>
+      <!-- Scholars Dropdown -->
+      <div class="space-y-1">
+        <button @click="scholarsDropdownOpen = !scholarsDropdownOpen; tab = 'scholars'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
+                :class="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <span>🔵 Scholars</span>
+          <svg class="w-4 h-4 transition-transform" :class="scholarsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div x-show="scholarsDropdownOpen" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="ml-4 space-y-1">
+          <button @click="tab = 'scholars'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🔵 All Scholars
+          </button>
+          <button @click="tab = 'scholars-new'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholars-new' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🟢 New Scholars
+          </button>
+          <button @click="tab = 'scholars-old'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🟡 Old Scholars
+          </button>
+        </div>
+      </div>
 
       <!-- Reports Dropdown -->
       <div class="space-y-1">

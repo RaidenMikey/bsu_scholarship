@@ -755,8 +755,14 @@ class ApplicationManagementController extends Controller
             $scholarsQuery->where('scholarship_id', $scholarshipFilter);
         }
 
-        // Apply applicant type filter for scholars (new/old)
-        if ($applicantTypeFilter !== 'all') {
+        // Apply tab-based filtering for scholars (this takes precedence over applicant type filter)
+        $tab = $request->get('tab', 'scholarships');
+        if ($tab === 'scholars-new') {
+            $scholarsQuery->where('type', 'new');
+        } elseif ($tab === 'scholars-old') {
+            $scholarsQuery->where('type', 'old');
+        } elseif ($applicantTypeFilter !== 'all') {
+            // Only apply applicant type filter if not on specific scholar tabs
             $scholarsQuery->where('type', $applicantTypeFilter);
         }
 
