@@ -24,9 +24,6 @@
         <td class="p-3">{{ $application->user->name }}</td>
         <td class="p-3">{{ $application->user->email }}</td>
         <td class="p-3">
-          <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $application->getApplicantTypeBadgeColor() }}">
-            {{ $application->getApplicantTypeDisplayName() }}
-          </span>
         </td>
         <td class="p-3">
           <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $application->getGrantCountBadgeColor() }}">

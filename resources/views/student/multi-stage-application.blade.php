@@ -213,7 +213,14 @@
                             @endforeach
                         </div>
 
-                        <div class="mt-6 flex justify-end">
+                        <div class="mt-6 flex justify-between">
+                            <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 1]) }}" 
+                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                                </svg>
+                                Back to Previous
+                            </a>
                             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                                 Upload Scholarship Documents
                             </button>
@@ -223,7 +230,14 @@
                     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                         <p class="text-yellow-800">No additional documents required for this scholarship.</p>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="flex justify-between">
+                        <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 1]) }}" 
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Back to Previous
+                        </a>
                         <a href="{{ route('student.apply', $scholarship->id) }}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                             Continue to Confirmation
                         </a>
@@ -243,14 +257,24 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach($submittedDocuments as $doc)
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <div class="flex items-center">
-                                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="text-sm font-medium text-green-800">{{ strip_tags($doc->document_name) }}</p>
-                                        <p class="text-xs text-green-600">{{ ucfirst($doc->document_category) }} Document</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <div>
+                                            <p class="text-sm font-medium text-green-800">{{ strip_tags($doc->document_name) }}</p>
+                                            <p class="text-xs text-green-600">{{ ucfirst($doc->document_category) }} Document</p>
+                                        </div>
                                     </div>
+                                    <a href="{{ Storage::url($doc->file_path) }}" target="_blank" 
+                                       class="inline-flex items-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition-colors"
+                                       title="View document">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
                                 </div>
                             </div>
                         @endforeach
@@ -291,8 +315,15 @@
                         </div>
                     </div>
                 @else
-                    <div class="flex justify-end">
-                        <form method="POST" action="{{ route('student.apply.final-submission', $scholarship->id) }}">
+                    <div class="flex justify-between">
+                        <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 2]) }}" 
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Back to Previous
+                        </a>
+                        <form method="POST" action="{{ route('student.apply.final-submission', $scholarship->id) }}" class="inline">
                             @csrf
                             <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
                                 Submit Application

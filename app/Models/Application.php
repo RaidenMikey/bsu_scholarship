@@ -12,7 +12,6 @@ class Application extends Model
     protected $fillable = [
         'user_id',
         'scholarship_id',
-        'type',
         'grant_count',
         'status',
     ];
@@ -21,7 +20,6 @@ class Application extends Model
      * Set default attribute values.
      */
     protected $attributes = [
-        'type' => 'new', // default if not provided
         'grant_count' => 0, // default if not provided
         'status' => 'pending', // default if not provided
     ];
@@ -56,21 +54,6 @@ class Application extends Model
         return $this->hasOne(Scholar::class);
     }
 
-    /**
-     * Check if this application is from a new applicant
-     */
-    public function isNewApplicant()
-    {
-        return $this->type === 'new';
-    }
-
-    /**
-     * Check if this application is from a continuing applicant
-     */
-    public function isContinuingApplicant()
-    {
-        return $this->type === 'continuing';
-    }
 
     /**
      * Check if the student has previously claimed a grant for this scholarship
@@ -83,39 +66,6 @@ class Application extends Model
                    ->exists();
     }
 
-    /**
-     * Get the applicant type display name
-     */
-    public function getApplicantTypeDisplayName()
-    {
-        return $this->type === 'new' ? 'New Applicant' : 'Continuing Applicant';
-    }
-
-    /**
-     * Get the applicant type badge color
-     */
-    public function getApplicantTypeBadgeColor()
-    {
-        return $this->type === 'new' 
-            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    }
-
-    /**
-     * Scope for new applicants
-     */
-    public function scopeNewApplicants($query)
-    {
-        return $query->where('type', 'new');
-    }
-
-    /**
-     * Scope for continuing applicants
-     */
-    public function scopeContinuingApplicants($query)
-    {
-        return $query->where('type', 'continuing');
-    }
 
     /**
      * Get the total grant count for a student in a specific scholarship

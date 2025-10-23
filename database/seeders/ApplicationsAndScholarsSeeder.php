@@ -17,7 +17,7 @@ class ApplicationsAndScholarsSeeder extends Seeder
      */
     public function run()
     {
-        // Get all students
+        // Get all students and scholarships
         $students = User::where('role', 'student')->get();
         $scholarships = Scholarship::all();
         
@@ -26,17 +26,60 @@ class ApplicationsAndScholarsSeeder extends Seeder
             return;
         }
         
-        // Split students: 50 scholars, 50 applicants
-        $scholarStudents = $students->take(50);
-        $applicantStudents = $students->skip(50);
+        // Get constituent campuses and their extensions
+        $constituentCampuses = Campus::where('type', 'constituent')->get();
         
-        $this->command->info('🎓 Creating 50 scholars...');
-        $this->createScholars($scholarStudents, $scholarships);
-        
-        $this->command->info('📝 Creating 50 applicants...');
-        $this->createApplicants($applicantStudents, $scholarships);
+        foreach ($constituentCampuses as $constituent) {
+            $this->command->info("🏛️ Processing {$constituent->name} and its extensions...");
+            
+            // Get all campuses under this constituent (constituent + extensions)
+            $allCampuses = $constituent->getAllCampusesUnder();
+            $campusIds = $allCampuses->pluck('id');
+            
+            // Get students from this constituent and its extensions
+            $campusStudents = $students->whereIn('campus_id', $campusIds);
+            
+            if ($campusStudents->count() === 0) {
+                $this->command->warn("⚠️ No students found for {$constituent->name}");
+                continue;
+            }
+            
+            $this->command->info("📊 Found {$campusStudents->count()} students for {$constituent->name} group");
+            
+            // Balance the statuses for this campus group
+            $this->balanceCampusGroup($campusStudents, $scholarships, $constituent->name);
+        }
         
         $this->command->info('✅ Applications and scholars created successfully!');
+    }
+    
+    private function balanceCampusGroup($students, $scholarships, $campusName)
+    {
+        $totalStudents = $students->count();
+        $this->command->info("🎯 Balancing {$totalStudents} students for {$campusName}...");
+        
+        // Calculate distribution:
+        // 25% scholars (approved applications)
+        // 50% applicants (mixed statuses: in_progress, pending, rejected)
+        // 25% not_applied (no applications yet)
+        $scholarCount = intval($totalStudents * 0.25);
+        $applicantCount = intval($totalStudents * 0.5);
+        $notAppliedCount = $totalStudents - $scholarCount - $applicantCount;
+        
+        // Split students
+        $scholarStudents = $students->take($scholarCount);
+        $applicantStudents = $students->skip($scholarCount)->take($applicantCount);
+        $notAppliedStudents = $students->skip($scholarCount + $applicantCount);
+        
+        $this->command->info("🎓 Creating {$scholarCount} scholars (approved applications)...");
+        $this->createScholars($scholarStudents, $scholarships);
+        
+        $this->command->info("📝 Creating {$applicantCount} applicants (mixed statuses)...");
+        $this->createApplicants($applicantStudents, $scholarships);
+        
+        $this->command->info("🚫 {$notAppliedCount} students will remain not_applied (no applications)");
+        
+        $this->command->info("✅ {$campusName} group balanced successfully!");
     }
     
     private function createScholars($students, $scholarships)
@@ -48,7 +91,6 @@ class ApplicationsAndScholarsSeeder extends Seeder
             $application = Application::create([
                 'user_id' => $student->id,
                 'scholarship_id' => $scholarship->id,
-                'type' => rand(0, 1) ? 'new' : 'continuing',
                 'status' => 'approved',
                 'grant_count' => $grantCount,
                 'created_at' => now()->subDays(rand(30, 180)),
@@ -80,8 +122,9 @@ class ApplicationsAndScholarsSeeder extends Seeder
     
     private function createApplicants($students, $scholarships)
     {
-        $applicationStatuses = ['pending', 'in_progress', 'rejected'];
-        $statusWeights = [0.6, 0.3, 0.1]; // 60% pending, 30% in_progress, 10% rejected
+        // Balanced status distribution for applicants (no approved here, they go to scholars)
+        $applicationStatuses = ['in_progress', 'pending', 'rejected'];
+        $statusWeights = [0.4, 0.4, 0.2]; // 40% in_progress, 40% pending, 20% rejected
         
         foreach ($students as $student) {
             $scholarship = $scholarships->random();
@@ -90,7 +133,6 @@ class ApplicationsAndScholarsSeeder extends Seeder
             Application::create([
                 'user_id' => $student->id,
                 'scholarship_id' => $scholarship->id,
-                'type' => rand(0, 1) ? 'new' : 'continuing',
                 'status' => $status,
                 'grant_count' => 0,
                 'created_at' => now()->subDays(rand(1, 60)),

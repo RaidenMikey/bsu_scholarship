@@ -123,31 +123,31 @@
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
              class="ml-4 space-y-1">
-          <button @click="tab = 'scholarships'; subTab = 'all'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships') }}'"
+          <button @click="tab = 'scholarships'; subTab = 'all'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="(tab === 'scholarships' && subTab === 'all') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             🎓 All Scholarships
           </button>
           
-          <button @click="tab = 'scholarships'; subTab = 'internal'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'internal']) }}'"
+          <button @click="tab = 'scholarships'; subTab = 'internal'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="(tab === 'scholarships' && subTab === 'internal') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             🏫 Internal
           </button>
           
-          <button @click="tab = 'scholarships'; subTab = 'external'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'external']) }}'"
+          <button @click="tab = 'scholarships'; subTab = 'external'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="(tab === 'scholarships' && subTab === 'external') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             🌐 External
           </button>
           
-          <button @click="tab = 'scholarships'; subTab = 'public'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'public']) }}'"
+          <button @click="tab = 'scholarships'; subTab = 'public'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="(tab === 'scholarships' && subTab === 'public') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             🏛️ Public
           </button>
           
-          <button @click="tab = 'scholarships'; subTab = 'government'; sidebarOpen = false; window.location.href = '{{ route('student.scholarships', ['type' => 'government']) }}'"
+          <button @click="tab = 'scholarships'; subTab = 'government'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="(tab === 'scholarships' && subTab === 'government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             🏛️ Government

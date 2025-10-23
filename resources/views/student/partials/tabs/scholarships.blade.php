@@ -3,7 +3,8 @@
        appliedScholarship: @js($scholarships->firstWhere('applied', true)),
        selected: null,
        open(scholarship) {
-         if (this.appliedScholarship && !scholarship.applied) {
+         // Only show warning if student has an ACTIVE application (not approved/rejected)
+         if (this.appliedScholarship && !scholarship.applied && this.appliedScholarship.status !== 'approved' && this.appliedScholarship.status !== 'rejected') {
            this.selected = scholarship;
            this.openWarning = true;
            return;
@@ -12,27 +13,23 @@
      }">
 
   @if ($hasApplication)
-    @php
-      $currentType = $scholarshipType ?? 'all';
-      $typeLabels = [
-        'all' => ['title' => '🎓 All Scholarships', 'description' => 'All available scholarship programs'],
-        'internal' => ['title' => '🏫 Internal Scholarships', 'description' => 'Internal university scholarship programs'],
-        'external' => ['title' => '🌐 External Scholarships', 'description' => 'External partner scholarship programs'],
-        'public' => ['title' => '🏛️ Public Scholarships', 'description' => 'Public scholarship programs'],
-        'government' => ['title' => '🏛️ Government Scholarships', 'description' => 'Government scholarship programs']
-      ];
-      $currentLabel = $typeLabels[$currentType] ?? $typeLabels['all'];
-    @endphp
-    
     <!-- Header with Type Filter -->
     <div class="mb-6">
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {{ $currentLabel['title'] }}
+                    <span x-show="subTab === 'all'">🎓 All Scholarships</span>
+                    <span x-show="subTab === 'internal'">🏫 Internal Scholarships</span>
+                    <span x-show="subTab === 'external'">🌐 External Scholarships</span>
+                    <span x-show="subTab === 'public'">🏛️ Public Scholarships</span>
+                    <span x-show="subTab === 'government'">🏛️ Government Scholarships</span>
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
-                    {{ $currentLabel['description'] }}
+                    <span x-show="subTab === 'all'">All available scholarship programs</span>
+                    <span x-show="subTab === 'internal'">Internal university scholarship programs</span>
+                    <span x-show="subTab === 'external'">External partner scholarship programs</span>
+                    <span x-show="subTab === 'public'">Public scholarship programs</span>
+                    <span x-show="subTab === 'government'">Government scholarship programs</span>
                 </p>
             </div>
         </div>
@@ -55,6 +52,11 @@
 
           @foreach ($scholarships as $scholarship)
           <div x-data="{ open: false }" 
+               x-show="subTab === 'all' || 
+                       (subTab === 'internal' && '{{ $scholarship->scholarship_type }}' === 'internal') ||
+                       (subTab === 'external' && '{{ $scholarship->scholarship_type }}' === 'external') ||
+                       (subTab === 'public' && '{{ $scholarship->scholarship_type }}' === 'public') ||
+                       (subTab === 'government' && '{{ $scholarship->scholarship_type }}' === 'government')"
                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 hover:shadow-xl transition scholarship-card relative overflow-hidden
                       {{ $scholarship->applied ? 'opacity-75' : '' }}"
                @if($scholarship->background_image)

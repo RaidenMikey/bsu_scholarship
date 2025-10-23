@@ -104,26 +104,26 @@
                         <div class="mb-6">
                             <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Application Progress</h4>
                             
-                            <!-- Progress Steps -->
-                            <div class="relative">
-                                <!-- Step 1: Application Submitted -->
-                                <div class="flex items-center mb-4">
-                                    <div class="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">Application Submitted</h5>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Your application has been submitted successfully</p>
-                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ $application->created_at?->format('M d, Y h:i A') }}</p>
-                                    </div>
+                        <!-- Enhanced Progress Steps -->
+                        <div class="relative">
+                            <!-- Step 1: Application Submitted -->
+                            <div class="flex items-center mb-4">
+                                <div class="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
                                 </div>
+                                <div class="ml-4">
+                                    <h5 class="text-sm font-medium text-gray-900 dark:text-white">Application Submitted</h5>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Your application has been submitted successfully</p>
+                                    <p class="text-xs text-gray-400 dark:text-gray-500">{{ $application->created_at?->format('M d, Y h:i A') }}</p>
+                                </div>
+                            </div>
 
                                 <!-- Connecting Line -->
                                 <div class="absolute left-4 top-8 w-0.5 h-8 bg-gray-300 dark:bg-gray-600"></div>
 
-                                <!-- Step 2: Documents Uploaded -->
+                                <!-- Step 2: Documents Uploaded & Evaluation Status -->
                                 <div class="flex items-center mb-4">
                                     <div class="flex-shrink-0 w-8 h-8 {{ $application->has_documents ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }} rounded-full flex items-center justify-center">
                                         @if($application->has_documents)
@@ -136,11 +136,39 @@
                                             </svg>
                                         @endif
                                     </div>
-                                    <div class="ml-4">
-                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">Documents Uploaded</h5>
+                                    <div class="ml-4 flex-1">
+                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">Documents Uploaded & Evaluated</h5>
                                         @if($application->has_documents)
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $application->documents_count }} documents uploaded</p>
-                                            <p class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->last_document_upload ? $application->last_document_upload?->format('M d, Y h:i A') : 'N/A' }}</p>
+                                            <div class="mt-2">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ $application->documents_count }} documents uploaded</span>
+                                                    <span class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->last_document_upload ? $application->last_document_upload?->format('M d, Y h:i A') : 'N/A' }}</span>
+                                                </div>
+                                                
+                                                <!-- Document Evaluation Status -->
+                                                <div class="grid grid-cols-3 gap-2 text-xs">
+                                                    <div class="flex items-center">
+                                                        <div class="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                                                        <span class="text-green-600 dark:text-green-400">{{ $application->approved_documents_count ?? 0 }} Approved</span>
+                                                    </div>
+                                                    <div class="flex items-center">
+                                                        <div class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
+                                                        <span class="text-yellow-600 dark:text-yellow-400">{{ $application->pending_documents_count ?? 0 }} Pending</span>
+                                                    </div>
+                                                    <div class="flex items-center">
+                                                        <div class="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
+                                                        <span class="text-red-600 dark:text-red-400">{{ $application->rejected_documents_count ?? 0 }} Rejected</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                @if(($application->rejected_documents_count ?? 0) > 0)
+                                                    <div class="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                                                        <p class="text-xs text-red-600 dark:text-red-400">
+                                                            <strong>Action Required:</strong> Some documents were rejected. Please review and resubmit.
+                                                        </p>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         @else
                                             <p class="text-sm text-red-500 dark:text-red-400">Documents not uploaded yet</p>
                                             <a href="{{ route('student.upload-documents', $application->scholarship_id) }}" 
@@ -154,7 +182,7 @@
                                 <!-- Connecting Line -->
                                 <div class="absolute left-4 top-16 w-0.5 h-8 bg-gray-300 dark:bg-gray-600"></div>
 
-                                <!-- Step 3: SFAO Review -->
+                                <!-- Step 3: SFAO 4-Stage Evaluation -->
                                 <div class="flex items-center mb-4">
                                     <div class="flex-shrink-0 w-8 h-8 {{ $application->status !== 'pending' ? 'bg-green-500' : ($application->has_documents ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600') }} rounded-full flex items-center justify-center">
                                         @if($application->status === 'approved' || $application->status === 'rejected')
@@ -171,19 +199,39 @@
                                             </svg>
                                         @endif
                                     </div>
-                                    <div class="ml-4">
-                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">SFAO Review</h5>
+                                    <div class="ml-4 flex-1">
+                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">SFAO 4-Stage Evaluation</h5>
                                         @if($application->status === 'approved')
-                                            <p class="text-sm text-green-600 dark:text-green-400">Application approved by SFAO</p>
+                                            <p class="text-sm text-green-600 dark:text-green-400">✅ Application approved by SFAO</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">All 4 evaluation stages completed successfully</p>
                                         @elseif($application->status === 'rejected')
-                                            <p class="text-sm text-red-600 dark:text-red-400">Application rejected by SFAO</p>
+                                            <p class="text-sm text-red-600 dark:text-red-400">❌ Application rejected by SFAO</p>
+                                            @if($application->remarks)
+                                                <p class="text-xs text-red-500 dark:text-red-400 mt-1">Reason: {{ $application->remarks }}</p>
+                                            @endif
                                         @elseif($application->has_documents)
-                                            <p class="text-sm text-yellow-600 dark:text-yellow-400">Under review by SFAO staff</p>
+                                            <p class="text-sm text-yellow-600 dark:text-yellow-400">⏳ Under SFAO evaluation</p>
+                                            <div class="mt-2">
+                                                <div class="grid grid-cols-4 gap-1 text-xs">
+                                                    <div class="text-center p-1 rounded {{ $application->evaluation_stage >= 1 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                                                        Stage 1
+                                                    </div>
+                                                    <div class="text-center p-1 rounded {{ $application->evaluation_stage >= 2 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                                                        Stage 2
+                                                    </div>
+                                                    <div class="text-center p-1 rounded {{ $application->evaluation_stage >= 3 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                                                        Stage 3
+                                                    </div>
+                                                    <div class="text-center p-1 rounded {{ $application->evaluation_stage >= 4 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                                                        Stage 4
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @else
                                             <p class="text-sm text-gray-500 dark:text-gray-400">Waiting for document upload</p>
                                         @endif
                                         @if($application->updated_at && $application->updated_at != $application->created_at)
-                                            <p class="text-xs text-gray-400 dark:text-gray-500">Last updated: {{ $application->updated_at?->format('M d, Y h:i A') }}</p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Last updated: {{ $application->updated_at?->format('M d, Y h:i A') }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -191,12 +239,16 @@
                                 <!-- Connecting Line -->
                                 <div class="absolute left-4 top-24 w-0.5 h-8 bg-gray-300 dark:bg-gray-600"></div>
 
-                                <!-- Step 4: Central Review -->
+                                <!-- Step 4: Central Review & Scholar Selection -->
                                 <div class="flex items-center">
-                                    <div class="flex-shrink-0 w-8 h-8 {{ $application->status === 'approved' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }} rounded-full flex items-center justify-center">
-                                        @if($application->status === 'approved')
+                                    <div class="flex-shrink-0 w-8 h-8 {{ $application->scholar_status === 'selected' ? 'bg-green-500' : ($application->status === 'approved' ? 'bg-yellow-500' : 'bg-gray-300 dark:bg-gray-600') }} rounded-full flex items-center justify-center">
+                                        @if($application->scholar_status === 'selected')
                                             <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        @elseif($application->status === 'approved')
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         @else
                                             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,10 +256,23 @@
                                             </svg>
                                         @endif
                                     </div>
-                                    <div class="ml-4">
-                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">Central Office Review</h5>
-                                        @if($application->status === 'approved')
-                                            <p class="text-sm text-green-600 dark:text-green-400">Final approval completed</p>
+                                    <div class="ml-4 flex-1">
+                                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">Central Review & Scholar Selection</h5>
+                                        @if($application->scholar_status === 'selected')
+                                            <p class="text-sm text-green-600 dark:text-green-400">🎓 Congratulations! You have been selected as a scholar</p>
+                                            <div class="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                                                <p class="text-xs text-green-700 dark:text-green-300">
+                                                    <strong>Scholar Status:</strong> {{ ucfirst($application->scholar_type ?? 'New') }} Scholar
+                                                </p>
+                                                @if($application->scholar_grant_count > 0)
+                                                    <p class="text-xs text-green-700 dark:text-green-300">
+                                                        <strong>Grant Count:</strong> {{ $application->scholar_grant_count }} grants received
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        @elseif($application->status === 'approved')
+                                            <p class="text-sm text-yellow-600 dark:text-yellow-400">⏳ Under central review for scholar selection</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Central admin is reviewing your application for final scholar selection</p>
                                         @else
                                             <p class="text-sm text-gray-500 dark:text-gray-400">Pending SFAO approval</p>
                                         @endif
@@ -251,7 +316,7 @@
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Type:</span>
-                                        <span class="font-medium text-gray-900 dark:text-white">{{ ucfirst($application->type ?? 'new') }}</span>
+                                        <span class="font-medium text-gray-900 dark:text-white">Application</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Documents:</span>

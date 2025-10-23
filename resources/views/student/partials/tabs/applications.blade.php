@@ -14,7 +14,6 @@
             <option value="status">Status</option>
             <option value="grant_amount">Grant Amount</option>
             <option value="submission_deadline">Deadline</option>
-            <option value="type">Application Type</option>
           </select>
         </div>
         
@@ -167,8 +166,6 @@
                         :class="application.scholarship.status_badge.color" 
                         x-text="application.scholarship.status_badge.text"></span>
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" 
-                        :class="application.scholarship.type_badge.color" 
-                        x-text="application.scholarship.type_badge.text"></span>
                 </div>
               </div>
             </div>

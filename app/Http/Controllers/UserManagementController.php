@@ -250,8 +250,10 @@ class UserManagementController extends Controller
             $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
+            $appliedStatuses = $user->appliedScholarships->pluck('status', 'scholarship_id')->toArray();
             foreach ($scholarships as $scholarship) {
                 $scholarship->applied = in_array($scholarship->id, $appliedIds);
+                $scholarship->status = $appliedStatuses[$scholarship->id] ?? null;
             }
         }
 
@@ -265,12 +267,42 @@ class UserManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Add additional data to each application
+        // Add enhanced tracking data to each application
         $applicationTracking->each(function($application) {
+            // Basic application data
             $application->scholarship->status_badge = $this->getStatusBadge($application->status);
-            $application->scholarship->type_badge = $this->getTypeBadge($application->type);
             $application->scholarship->days_remaining = $this->getDaysRemaining($application->scholarship->submission_deadline);
             $application->scholarship->grant_amount_formatted = $application->scholarship->grant_amount ? '₱' . number_format($application->scholarship->grant_amount, 2) : 'Not specified';
+            
+            // Document tracking data
+            $documents = \App\Models\StudentSubmittedDocument::where('user_id', $application->user_id)
+                ->where('scholarship_id', $application->scholarship_id)
+                ->get();
+            
+            $application->has_documents = $documents->count() > 0;
+            $application->documents_count = $documents->count();
+            $application->approved_documents_count = $documents->where('evaluation_status', 'approved')->count();
+            $application->pending_documents_count = $documents->where('evaluation_status', 'pending')->count();
+            $application->rejected_documents_count = $documents->where('evaluation_status', 'rejected')->count();
+            $application->last_document_upload = $documents->max('created_at');
+            
+            // SFAO evaluation stage tracking
+            $application->evaluation_stage = $this->getEvaluationStage($application);
+            
+            // Scholar status tracking
+            $scholar = \App\Models\Scholar::where('user_id', $application->user_id)
+                ->where('scholarship_id', $application->scholarship_id)
+                ->first();
+            
+            if ($scholar) {
+                $application->scholar_status = 'selected';
+                $application->scholar_type = $scholar->type;
+                $application->scholar_grant_count = $scholar->grant_count;
+            } else {
+                $application->scholar_status = 'not_selected';
+                $application->scholar_type = null;
+                $application->scholar_grant_count = 0;
+            }
         });
 
         // Get notifications for the student
@@ -284,6 +316,42 @@ class UserManagementController extends Controller
             ->count();
 
         return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount'));
+    }
+
+    /**
+     * Get evaluation stage for application tracking
+     */
+    private function getEvaluationStage($application)
+    {
+        if ($application->status === 'rejected') {
+            return 0; // Rejected applications
+        }
+        
+        if ($application->status === 'approved') {
+            return 4; // All stages completed
+        }
+        
+        // Check document evaluation progress
+        $documents = \App\Models\StudentSubmittedDocument::where('user_id', $application->user_id)
+            ->where('scholarship_id', $application->scholarship_id)
+            ->get();
+        
+        $approvedDocs = $documents->where('evaluation_status', 'approved')->count();
+        $totalDocs = $documents->count();
+        
+        if ($totalDocs === 0) {
+            return 0; // No documents uploaded
+        }
+        
+        if ($approvedDocs === $totalDocs) {
+            return 4; // All documents approved
+        }
+        
+        if ($approvedDocs > 0) {
+            return min(3, $approvedDocs); // Partial progress
+        }
+        
+        return 1; // Documents uploaded, pending evaluation
     }
 
     /**
@@ -392,7 +460,6 @@ class UserManagementController extends Controller
         // Add additional data to each application
         $applicationTracking->each(function($application) {
             $application->scholarship->status_badge = $this->getStatusBadge($application->status);
-            $application->scholarship->type_badge = $this->getTypeBadge($application->type);
             $application->scholarship->days_remaining = $this->getDaysRemaining($application->scholarship->submission_deadline);
             $application->scholarship->grant_amount_formatted = $application->scholarship->grant_amount ? '₱' . number_format($application->scholarship->grant_amount, 2) : 'Not specified';
         });
@@ -524,7 +591,7 @@ class UserManagementController extends Controller
     /**
      * Show multi-stage application form
      */
-    public function showMultiStageApplication($scholarship_id)
+    public function showMultiStageApplication($scholarship_id, Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'student') {
             return redirect('/login')->with('session_expired', true);
@@ -541,23 +608,30 @@ class UserManagementController extends Controller
             ->where('scholarship_id', $scholarship_id)
             ->first();
 
-        // Determine current stage based on submitted documents
-        $currentStage = 1;
-        $sfaoDocsCount = $submittedDocuments->where('document_category', 'sfao_required')->count();
-        $scholarshipDocsCount = $submittedDocuments->where('document_category', 'scholarship_required')->count();
+        // Check if user wants to force a specific stage
+        $forceStage = $request->get('stage');
         
-        if ($sfaoDocsCount >= 3) { // At least 3 mandatory SFAO docs
-            $currentStage = 2;
-        }
-        
-        if ($scholarship->requiredDocuments->where('is_mandatory', true)->count() == 0 || $scholarshipDocsCount >= $scholarship->requiredDocuments->where('is_mandatory', true)->count()) {
-            if ($currentStage == 2) {
-                $currentStage = 3;
+        if ($forceStage && in_array($forceStage, [1, 2, 3])) {
+            $currentStage = (int) $forceStage;
+        } else {
+            // Determine current stage based on submitted documents
+            $currentStage = 1;
+            $sfaoDocsCount = $submittedDocuments->where('document_category', 'sfao_required')->count();
+            $scholarshipDocsCount = $submittedDocuments->where('document_category', 'scholarship_required')->count();
+            
+            if ($sfaoDocsCount >= 3) { // At least 3 mandatory SFAO docs
+                $currentStage = 2;
             }
-        }
-        
-        if ($application) {
-            $currentStage = 3; // Application already submitted
+            
+            if ($scholarship->requiredDocuments->where('is_mandatory', true)->count() == 0 || $scholarshipDocsCount >= $scholarship->requiredDocuments->where('is_mandatory', true)->count()) {
+                if ($currentStage == 2) {
+                    $currentStage = 3;
+                }
+            }
+            
+            if ($application) {
+                $currentStage = 3; // Application already submitted
+            }
         }
 
         return view('student.multi-stage-application', compact('scholarship', 'submittedDocuments', 'application', 'currentStage'));
@@ -715,15 +789,12 @@ class UserManagementController extends Controller
 
         // Create or update application
         $hasClaimedGrant = Application::hasClaimedGrant($userId, $scholarship_id);
-        $applicationType = $hasClaimedGrant ? 'continuing' : 'new';
-        
         Application::updateOrCreate(
             [
                 'user_id' => $userId,
                 'scholarship_id' => $scholarship_id,
             ],
             [
-                'type' => $applicationType,
                 'status' => 'in_progress',
             ]
         );

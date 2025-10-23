@@ -91,8 +91,6 @@
                                         <span class="font-medium">₱{{ number_format($scholarship->grant_amount, 2) }}</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-500 dark:text-gray-400">Application Type:</span>
-                                        <span class="font-medium">{{ $application->getApplicantTypeDisplayName() }}</span>
                                     </div>
                                 </div>
                                 

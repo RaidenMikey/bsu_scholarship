@@ -281,8 +281,8 @@
                                     @if($student->has_applications && isset($student->applications_with_types))
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($student->applications_with_types as $app)
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $app['type_badge_color'] }}">
-                                                    {{ $app['type_display'] }}
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                    Application
                                                 </span>
                                             @endforeach
                                         </div>
