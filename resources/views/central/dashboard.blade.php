@@ -276,6 +276,7 @@
     <!-- Tabs -->
     @include('central.partials.tabs.scholarships')
     @include('central.partials.tabs.scholars', ['scholars' => $scholars])
+    @include('central.partials.tabs.endorsed-applicants', ['endorsedApplicants' => $endorsedApplicants])
     @include('central.partials.tabs.reports')
     @include('central.partials.tabs.statistics')
     @include('central.partials.tabs.staff')

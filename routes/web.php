@@ -171,6 +171,9 @@ Route::middleware(['web', 'checkUserExists:central'])
             Route::get('/statistics', [App\Http\Controllers\ScholarController::class, 'statistics'])->name('statistics');
             Route::post('/{scholar}/add-grant', [App\Http\Controllers\ScholarController::class, 'addGrant'])->name('add-grant');
         });
+
+        // Endorsed Applicants Validation
+        Route::get('/endorsed-applications/{application}/validate', [ApplicationManagementController::class, 'showEndorsedValidation'])->name('endorsed.validate');
     });
 
 

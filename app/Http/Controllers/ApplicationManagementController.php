@@ -891,6 +891,33 @@ class ApplicationManagementController extends Controller
     }
 
     /**
+     * Show validation page for an endorsed (approved) application for Central admin.
+     */
+    public function showEndorsedValidation(\Illuminate\Http\Request $request, \App\Models\Application $application)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        // Eager-load related data needed for profile/validation
+        $application->load(['user.campus', 'user.form', 'scholarship']);
+
+        // Get submitted documents if present
+        $submittedDocuments = \App\Models\StudentSubmittedDocument::where('user_id', $application->user_id)
+            ->where('scholarship_id', $application->scholarship_id)
+            ->orderBy('document_category')
+            ->orderBy('document_name')
+            ->get();
+
+        return view('central.endorsed.validate', [
+            'application' => $application,
+            'user' => $application->user,
+            'scholarship' => $application->scholarship,
+            'submittedDocuments' => $submittedDocuments,
+        ]);
+    }
+
+    /**
      * Generate comprehensive analytics data for the statistics dashboard
      */
     private function generateAnalyticsData($filters = [])
