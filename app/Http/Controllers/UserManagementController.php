@@ -298,10 +298,12 @@ class UserManagementController extends Controller
                 $application->scholar_status = 'selected';
                 $application->scholar_type = $scholar->type;
                 $application->scholar_grant_count = $scholar->grant_count;
+                $application->scholar_selected_at = $scholar->created_at;
             } else {
                 $application->scholar_status = 'not_selected';
                 $application->scholar_type = null;
                 $application->scholar_grant_count = 0;
+                $application->scholar_selected_at = null;
             }
         });
 

@@ -824,7 +824,52 @@ class ApplicationManagementController extends Controller
             $qualifiedApplicants = collect();
         }
 
-        return view('central.dashboard', compact('applications', 'scholars', 'qualifiedApplicants', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'applicantTypeOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'applicantTypeFilter'));
+        // Get endorsed applicants (approved by SFAO and ready for scholar selection)
+        $endorsedApplicantsQuery = Application::with(['user', 'scholarship', 'user.campus'])
+            ->where('status', 'approved')
+            ->whereDoesntHave('user.scholars'); // Not already a scholar
+
+        // Apply campus filter for endorsed applicants
+        if ($campusFilter !== 'all') {
+            $endorsedApplicantsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply scholarship filter for endorsed applicants
+        if ($scholarshipFilter !== 'all') {
+            $endorsedApplicantsQuery->where('scholarship_id', $scholarshipFilter);
+        }
+
+        // Apply sorting for endorsed applicants
+        switch ($sortBy) {
+            case 'name':
+                $endorsedApplicantsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $endorsedApplicantsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.email', $sortOrder);
+                break;
+            case 'scholarship':
+                $endorsedApplicantsQuery->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'status':
+                $endorsedApplicantsQuery->orderBy('applications.status', $sortOrder);
+                break;
+            default:
+                $endorsedApplicantsQuery->orderBy('applications.created_at', $sortOrder);
+        }
+
+        $endorsedApplicants = $endorsedApplicantsQuery->get();
+
+        // Ensure endorsedApplicants is always a collection
+        if (!$endorsedApplicants) {
+            $endorsedApplicants = collect();
+        }
+
+        return view('central.dashboard', compact('applications', 'scholars', 'qualifiedApplicants', 'endorsedApplicants', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'applicantTypeOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'applicantTypeFilter'));
     }
 
     /**

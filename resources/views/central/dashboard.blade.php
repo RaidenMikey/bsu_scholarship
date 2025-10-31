@@ -150,7 +150,7 @@
       <div class="space-y-1">
         <button @click="scholarsDropdownOpen = !scholarsDropdownOpen; tab = 'scholars'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
-                :class="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old' || tab === 'endorsed-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <span>🔵 Scholars</span>
           <svg class="w-4 h-4 transition-transform" :class="scholarsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -180,6 +180,11 @@
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             🟡 Old Scholars
+          </button>
+          <button @click="tab = 'endorsed-applicants'; sidebarOpen = false"
+                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                  :class="tab === 'endorsed-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            ✅ Endorsed Applicants
           </button>
         </div>
       </div>

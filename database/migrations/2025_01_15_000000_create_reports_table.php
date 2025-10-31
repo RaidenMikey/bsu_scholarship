@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sfao_user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('campus_id')->constrained('campuses')->onDelete('cascade');
+            $table->string('original_campus_selection')->nullable(); // Store original campus selection
             $table->string('report_type'); // 'monthly', 'quarterly', 'annual', 'custom'
             $table->string('title');
             $table->text('description')->nullable();

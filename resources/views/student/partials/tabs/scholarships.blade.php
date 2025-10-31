@@ -304,7 +304,7 @@
     @else
       <div class="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-lg shadow-sm">
         <p class="text-blue-800 font-medium">
-          No {{ strtolower($currentLabel['title']) }} currently match your profile criteria.
+          No scholarships currently match your profile criteria.
         </p>
         <p class="mt-1 text-blue-700 text-sm">
           Keep improving to unlock more opportunities!
