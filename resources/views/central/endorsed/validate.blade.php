@@ -27,24 +27,65 @@
 
     <!-- Applicant Profile Card -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- Avatar -->
+        <div class="flex-shrink-0">
+          <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) : asset('images/default-avatar.png') }}"
+               alt="Profile Picture"
+               class="h-24 w-24 md:h-28 md:w-28 rounded-full object-cover border border-gray-200 dark:border-gray-700">
+        </div>
+        <!-- Identity & Quick Info -->
+        <div class="flex-1">
           <div class="text-sm text-gray-500 dark:text-gray-400">Student</div>
           <div class="text-xl font-semibold text-gray-900 dark:text-white">{{ $user->name }}</div>
           <div class="text-sm text-gray-600 dark:text-gray-300">{{ $user->email }}</div>
+          <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Campus</div>
+              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->campus->name ?? 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Program</div>
+              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->program ?? 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Year Level</div>
+              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->year_level ?? 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">GWA</div>
+              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->gwa ?? 'N/A' }}</div>
+            </div>
+          </div>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Campus</div>
-            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->campus->name ?? 'N/A' }}</div>
-          </div>
-          <div>
-            <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Program</div>
-            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->program ?? 'N/A' }}</div>
-          </div>
-          <div>
-            <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Year Level</div>
-            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->year_level ?? 'N/A' }}</div>
+      </div>
+
+      <!-- Additional Profile Details -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Sex</div>
+          <div class="font-medium text-gray-900 dark:text-white">{{ $user->form->sex ?? 'N/A' }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Age</div>
+          <div class="font-medium text-gray-900 dark:text-white">{{ $user->form->age ?? 'N/A' }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Contact</div>
+          <div class="font-medium text-gray-900 dark:text-white">{{ $user->form->telephone ?? $user->form->email ?? 'N/A' }}</div>
+        </div>
+        <div class="md:col-span-3">
+          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Address</div>
+          <div class="font-medium text-gray-900 dark:text-white">
+            @php
+              $addressParts = array_filter([
+                $user->form->street_barangay ?? null,
+                $user->form->town_city ?? null,
+                $user->form->province ?? null,
+                $user->form->zip_code ?? null,
+              ]);
+            @endphp
+            {{ count($addressParts) ? implode(', ', $addressParts) : 'N/A' }}
           </div>
         </div>
       </div>
@@ -103,6 +144,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Size</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Evaluation</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">View</th>
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -117,10 +159,21 @@
                     {{ $doc->getEvaluationStatusDisplayName() }}
                   </span>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right">
+                  @php
+                    $url = asset('storage/' . ltrim($doc->file_path, '/'));
+                  @endphp
+                  <a href="{{ $url }}" target="_blank" class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 transition-colors" title="View document">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </a>
+                </td>
               </tr>
             @empty
               <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No submitted documents found.</td>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No submitted documents found.</td>
               </tr>
             @endforelse
           </tbody>
