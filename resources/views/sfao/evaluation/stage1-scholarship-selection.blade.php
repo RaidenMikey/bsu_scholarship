@@ -4,12 +4,10 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Document Evaluation</h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">Stage 1: Select Scholarship to Evaluate</p>
-            </div>
-        </div>
+        @include('sfao.partials.page-header', [
+            'title' => 'Document Evaluation',
+            'subtitle' => 'Stage 1: Select Scholarship to Evaluate'
+        ])
 
         <!-- Student Info -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">

@@ -22,6 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Report - SFAO Dashboard</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -50,6 +51,11 @@
 
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            
+            <!-- Page Header -->
+            @include('sfao.partials.page-header', [
+                'title' => 'Report Details'
+            ])
             
             <!-- Enhanced Header -->
             <div class="bg-white shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in">
@@ -465,14 +471,6 @@
                         
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                            <!-- Back to Dashboard Button -->
-                            <a href="{{ route('sfao.dashboard') }}"
-                               class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200 h-12">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                                </svg>
-                                Back to Dashboard
-                            </a>
                             
                             @if($report->isDraft())
                                 <!-- Draft Actions -->

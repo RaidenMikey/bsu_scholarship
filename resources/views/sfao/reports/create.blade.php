@@ -22,6 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Report - SFAO Dashboard</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
@@ -34,39 +35,13 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-bsu-red text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-xl font-bold">BSU Scholarship System</h1>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm">Welcome, {{ $user->name }}</span>
-                    <a href="/sfao" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        ← Back to Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
     <div class="min-h-screen bg-gray-50">
-        <div class="max-w-4xl mx-auto py-8">
+        <div class="max-w-4xl mx-auto py-8 px-4">
             <!-- Header -->
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-bsu-red rounded-full mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                </div>
-                <h2 class="text-3xl font-bold text-bsu-red mb-2">Create New Report</h2>
-                <p class="text-lg text-gray-600">
-                    Generate a comprehensive report for Central Administration
-                </p>
-            </div>
+            @include('sfao.partials.page-header', [
+                'title' => 'Create New Report',
+                'subtitle' => 'Generate a comprehensive report for Central Administration'
+            ])
 
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                 <div class="bg-bsu-red px-8 py-6">
@@ -130,11 +105,7 @@
                             <option value="">Select Campus</option>
                             @foreach($campusOptions as $campusOption)
                                 <option value="{{ $campusOption->id }}" {{ old('campus_id') == $campusOption->id ? 'selected' : '' }}>
-                                    @if($campusOption->type === 'constituent_with_extensions')
-                                        🏫 {{ $campusOption->name }} (Constituent + Extensions)
-                                    @else
-                                        🏫 {{ $campusOption->name }} ({{ ucfirst($campusOption->type) }})
-                                    @endif
+                                    🏫 {{ $campusOption->name }}
                                 </option>
                             @endforeach
                         </select>

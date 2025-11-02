@@ -4,24 +4,10 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                    @if(request('from_status'))
-                        Evaluation Details
-                    @else
-                        Document Evaluation
-                    @endif
-                </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                    @if(request('from_status'))
-                        View application evaluation details and status
-                    @else
-                        Stage 4: Final Review & Application Decision
-                    @endif
-                </p>
-            </div>
-        </div>
+        @include('sfao.partials.page-header', [
+            'title' => request('from_status') ? 'Evaluation Details' : 'Document Evaluation',
+            'subtitle' => request('from_status') ? 'View application evaluation details and status' : 'Stage 4: Final Review & Application Decision'
+        ])
 
         <!-- Student & Scholarship Info -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
@@ -227,15 +213,69 @@
             </div>
         </div>
 
-        <!-- Final Evaluation Form -->
-        @if($application && in_array($application->status, ['in_progress', 'pending']))
+        <!-- System Decision Display -->
+        @if($application && in_array($application->status, ['in_progress', 'pending']) && isset($autoDecision))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Final Evaluation & Decision</h3>
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Make your final decision and provide remarks for the student.</p>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">System Decision</h3>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Based on document evaluation status, the system has automatically determined the final decision.</p>
             </div>
             
             <div class="p-6">
+                <!-- System Decision Display -->
+                <div class="mb-6">
+                    <div class="rounded-lg p-6 border-2 
+                        @if($autoDecision === 'approve')
+                            bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600
+                        @elseif($autoDecision === 'reject')
+                            bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-600
+                        @else
+                            bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600
+                        @endif">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                @if($autoDecision === 'approve')
+                                    <div class="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-green-800 dark:text-green-200">Application Approved</h4>
+                                        <p class="text-sm text-green-600 dark:text-green-400 mt-1">
+                                            All documents have been approved. The application will be marked as approved.
+                                        </p>
+                                    </div>
+                                @elseif($autoDecision === 'reject')
+                                    <div class="flex-shrink-0 w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-red-800 dark:text-red-200">Application Rejected</h4>
+                                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">
+                                            One or more documents have been rejected. The application will be marked as rejected.
+                                        </p>
+                                    </div>
+                                @else
+                                    <div class="flex-shrink-0 w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xl font-bold text-yellow-800 dark:text-yellow-200">Application Pending</h4>
+                                        <p class="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+                                            One or more documents are still pending evaluation. The application will remain pending.
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Remarks Section -->
                 <div class="mb-6">
                     <label for="remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -257,29 +297,24 @@
                     @enderror
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex justify-end space-x-4">
+                <!-- Single Accept Button -->
+                <div class="flex justify-end">
                     <button 
                         type="button" 
-                        onclick="showConfirmationModal('pending')"
-                        class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                        onclick="showConfirmationModal()"
+                        class="text-white px-8 py-3 rounded-lg transition-colors font-semibold text-lg flex items-center space-x-2
+                        @if($autoDecision === 'approve')
+                            bg-green-600 hover:bg-green-700
+                        @elseif($autoDecision === 'reject')
+                            bg-red-600 hover:bg-red-700
+                        @else
+                            bg-yellow-600 hover:bg-yellow-700
+                        @endif"
                     >
-                        Mark as Pending
-                    </button>
-                    <button 
-                        type="button" 
-                        onclick="showConfirmationModal('reject')"
-                        class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                        Reject Application
-                    </button>
-                    
-                    <button 
-                        type="button" 
-                        onclick="showConfirmationModal('approve')"
-                        class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                        Approve Application
+                        <span>Accept System Decision</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -376,56 +411,53 @@
 <!-- Hidden form for submission -->
 <form id="hiddenForm" method="POST" action="" style="display: none;">
     @csrf
-    <input type="hidden" name="action" id="hiddenAction" value="">
     <textarea name="remarks" id="hiddenRemarks"></textarea>
 </form>
 
 <script>
-let currentAction = '';
-
-function showConfirmationModal(action) {
-    currentAction = action;
+function showConfirmationModal() {
+    const autoDecision = "{{ $autoDecision ?? 'pending' }}";
     const modal = document.getElementById('confirmationModal');
     const modalIcon = document.getElementById('modalIcon');
     const modalTitle = document.getElementById('modalTitle');
     const modalMessage = document.getElementById('modalMessage');
     const confirmButton = document.getElementById('confirmButton');
     
-    if (action === 'approve') {
+    if (autoDecision === 'approve') {
         // Approve styling
         modalIcon.innerHTML = `
             <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
         `;
-        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-green-100';
-        modalTitle.textContent = 'Approve Application';
-        modalMessage.textContent = 'Are you sure you want to approve this application? This action will notify the student and update the application status.';
-        confirmButton.textContent = 'Approve';
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-green-100 dark:bg-green-900';
+        modalTitle.textContent = 'Confirm Application Approval';
+        modalMessage.textContent = 'Accept the system\'s decision to approve this application? All documents have been approved. The student will be notified.';
+        confirmButton.textContent = 'Accept & Approve';
         confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-green-600 hover:bg-green-700';
-    } else if (action === 'reject') {
+    } else if (autoDecision === 'reject') {
         // Reject styling
         modalIcon.innerHTML = `
             <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         `;
-        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-red-100';
-        modalTitle.textContent = 'Reject Application';
-        modalMessage.textContent = 'Are you sure you want to reject this application? This action will notify the student and update the application status.';
-        confirmButton.textContent = 'Reject';
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-red-100 dark:bg-red-900';
+        modalTitle.textContent = 'Confirm Application Rejection';
+        modalMessage.textContent = 'Accept the system\'s decision to reject this application? One or more documents have been rejected. The student will be notified.';
+        confirmButton.textContent = 'Accept & Reject';
         confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-red-600 hover:bg-red-700';
-    } else if (action === 'pending') {
+    } else {
         // Pending styling
         modalIcon.innerHTML = `
             <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
         `;
-        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-yellow-100';
-        modalTitle.textContent = 'Mark as Pending';
-        modalMessage.textContent = 'Set this application back to pending for further review? The student will be notified.';
-        confirmButton.textContent = 'Mark Pending';
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-yellow-100 dark:bg-yellow-900';
+        modalTitle.textContent = 'Confirm Application Pending';
+        modalMessage.textContent = 'Accept the system\'s decision to keep this application pending? One or more documents are still pending evaluation. The student will be notified.';
+        confirmButton.textContent = 'Accept & Keep Pending';
         confirmButton.className = 'px-4 py-2 rounded-md text-sm font-medium text-white transition-colors bg-yellow-600 hover:bg-yellow-700';
     }
     
@@ -454,8 +486,7 @@ function hideConfirmationModal() {
 }
 
 function confirmAction() {
-    // Set the hidden form values
-    document.getElementById('hiddenAction').value = currentAction;
+    // Set the hidden form values (action is no longer needed, but keeping for compatibility)
     document.getElementById('hiddenRemarks').value = document.getElementById('remarks').value;
     
     // Set the form action

@@ -213,16 +213,45 @@ class SFAOEvaluationController extends Controller
             ->where('scholarship_id', $scholarshipId)
             ->first();
 
+        // Automatically determine final decision based on document statuses
+        $autoDecision = $this->determineAutoDecision($evaluatedDocuments);
+        
         return view('sfao.evaluation.stage4-final-review', compact(
             'student', 
             'scholarship', 
             'evaluatedDocuments',
-            'application'
+            'application',
+            'autoDecision'
         ));
     }
 
     /**
+     * Determine automatic decision based on document evaluation statuses
+     * Priority: Reject > Pending > Approve
+     */
+    private function determineAutoDecision($documents)
+    {
+        if ($documents->isEmpty()) {
+            return 'pending'; // Default to pending if no documents
+        }
+
+        // Check if any document is rejected (highest priority)
+        if ($documents->contains('evaluation_status', 'rejected')) {
+            return 'reject';
+        }
+
+        // Check if any document is pending (second priority)
+        if ($documents->contains('evaluation_status', 'pending')) {
+            return 'pending';
+        }
+
+        // All documents are approved
+        return 'approve';
+    }
+
+    /**
      * Submit final evaluation with remarks
+     * Now automatically determines decision based on document statuses
      */
     public function submitFinalEvaluation(Request $request, $userId, $scholarshipId)
     {
@@ -231,7 +260,6 @@ class SFAOEvaluationController extends Controller
         }
 
         $request->validate([
-            'action' => 'required|in:approve,reject,pending',
             'remarks' => 'nullable|string|max:1000',
         ]);
 
@@ -244,8 +272,16 @@ class SFAOEvaluationController extends Controller
             return redirect()->back()->with('error', 'Application not found.');
         }
 
+        // Get all documents to determine auto-decision
+        $documents = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->get();
+
+        // Automatically determine the decision
+        $action = $this->determineAutoDecision($documents);
+
         // Update application with remarks and status (including pending)
-        $newStatus = match($request->action) {
+        $newStatus = match($action) {
             'approve' => 'approved',
             'reject' => 'rejected',
             'pending' => 'pending',
@@ -258,10 +294,6 @@ class SFAOEvaluationController extends Controller
         ]);
 
         // Get document evaluation status for this application
-        $documents = StudentSubmittedDocument::where('user_id', $userId)
-            ->where('scholarship_id', $scholarshipId)
-            ->get();
-
         $documentStatus = [
             'pending' => $documents->where('evaluation_status', 'pending')->count(),
             'rejected' => $documents->where('evaluation_status', 'rejected')->count(),
@@ -272,22 +304,22 @@ class SFAOEvaluationController extends Controller
         $rejectedDocuments = $documents->where('evaluation_status', 'rejected')->pluck('document_name')->toArray();
 
         // Create notification for student
-        $notificationTitle = match($request->action) {
+        $notificationTitle = match($action) {
             'approve' => 'Application Approved',
             'reject' => 'Application Rejected', 
             'pending' => 'Application Status Updated',
             default => 'Application Status Updated'
         };
 
-        $notificationMessage = match($request->action) {
-            'approve' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been approved.',
-            'reject' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been rejected.',
-            'pending' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been set back to pending for further review.',
+        $notificationMessage = match($action) {
+            'approve' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been approved based on document evaluation.',
+            'reject' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been rejected based on document evaluation.',
+            'pending' => 'Your application for ' . $application->scholarship->scholarship_name . ' has been set to pending for further review based on document evaluation.',
             default => 'Your application status has been updated.'
         };
 
         // Add document information to message if there are pending or rejected documents
-        if ($request->action === 'pending' && (count($pendingDocuments) > 0 || count($rejectedDocuments) > 0)) {
+        if ($action === 'pending' && (count($pendingDocuments) > 0 || count($rejectedDocuments) > 0)) {
             $documentInfo = [];
             if (count($pendingDocuments) > 0) {
                 $documentInfo[] = 'Pending documents: ' . implode(', ', $pendingDocuments);
@@ -315,10 +347,10 @@ class SFAOEvaluationController extends Controller
             ]
         ]);
 
-        $message = match($request->action) {
-            'approve' => 'Application approved successfully.',
-            'reject' => 'Application rejected successfully.',
-            'pending' => 'Application set to pending successfully.',
+        $message = match($action) {
+            'approve' => 'Application approved successfully based on document evaluation.',
+            'reject' => 'Application rejected successfully based on document evaluation.',
+            'pending' => 'Application set to pending successfully based on document evaluation.',
             default => 'Application status updated successfully.'
         };
 

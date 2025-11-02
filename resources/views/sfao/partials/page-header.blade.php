@@ -1,6 +1,6 @@
 {{-- 
-    Reusable page header component for central non-dashboard pages
-    Usage: @include('central.partials.page-header', ['title' => 'Page Title'])
+    Reusable page header component for SFAO non-dashboard pages
+    Usage: @include('sfao.partials.page-header', ['title' => 'Page Title'])
 --}}
 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b-2 border-bsu-red">
     <div>
@@ -9,7 +9,7 @@
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $subtitle }}</p>
         @endisset
     </div>
-    <a href="{{ route('central.dashboard') }}" 
+    <a href="{{ route('sfao.dashboard') }}" 
        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg border-2 border-bsu-red whitespace-nowrap
               bg-white text-bsu-red">
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

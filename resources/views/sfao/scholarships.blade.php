@@ -11,10 +11,10 @@
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Available Scholarships</h1>
-        <p class="text-gray-600">View and manage scholarships for your campus</p>
-    </div>
+    @include('sfao.partials.page-header', [
+        'title' => 'Available Scholarships',
+        'subtitle' => 'View and manage scholarships for your campus'
+    ])
 
     <!-- Campus Info -->
     @if(isset($sfaoCampus))
