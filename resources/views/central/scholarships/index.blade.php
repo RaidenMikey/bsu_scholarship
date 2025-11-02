@@ -2,19 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholarships Management - BSU</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50 min-h-screen">
 
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
     <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Scholarships Management</h1>
-        <p class="text-gray-600">Manage all scholarships in the system</p>
-    </div>
+    @include('central.partials.page-header', [
+        'title' => 'Scholarships Management',
+        'subtitle' => 'Manage all scholarships in the system'
+    ])
 
     <!-- Actions -->
     <div class="mb-6 flex justify-between items-center">

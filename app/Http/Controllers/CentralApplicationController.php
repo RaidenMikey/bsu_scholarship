@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Application;
+use App\Models\StudentSubmittedDocument;
 use App\Services\NotificationService;
 
 /**
@@ -109,9 +110,18 @@ class CentralApplicationController extends Controller
         }
 
         // Load necessary relationships
-        $application->load(['user', 'scholarship', 'user.campus']);
+        $application->load(['user', 'scholarship', 'user.campus', 'user.form']);
+        
+        // Get the user and scholarship for easier access in view
+        $user = $application->user;
+        $scholarship = $application->scholarship;
+        
+        // Load submitted documents for this application
+        $submittedDocuments = StudentSubmittedDocument::where('user_id', $user->id)
+            ->where('scholarship_id', $scholarship->id)
+            ->get();
 
-        return view('central.endorsed.validate', compact('application'));
+        return view('central.endorsed.validate', compact('application', 'user', 'scholarship', 'submittedDocuments'));
     }
 }
 

@@ -16,67 +16,66 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen">
+<body class="bg-gray-50 min-h-screen">
 
   <div class="max-w-6xl mx-auto p-4 md:p-8">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Validate Endorsed Applicant</h1>
-      <a href="{{ route('central.dashboard') }}" class="px-4 py-2 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors">Back to Dashboard</a>
-    </div>
+    @include('central.partials.page-header', [
+        'title' => 'Validate Endorsed Applicant'
+    ])
 
     <!-- Applicant Profile Card -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6 mb-6">
       <div class="flex flex-col md:flex-row gap-6">
         <!-- Avatar -->
         <div class="flex-shrink-0">
           <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) : asset('images/default-avatar.png') }}"
                alt="Profile Picture"
-               class="h-24 w-24 md:h-28 md:w-28 rounded-full object-cover border border-gray-200 dark:border-gray-700">
+               class="h-24 w-24 md:h-28 md:w-28 rounded-full object-cover border-4 border-bsu-red">
         </div>
         <!-- Identity & Quick Info -->
         <div class="flex-1">
-          <div class="text-sm text-gray-500 dark:text-gray-400">Student</div>
-          <div class="text-xl font-semibold text-gray-900 dark:text-white">{{ $user->name }}</div>
-          <div class="text-sm text-gray-600 dark:text-gray-300">{{ $user->email }}</div>
+          <div class="text-sm text-gray-500 uppercase tracking-wide font-medium">Student</div>
+          <div class="text-xl font-bold text-bsu-red mt-1">{{ $user->name }}</div>
+          <div class="text-sm text-gray-600">{{ $user->email }}</div>
           <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Campus</div>
-              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->campus->name ?? 'N/A' }}</div>
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Campus</div>
+              <div class="text-sm font-bold text-bsu-red mt-1">{{ $user->campus->name ?? 'N/A' }}</div>
             </div>
-            <div>
-              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Program</div>
-              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->program ?? 'N/A' }}</div>
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Program</div>
+              <div class="text-sm font-bold text-bsu-red mt-1">{{ $user->form->program ?? 'N/A' }}</div>
             </div>
-            <div>
-              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Year Level</div>
-              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->year_level ?? 'N/A' }}</div>
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Year Level</div>
+              <div class="text-sm font-bold text-bsu-red mt-1">{{ $user->form->year_level ?? 'N/A' }}</div>
             </div>
-            <div>
-              <div class="text-xs uppercase text-gray-500 dark:text-gray-400">GWA</div>
-              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->form->gwa ?? 'N/A' }}</div>
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">GWA</div>
+              <div class="text-sm font-bold text-bsu-red mt-1">{{ $user->form->gwa ?? 'N/A' }}</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Additional Profile Details -->
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+      <div class="mt-6 pt-6 border-t-2 border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div>
-          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Sex</div>
-          <div class="font-medium text-gray-900 dark:text-white">{{ $user->form->sex ?? 'N/A' }}</div>
+          <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Sex</div>
+          <div class="font-bold text-bsu-red mt-1">{{ $user->form->sex ?? 'N/A' }}</div>
         </div>
         <div>
-          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Age</div>
-          <div class="font-medium text-gray-900 dark:text-white">{{ $user->form->age ?? 'N/A' }}</div>
+          <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Age</div>
+          <div class="font-bold text-bsu-red mt-1">{{ $user->form->age ?? 'N/A' }}</div>
         </div>
         <div>
-          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Contact</div>
-          <div class="font-medium text-gray-900 dark:text-white">{{ $user->form->telephone ?? $user->form->email ?? 'N/A' }}</div>
+          <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Contact</div>
+          <div class="font-bold text-bsu-red mt-1">{{ $user->form->telephone ?? $user->form->email ?? 'N/A' }}</div>
         </div>
         <div class="md:col-span-3">
-          <div class="text-xs uppercase text-gray-500 dark:text-gray-400">Address</div>
-          <div class="font-medium text-gray-900 dark:text-white">
+          <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Address</div>
+          <div class="font-medium text-gray-800 mt-1">
             @php
               $addressParts = array_filter([
                 $user->form->street_barangay ?? null,
@@ -93,69 +92,69 @@
 
     <!-- Scholarship & Application -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-        <div class="text-sm text-gray-500 dark:text-gray-400">Scholarship</div>
-        <div class="text-xl font-semibold text-gray-900 dark:text-white">{{ $scholarship->scholarship_name }}</div>
-        <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <div class="text-gray-500 dark:text-gray-400">Type</div>
-            <div class="font-medium">{{ ucfirst($scholarship->scholarship_type) }}</div>
+      <div class="md:col-span-2 bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6">
+        <div class="text-sm text-gray-600 uppercase tracking-wide font-semibold mb-2">Scholarship</div>
+        <div class="text-xl font-bold text-bsu-red mb-4">{{ $scholarship->scholarship_name }}</div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Type</div>
+            <div class="font-bold text-bsu-red mt-1">{{ ucfirst($scholarship->scholarship_type) }}</div>
           </div>
-          <div>
-            <div class="text-gray-500 dark:text-gray-400">Priority</div>
-            <div class="font-medium">{{ ucfirst($scholarship->priority_level) }}</div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Priority</div>
+            <div class="font-bold text-bsu-red mt-1">{{ ucfirst($scholarship->priority_level) }}</div>
           </div>
-          <div>
-            <div class="text-gray-500 dark:text-gray-400">Grant Amount</div>
-            <div class="font-medium">{{ $scholarship->grant_amount ? '₱' . number_format((float) $scholarship->grant_amount, 2) : 'TBD' }}</div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Grant Amount</div>
+            <div class="font-bold text-bsu-red mt-1">{{ $scholarship->grant_amount ? '₱' . number_format((float) $scholarship->grant_amount, 2) : 'TBD' }}</div>
           </div>
-          <div>
-            <div class="text-gray-500 dark:text-gray-400">Status</div>
-            <div class="font-medium">{{ ucfirst($application->status) }}</div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Status</div>
+            <div class="font-bold text-bsu-red mt-1">{{ ucfirst($application->status) }}</div>
           </div>
         </div>
       </div>
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-        <div class="text-sm text-gray-500 dark:text-gray-400">Academic</div>
-        <div class="mt-2 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <div class="text-gray-500 dark:text-gray-400">GWA</div>
-            <div class="font-medium">{{ $user->form->gwa ?? 'N/A' }}</div>
+      <div class="bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6">
+        <div class="text-sm text-gray-600 uppercase tracking-wide font-semibold mb-3">Academic</div>
+        <div class="grid grid-cols-1 gap-4 text-sm">
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">GWA</div>
+            <div class="font-bold text-bsu-red mt-1 text-lg">{{ $user->form->gwa ?? 'N/A' }}</div>
           </div>
-          <div>
-            <div class="text-gray-500 dark:text-gray-400">Allowance</div>
-            <div class="font-medium">{{ isset($user->form->monthly_allowance) ? '₱' . number_format((float) $user->form->monthly_allowance, 2) : 'N/A' }}</div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Allowance</div>
+            <div class="font-bold text-bsu-red mt-1">{{ isset($user->form->monthly_allowance) ? '₱' . number_format((float) $user->form->monthly_allowance, 2) : 'N/A' }}</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Documents -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Submitted Documents</h2>
+    <div class="bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6 mb-6">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b-2 border-bsu-red">
+        <h2 class="text-lg font-bold text-bsu-red uppercase tracking-wide">Submitted Documents</h2>
       </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-700">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-bsu-red">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Size</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Evaluation</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">View</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Name</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Size</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Evaluation</th>
+              <th class="px-6 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">View</th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody class="bg-white divide-y divide-gray-200">
             @forelse($submittedDocuments as $doc)
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $doc->getDocumentCategoryDisplayName() }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $doc->document_name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $doc->getFileTypeDisplayName() }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ $doc->getFileSizeFormatted() }}</td>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ $doc->getDocumentCategoryDisplayName() }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $doc->document_name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $doc->getFileTypeDisplayName() }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $doc->getFileSizeFormatted() }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold {{ $doc->getEvaluationStatusBadgeColor() }}">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $doc->getEvaluationStatusBadgeColor() }}">
                     {{ $doc->getEvaluationStatusDisplayName() }}
                   </span>
                 </td>
@@ -163,7 +162,7 @@
                   @php
                     $url = asset('storage/' . ltrim($doc->file_path, '/'));
                   @endphp
-                  <a href="{{ $url }}" target="_blank" class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 transition-colors" title="View document">
+                  <a href="{{ $url }}" target="_blank" class="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-white hover:bg-bsu-red hover:text-white border-2 border-bsu-red text-bsu-red transition-colors" title="View document">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -173,7 +172,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No submitted documents found.</td>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500">No submitted documents found.</td>
               </tr>
             @endforelse
           </tbody>
@@ -182,8 +181,8 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-end gap-3">
-      <a href="{{ route('central.dashboard', ['tab' => 'endorsed-applicants']) }}" class="px-4 py-2 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors">Cancel</a>
+    <div class="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
+      <a href="{{ route('central.dashboard', ['tab' => 'endorsed-applicants']) }}" class="px-6 py-2 text-sm font-semibold bg-white hover:bg-bsu-red hover:text-white text-bsu-red rounded-lg border-2 border-bsu-red transition-colors">Cancel</a>
     </div>
   </div>
 

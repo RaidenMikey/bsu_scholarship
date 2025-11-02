@@ -19,8 +19,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ isset($scholarship) ? 'Edit Scholarship' : 'Create Scholarship' }} - BSU</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -35,13 +37,15 @@
     </script>
     
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50 min-h-screen">
 
-<div class="max-w-4xl mx-auto px-6 py-10 bg-white rounded-xl shadow-md border-2 border-red-700 mt-10">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
 
-    <h2 class="text-2xl font-bold text-red-700 text-center mb-6">
-        {{ isset($scholarship) ? 'Edit Scholarship' : 'Add New Scholarship' }}
-    </h2>
+    @include('central.partials.page-header', [
+        'title' => isset($scholarship) ? 'Edit Scholarship' : 'Add New Scholarship'
+    ])
+
+    <div class="bg-white rounded-xl shadow-lg border-2 border-red-700 p-6 md:p-8 mt-6">
 
     <form method="POST" enctype="multipart/form-data"
           action="{{ isset($scholarship) 
@@ -377,6 +381,7 @@
             </button>
         </div>
     </form>
+    </div>
 </div>
 
 </body>
