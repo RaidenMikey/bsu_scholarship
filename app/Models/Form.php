@@ -17,108 +17,70 @@ class Form extends Model
         'last_name',
         'first_name',
         'middle_name',
-
-        // Address broken down
+        'age',
+        'sex',
+        'civil_status',
+        'birthdate',
+        'birthplace',
+        'email',
+        'contact_number',
         'street_barangay',
         'town_city',
         'province',
         'zip_code',
-
-        'age',
-        'sex',
-        'civil_status',
+        'citizenship',
         'disability',
         'tribe',
-        'citizenship',
-        'birthdate',
-        'birthplace',
-        'birth_order',
-        'email',
-        'telephone',
-        'religion',
-        'highschool_type',
-        'monthly_allowance',
-        'living_arrangement',
-        'living_arrangement_other',
-        'transportation',
-        'transportation_other',
-
 
         // ------------------- Academic Data -------------------
+        'sr_code',
         'education_level',
         'program',
-        'college',
+        'college_department',
         'year_level',
         'campus',
-        'gwa',
-        'honors',
+        'previous_gwa',
+        'honors_received',
         'units_enrolled',
+        'scholarship_applied',
+        'semester',
         'academic_year',
         'has_existing_scholarship',
         'existing_scholarship_details',
 
         // ------------------- Family Data -------------------
-        // Father
-        'father_living',
+        'father_status',
         'father_name',
-        'father_age',
-        'father_residence',
-        'father_education',
+        'father_address',
         'father_contact',
         'father_occupation',
-        'father_company',
-        'father_company_address',
-        'father_employment_status',
-
-        // Mother
-        'mother_living',
+        'father_income_bracket',
+        'mother_status',
         'mother_name',
-        'mother_age',
-        'mother_residence',
-        'mother_education',
+        'mother_address',
         'mother_contact',
         'mother_occupation',
-        'mother_company',
-        'mother_company_address',
-        'mother_employment_status',
-
-        // ------------------- Additional Family Information -------------------
-        'family_members_count',
+        'mother_income_bracket',
         'siblings_count',
-        'family_form',
 
-        // ------------------- Income Information -------------------
-        'monthly_family_income_bracket',
-        'other_income_sources',
-
-        // ------------------- House Profile & Utilities -------------------
-        'vehicle_ownership',
-        'appliances',
-        'house_ownership',
-        'house_material',
-        'house_type',
-        'cooking_utilities',
-        'water_source',
-        'electricity_source',
-        'monthly_bills_electric',
-        'monthly_bills_telephone',
-        'monthly_bills_internet',
+        // ------------------- Essay / Question -------------------
+        'reason_for_applying',
 
         // ------------------- Certification -------------------
         'student_signature',
         'date_signed',
+
+        // ------------------- Status / Meta -------------------
+        'form_status',
+        'reviewer_remarks',
+        'reviewed_by',
     ];
 
     protected $casts = [
         'has_existing_scholarship' => 'boolean',
-        'father_living' => 'boolean',
-        'mother_living' => 'boolean',
-        'gwa' => 'float',
+        'previous_gwa' => 'float',
         'birthdate' => 'date',
         'date_signed' => 'date',
-        'monthly_bills_electric' => 'decimal:2',
-        'monthly_bills_telephone' => 'decimal:2',
-        'monthly_bills_internet' => 'decimal:2',
     ];
 
     /**

@@ -16,101 +16,68 @@ class FormController extends Controller
             'last_name'           => 'nullable|string',
             'first_name'          => 'nullable|string',
             'middle_name'         => 'nullable|string',
+            'age'                 => 'nullable|integer',
+            'sex'                 => 'nullable|in:male,female',
+            'civil_status'        => 'nullable|string',
+            'birthdate'           => 'nullable|date',
+            'birthplace'          => 'nullable|string',
+            'email'               => 'nullable|email',
+            'contact_number'      => 'nullable|string',
             'street_barangay'     => 'nullable|string',
             'town_city'           => 'nullable|string',
             'province'            => 'nullable|string',
-            'zip_code'            => 'nullable|digits:4',
-            'age'                 => 'nullable|integer',
-            'sex'                 => 'nullable|string',
-            'civil_status'        => 'nullable|string',
+            'zip_code'            => 'nullable|string',
+            'citizenship'         => 'nullable|string',
             'disability'          => 'nullable|string',
             'tribe'               => 'nullable|string',
-            'citizenship'         => 'nullable|string',
-            'birthdate'           => 'nullable|date',
-            'birthplace'          => 'nullable|string',
-            'birth_order'         => 'nullable|string',
-            'email'               => 'nullable|email',
-            'telephone'           => 'nullable|string',
-            'religion'            => 'nullable|string',
-            'highschool_type'     => 'nullable|string',
-            'monthly_allowance'   => 'nullable|string',
-            'living_arrangement'  => 'nullable|string',
-            'living_arrangement_other' => 'nullable|string',
-            'transportation'      => 'nullable|string',
-            'transportation_other' => 'nullable|string',
 
             // ------------------- Academic Data -------------------
-            'education_level'              => 'nullable|string',
+            'sr_code'                      => 'nullable|string',
+            'education_level'              => 'nullable|in:Undergraduate,Graduate School,Integrated School',
             'program'                      => 'nullable|string',
-            'college'                      => 'nullable|string',
+            'college_department'           => 'nullable|string',
             'year_level'                   => 'nullable|string',
             'campus'                       => 'nullable|string',
-            'gwa'                          => 'nullable|numeric|between:1.00,5.00',
-            'honors'                       => 'nullable|string',
-            'units_enrolled'               => 'nullable|string',
+            'previous_gwa'                 => 'nullable|numeric|between:1.00,5.00',
+            'honors_received'              => 'nullable|string',
+            'units_enrolled'               => 'nullable|integer',
+            'scholarship_applied'          => 'nullable|string',
+            'semester'                     => 'nullable|string',
             'academic_year'                => 'nullable|string',
             'has_existing_scholarship'     => 'nullable|boolean',
             'existing_scholarship_details' => 'nullable|string',
 
             // ------------------- Family Data -------------------
-            // Father
-            'father_living'            => 'nullable|boolean',
-            'father_name'              => 'nullable|string',
-            'father_age'               => 'nullable|integer',
-            'father_residence'         => 'nullable|string',
-            'father_education'         => 'nullable|string',
-            'father_contact'           => 'nullable|string',
-            'father_occupation'        => 'nullable|string',
-            'father_company'           => 'nullable|string',
-            'father_company_address'   => 'nullable|string',
-            'father_employment_status' => 'nullable|string',
+            'father_status'        => 'nullable|in:living,deceased',
+            'father_name'          => 'nullable|string',
+            'father_address'       => 'nullable|string',
+            'father_contact'       => 'nullable|string',
+            'father_occupation'    => 'nullable|string',
+            'father_income_bracket' => 'nullable|string',
+            'mother_status'        => 'nullable|in:living,deceased',
+            'mother_name'          => 'nullable|string',
+            'mother_address'       => 'nullable|string',
+            'mother_contact'       => 'nullable|string',
+            'mother_occupation'    => 'nullable|string',
+            'mother_income_bracket' => 'nullable|string',
+            'siblings_count'       => 'nullable|integer',
 
-            // Mother
-            'mother_living'            => 'nullable|boolean',
-            'mother_name'              => 'nullable|string',
-            'mother_age'               => 'nullable|integer',
-            'mother_residence'         => 'nullable|string',
-            'mother_education'         => 'nullable|string',
-            'mother_contact'           => 'nullable|string',
-            'mother_occupation'        => 'nullable|string',
-            'mother_company'           => 'nullable|string',
-            'mother_company_address'   => 'nullable|string',
-            'mother_employment_status' => 'nullable|string',
-
-            // ------------------- Additional Family Information -------------------
-            'family_members_count' => 'nullable|integer',
-            'siblings_count' => 'nullable|integer',
-            'family_form' => 'nullable|string',
-
-            // ------------------- Income Information -------------------
-            'monthly_family_income_bracket' => 'nullable|string',
-            'other_income_sources' => 'nullable|string',
-
-            // ------------------- House Profile & Utilities -------------------
-            'vehicle_ownership' => 'nullable|string',
-            'appliances' => 'nullable|string',
-            'house_ownership' => 'nullable|string',
-            'house_material' => 'nullable|string',
-            'house_type' => 'nullable|string',
-            'cooking_utilities' => 'nullable|string',
-            'water_source' => 'nullable|string',
-            'electricity_source' => 'nullable|string',
-            'monthly_bills_electric' => 'nullable|numeric',
-            'monthly_bills_telephone' => 'nullable|numeric',
-            'monthly_bills_internet' => 'nullable|numeric',
+            // ------------------- Essay / Question -------------------
+            'reason_for_applying' => 'nullable|string',
 
             // ------------------- Certification -------------------
             'student_signature' => 'nullable|string',
-            'date_signed' => 'nullable|date',
+            'date_signed'       => 'nullable|date',
         ]);
 
         // ✅ Ensure empty string → NULL for GWA
-        $validated['gwa'] = $request->filled('gwa') ? $request->gwa : null;
+        $validated['previous_gwa'] = $request->filled('previous_gwa') ? $request->previous_gwa : null;
 
         // Ensure proper boolean conversion
         $validated['has_existing_scholarship'] = $request->boolean('has_existing_scholarship');
-        $validated['father_living'] = $request->boolean('father_living');
-        $validated['mother_living'] = $request->boolean('mother_living');
+
+        // Set form_status to 'submitted' when form is submitted
+        $validated['form_status'] = 'submitted';
 
         // Inject user_id into validated data
         $validated['user_id'] = $userId;

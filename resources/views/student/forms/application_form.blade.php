@@ -66,47 +66,16 @@ if (!$user) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label class="block font-semibold text-gray-700 mb-1">Last Name</label>
-              <input type="text" name="last_name" value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+              <label class="block font-semibold text-gray-700 mb-1">Last Name <span class="text-red-500">*</span></label>
+              <input type="text" name="last_name" required value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
             </div>
             <div>
-              <label class="block font-semibold text-gray-700 mb-1">First Name</label>
-              <input type="text" name="first_name" value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+              <label class="block font-semibold text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
+              <input type="text" name="first_name" required value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
             </div>
             <div>
               <label class="block font-semibold text-gray-700 mb-1">Middle Name</label>
               <input type="text" name="middle_name" value="{{ old('middle_name', $existingApplication->middle_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-          </div>
-
-          <div class="md:col-span-2 grid grid-cols-7 gap-4">
-            <div class="col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Street / Barangay</label>
-              <input type="text" name="street_barangay" 
-                    value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" 
-                    class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-
-            <div class="col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Town / City / Municipality</label>
-              <input type="text" name="town_city" 
-                    value="{{ old('town_city', $existingApplication->town_city ?? '') }}" 
-                    class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-
-            <div class="col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Province</label>
-              <input type="text" name="province" 
-                    value="{{ old('province', $existingApplication->province ?? '') }}" 
-                    class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-
-            <div class="col-span-1">
-              <label class="block font-semibold text-gray-700 mb-1">ZIP Code</label>
-              <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" 
-                  value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" 
-                  class="w-full border border-red-500 px-3 py-2 rounded-md text-center"
-                  title="ZIP Code must be 4 digits">
             </div>
           </div>
 
@@ -153,13 +122,44 @@ if (!$user) {
           </div>
 
           <div>
-            <label class="block font-semibold text-gray-700 mb-1">Disability</label>
-            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <label class="block font-semibold text-gray-700 mb-1">Email</label>
+            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
           </div>
 
           <div>
-            <label class="block font-semibold text-gray-700 mb-1">Tribe</label>
-            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <label class="block font-semibold text-gray-700 mb-1">Contact Number</label>
+            <input type="text" name="contact_number" value="{{ old('contact_number', $existingApplication->contact_number ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+          </div>
+
+          <div class="md:col-span-2 grid grid-cols-7 gap-4">
+            <div class="col-span-2">
+              <label class="block font-semibold text-gray-700 mb-1">Street / Barangay</label>
+              <input type="text" name="street_barangay" 
+                    value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" 
+                    class="w-full border border-red-500 px-3 py-2 rounded-md">
+            </div>
+
+            <div class="col-span-2">
+              <label class="block font-semibold text-gray-700 mb-1">Town / City / Municipality</label>
+              <input type="text" name="town_city" 
+                    value="{{ old('town_city', $existingApplication->town_city ?? '') }}" 
+                    class="w-full border border-red-500 px-3 py-2 rounded-md">
+            </div>
+
+            <div class="col-span-2">
+              <label class="block font-semibold text-gray-700 mb-1">Province</label>
+              <input type="text" name="province" 
+                    value="{{ old('province', $existingApplication->province ?? '') }}" 
+                    class="w-full border border-red-500 px-3 py-2 rounded-md">
+            </div>
+
+            <div class="col-span-1">
+              <label class="block font-semibold text-gray-700 mb-1">ZIP Code</label>
+              <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" 
+                  value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" 
+                  class="w-full border border-red-500 px-3 py-2 rounded-md text-center"
+                  title="ZIP Code must be 4 digits">
+            </div>
           </div>
 
           <div>
@@ -168,28 +168,13 @@ if (!$user) {
           </div>
 
           <div>
-            <label class="block font-semibold text-gray-700 mb-1">Birth Order</label>
-            <select name="birth_order" class="w-full border border-red-500 px-3 py-2 rounded-md">
-                <option value="">-- Select Birth Order --</option>
-                <option value="First Born" {{ old('birth_order', $existingApplication->birth_order ?? '') == 'First Born' ? 'selected' : '' }}>First Born</option>
-                <option value="Middle Born" {{ old('birth_order', $existingApplication->birth_order ?? '') == 'Middle Born' ? 'selected' : '' }}>Middle Born</option>
-                <option value="Last Born" {{ old('birth_order', $existingApplication->birth_order ?? '') == 'Last Born' ? 'selected' : '' }}>Last Born</option>
-            </select>
+            <label class="block font-semibold text-gray-700 mb-1">Disability</label>
+            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
           </div>
 
           <div>
-            <label class="block font-semibold text-gray-700 mb-1">Email</label>
-            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-          </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Telephone</label>
-            <input type="text" name="telephone" value="{{ old('telephone', $existingApplication->telephone ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-          </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Religion</label>
-            <input type="text" name="religion" value="{{ old('religion', $existingApplication->religion ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+            <label class="block font-semibold text-gray-700 mb-1">Tribe</label>
+            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
           </div>
         </div>
       </section>
@@ -198,67 +183,26 @@ if (!$user) {
       <section class="mt-8">
         <h2 class="text-xl font-semibold text-bsu-red mb-6">Academic Data</h2>
 
-        <div class="mb-4">
-          <label class="block mb-1 font-medium text-gray-700">High School Type</label>
-          <select name="highschool_type" class="w-full border border-red-500 rounded-md p-2">
-              <option value="">-- Select High School Type --</option>
-              @foreach (['Public', 'Private'] as $type)
-                  <option value="{{ $type }}" 
-                      {{ old('highschool_type', $existingApplication->highschool_type ?? '') == $type ? 'selected' : '' }}>
-                      {{ $type }}
-                  </option>
-              @endforeach
-          </select>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">SR Code</label>
+            <input type="text" name="sr_code" 
+              value="{{ old('sr_code', $existingApplication->sr_code ?? '') }}"
+              class="w-full border border-red-500 rounded-md p-2">
+          </div>
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Educational Level</label>
+            <select name="education_level" class="w-full border border-red-500 rounded-md p-2">
+                <option value="">-- Select Educational Level --</option>
+                <option value="Undergraduate" {{ old('education_level', $existingApplication->education_level ?? '') == 'Undergraduate' ? 'selected' : '' }}>Undergraduate</option>
+                <option value="Graduate School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
+                <option value="Integrated School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Integrated School' ? 'selected' : '' }}>Integrated School</option>
+            </select>
+          </div>
         </div>
 
-        <div class="mb-4">
-          <label class="block mb-1 font-medium text-gray-700">Monthly Allowance</label>
-          <input type="number" name="monthly_allowance" placeholder="₱"
-            value="{{ old('monthly_allowance', $existingApplication->monthly_allowance ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
-        </div>
-
-        <div class="mb-4">
-          <label class="block mb-1 font-medium text-gray-700">Living Arrangement</label>
-          <select name="living_arrangement" class="w-full border border-red-500 rounded-md p-2" onchange="handleLivingArrangementChange(this)">
-              <option value="">-- Select Living Arrangement --</option>
-              <option value="Living with Parents" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Living with Parents' ? 'selected' : '' }}>Living with Parents</option>
-              <option value="Living with Relatives" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Living with Relatives' ? 'selected' : '' }}>Living with Relatives</option>
-              <option value="Owned House" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Owned House' ? 'selected' : '' }}>Owned House</option>
-              <option value="Boarding House" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Boarding House' ? 'selected' : '' }}>Boarding House</option>
-              <option value="Apartment" {{ old('living_arrangement', $existingApplication->living_arrangement ?? '') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
-              <option value="Others">Others (Please specify)</option>
-          </select>
-          <input type="text" name="living_arrangement_other" placeholder="Please specify" 
-            value="{{ old('living_arrangement_other', $existingApplication->living_arrangement_other ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2 mt-2 hidden" id="living_arrangement_other">
-        </div>
-
-        <div class="mb-4">
-          <label class="block mb-1 font-medium text-gray-700">Mode of Transportation</label>
-          <select name="transportation" class="w-full border border-red-500 rounded-md p-2" onchange="handleTransportationChange(this)">
-              <option value="">-- Select Transportation --</option>
-              <option value="Public Transportation" {{ old('transportation', $existingApplication->transportation ?? '') == 'Public Transportation' ? 'selected' : '' }}>Public Transportation</option>
-              <option value="Own Vehicle" {{ old('transportation', $existingApplication->transportation ?? '') == 'Own Vehicle' ? 'selected' : '' }}>Own Vehicle</option>
-              <option value="School Service" {{ old('transportation', $existingApplication->transportation ?? '') == 'School Service' ? 'selected' : '' }}>School Service</option>
-              <option value="Others">Others (Please specify)</option>
-          </select>
-          <input type="text" name="transportation_other" placeholder="Please specify" 
-            value="{{ old('transportation_other', $existingApplication->transportation_other ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2 mt-2 hidden" id="transportation_other">
-        </div>
-
-        <div class="mb-4">
-          <label class="block mb-1 font-medium text-gray-700">Educational Level</label>
-          <select name="education_level" class="w-full border border-red-500 rounded-md p-2">
-              <option value="">-- Select Educational Level --</option>
-              <option value="Undergraduate" {{ old('education_level', $existingApplication->education_level ?? '') == 'Undergraduate' ? 'selected' : '' }}>Undergraduate</option>
-              <option value="Graduate School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
-              <option value="Integrated / Laboratory School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Integrated / Laboratory School' ? 'selected' : '' }}>Integrated / Laboratory School</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700">Program</label>
             <select name="program" class="w-full border border-red-500 rounded-md p-2">
@@ -274,17 +218,17 @@ if (!$user) {
 
           <div>
             <label class="block mb-1 font-medium text-gray-700">College/Department</label>
-            <select name="college" class="w-full border border-red-500 rounded-md p-2">
+            <select name="college_department" class="w-full border border-red-500 rounded-md p-2">
                 <option value="">-- Select College/Department --</option>
-                <option value="CICS" {{ old('college', $existingApplication->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS (College of Information and Computing Sciences)</option>
-                <option value="CTE" {{ old('college', $existingApplication->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE (College of Teacher Education)</option>
-                <option value="CABEIHM" {{ old('college', $existingApplication->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM (College of Accountancy, Business, Economics and International Hospitality Management)</option>
-                <option value="CAS" {{ old('college', $existingApplication->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS (College of Arts and Sciences)</option>
+                <option value="CICS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CICS' ? 'selected' : '' }}>CICS (College of Information and Computing Sciences)</option>
+                <option value="CTE" {{ old('college_department', $existingApplication->college_department ?? '') == 'CTE' ? 'selected' : '' }}>CTE (College of Teacher Education)</option>
+                <option value="CABEIHM" {{ old('college_department', $existingApplication->college_department ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM (College of Accountancy, Business, Economics and International Hospitality Management)</option>
+                <option value="CAS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CAS' ? 'selected' : '' }}>CAS (College of Arts and Sciences)</option>
             </select>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700">Grade/Year Level</label>
             <select name="year_level" class="w-full border border-red-500 rounded-md p-2">
@@ -293,35 +237,29 @@ if (!$user) {
                 <option value="2nd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
                 <option value="3rd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
                 <option value="4th Year" {{ old('year_level', $existingApplication->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
+                <option value="5th Year" {{ old('year_level', $existingApplication->year_level ?? '') == '5th Year' ? 'selected' : '' }}>5th Year</option>
             </select>
           </div>
           <div>
             <label class="block mb-1 font-medium text-gray-700">Campus</label>
-            <select name="campus" class="w-full border border-red-500 rounded-md p-2">
-                <option value="">-- Select Campus --</option>
-                @foreach (['Pablo Borbon', 'Alangilan', 'Lipa', 'Nasugbu', 'Malvar', 'Lemery', 'Rosario', 'San Juan', 'Lobo', 'Mabini', 'Balayan'] as $campus)
-                    <option value="{{ $campus }}" 
-                        {{ old('campus', $existingApplication->campus ?? '') == $campus ? 'selected' : '' }}
-                        {{ (auth()->user()->campus_id ?? '') == $campus ? 'selected' : '' }}>
-                        {{ $campus }}
-                    </option>
-                @endforeach
-            </select>
+            <input type="text" name="campus" 
+              value="{{ old('campus', $existingApplication->campus ?? '') }}"
+              class="w-full border border-red-500 rounded-md p-2">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700">GWA</label>
-            <input type="number" name="gwa" step="0.01" min="1.00" max="5.00" 
+            <label class="block mb-1 font-medium text-gray-700">Previous GWA</label>
+            <input type="number" name="previous_gwa" step="0.01" min="1.00" max="5.00" 
                    placeholder="0.00"
-                   value="{{ old('gwa', $existingApplication->gwa ?? '') }}"
+                   value="{{ old('previous_gwa', $existingApplication->previous_gwa ?? '') }}"
                    class="w-full border border-red-500 rounded-md p-2">
         </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700">Honors Received</label>
-            <input type="text" name="honors" placeholder="If any"
-              value="{{ old('honors', $existingApplication->honors ?? '') }}"
+            <input type="text" name="honors_received" placeholder="If any"
+              value="{{ old('honors_received', $existingApplication->honors_received ?? '') }}"
               class="w-full border border-red-500 rounded-md p-2">
           </div>
           <div>
@@ -332,11 +270,25 @@ if (!$user) {
           </div>
         </div>
 
-        <div class="mt-4">
-          <label class="block mb-1 font-medium text-gray-700">Academic Year</label>
-          <input type="text" name="academic_year" placeholder="e.g., 2025-2026"
-            value="{{ old('academic_year', $existingApplication->academic_year ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Scholarship Applied</label>
+            <input type="text" name="scholarship_applied" 
+              value="{{ old('scholarship_applied', $existingApplication->scholarship_applied ?? '') }}"
+              class="w-full border border-red-500 rounded-md p-2">
+          </div>
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Semester</label>
+            <input type="text" name="semester" placeholder="e.g., 1st Semester"
+              value="{{ old('semester', $existingApplication->semester ?? '') }}"
+              class="w-full border border-red-500 rounded-md p-2">
+          </div>
+          <div>
+            <label class="block mb-1 font-medium text-gray-700">Academic Year</label>
+            <input type="text" name="academic_year" placeholder="e.g., 2025-2026"
+              value="{{ old('academic_year', $existingApplication->academic_year ?? '') }}"
+              class="w-full border border-red-500 rounded-md p-2">
+          </div>
         </div>
 
         <div class="mt-6">
@@ -371,231 +323,106 @@ if (!$user) {
         <div class="border border-gray-300 rounded-lg p-4 mb-6">
           <h3 class="text-lg font-semibold text-gray-700 mb-2">Father's Information</h3>
 
-          <label class="block font-medium mb-1">Is Father Living?</label>
-          <select name="father_living" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-            <option value="1" {{ old('father_living', $existingApplication->father_living ?? '') == 1 ? 'selected' : '' }}>Yes</option>
-            <option value="0" {{ old('father_living', $existingApplication->father_living ?? '') == 0 ? 'selected' : '' }}>No</option>
-          </select>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Father Status</label>
+              <select name="father_status" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">-- Select Status --</option>
+                <option value="living" {{ old('father_status', $existingApplication->father_status ?? '') == 'living' ? 'selected' : '' }}>Living</option>
+                <option value="deceased" {{ old('father_status', $existingApplication->father_status ?? '') == 'deceased' ? 'selected' : '' }}>Deceased</option>
+              </select>
+            </div>
 
-          <label class="block font-medium mb-1">Father's Name</label>
-          <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Father's Name</label>
+              <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
 
-          <label class="block font-medium mb-1">Father's Age</label>
-          <input type="number" name="father_age" value="{{ old('father_age', $existingApplication->father_age ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Father's Address</label>
+              <input type="text" name="father_address" value="{{ old('father_address', $existingApplication->father_address ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
 
-          <label class="block font-medium mb-1">Father's Residence</label>
-          <input type="text" name="father_residence" value="{{ old('father_residence', $existingApplication->father_residence ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Father's Contact</label>
+              <input type="text" name="father_contact" value="{{ old('father_contact', $existingApplication->father_contact ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
 
-          <label class="block font-medium mb-1">Father's Education</label>
-          <input type="text" name="father_education" value="{{ old('father_education', $existingApplication->father_education ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium mb-1">Father's Occupation</label>
+              <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
 
-          <label class="block font-medium mb-1">Father's Contact</label>
-          <input type="text" name="father_contact" value="{{ old('father_contact', $existingApplication->father_contact ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Father's Occupation</label>
-          <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Father's Company</label>
-          <input type="text" name="father_company" value="{{ old('father_company', $existingApplication->father_company ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Father's Company Address</label>
-          <input type="text" name="father_company_address" value="{{ old('father_company_address', $existingApplication->father_company_address ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Father's Employment Status</label>
-          <input type="text" name="father_employment_status" value="{{ old('father_employment_status', $existingApplication->father_employment_status ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div>
+              <label class="block font-medium mb-1">Father's Income Bracket</label>
+              <input type="text" name="father_income_bracket" value="{{ old('father_income_bracket', $existingApplication->father_income_bracket ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
         </div>
 
         <!-- Mother Section -->
-        <div class="border border-gray-300 rounded-lg p-4">
+        <div class="border border-gray-300 rounded-lg p-4 mb-6">
           <h3 class="text-lg font-semibold text-gray-700 mb-2">Mother's Information</h3>
 
-          <label class="block font-medium mb-1">Is Mother Living?</label>
-          <select name="mother_living" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-            <option value="1" {{ old('mother_living', $existingApplication->mother_living ?? '') == 1 ? 'selected' : '' }}>Yes</option>
-            <option value="0" {{ old('mother_living', $existingApplication->mother_living ?? '') == 0 ? 'selected' : '' }}>No</option>
-          </select>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Mother Status</label>
+              <select name="mother_status" class="w-full border border-red-500 rounded-md px-3 py-2">
+                <option value="">-- Select Status --</option>
+                <option value="living" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'living' ? 'selected' : '' }}>Living</option>
+                <option value="deceased" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'deceased' ? 'selected' : '' }}>Deceased</option>
+              </select>
+            </div>
 
-          <label class="block font-medium mb-1">Mother's Name</label>
-          <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Mother's Name</label>
+              <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
 
-          <label class="block font-medium mb-1">Mother's Age</label>
-          <input type="number" name="mother_age" value="{{ old('mother_age', $existingApplication->mother_age ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Mother's Address</label>
+              <input type="text" name="mother_address" value="{{ old('mother_address', $existingApplication->mother_address ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
 
-          <label class="block font-medium mb-1">Mother's Residence</label>
-          <input type="text" name="mother_residence" value="{{ old('mother_residence', $existingApplication->mother_residence ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Mother's Contact</label>
+              <input type="text" name="mother_contact" value="{{ old('mother_contact', $existingApplication->mother_contact ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
 
-          <label class="block font-medium mb-1">Mother's Education</label>
-          <input type="text" name="mother_education" value="{{ old('mother_education', $existingApplication->mother_education ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Mother's Occupation</label>
+              <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
 
-          <label class="block font-medium mb-1">Mother's Contact</label>
-          <input type="text" name="mother_contact" value="{{ old('mother_contact', $existingApplication->mother_contact ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
+            <div>
+              <label class="block font-medium mb-1">Mother's Income Bracket</label>
+              <input type="text" name="mother_income_bracket" value="{{ old('mother_income_bracket', $existingApplication->mother_income_bracket ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            </div>
+          </div>
+        </div>
 
-          <label class="block font-medium mb-1">Mother's Occupation</label>
-          <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Mother's Company</label>
-          <input type="text" name="mother_company" value="{{ old('mother_company', $existingApplication->mother_company ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Mother's Company Address</label>
-          <input type="text" name="mother_company_address" value="{{ old('mother_company_address', $existingApplication->mother_company_address ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2 mb-4">
-
-          <label class="block font-medium mb-1">Mother's Employment Status</label>
-          <input type="text" name="mother_employment_status" value="{{ old('mother_employment_status', $existingApplication->mother_employment_status ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+        <div class="mb-4">
+          <label class="block font-medium mb-1">Number of Siblings</label>
+          <input type="number" name="siblings_count" value="{{ old('siblings_count', $existingApplication->siblings_count ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
         </div>
       </section>
 
-      <!-- Additional Family Information Section -->
+      <!-- Essay / Question Section -->
       <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">Additional Family Information</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block font-medium mb-1">Number of Family Members</label>
-            <input type="number" name="family_members_count" value="{{ old('family_members_count', $existingApplication->family_members_count ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Number of Siblings</label>
-            <input type="number" name="siblings_count" value="{{ old('siblings_count', $existingApplication->siblings_count ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Family Form</label>
-            <input type="text" name="family_form" placeholder="e.g., Living together, Separated, Annulled" value="{{ old('family_form', $existingApplication->family_form ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-          </div>
-        </div>
-      </section>
-
-      <!-- Income Information Section -->
-      <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">Income Information</h2>
-        <div class="space-y-4">
-          <div>
-            <label class="block font-medium mb-1">Monthly Family Income Bracket</label>
-            <select name="monthly_family_income_bracket" class="w-full border border-red-500 rounded-md px-3 py-2">
-              <option value="">Select Income Bracket</option>
-              <option value="<10957" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '<10957' ? 'selected' : '' }}>Below ₱10,957</option>
-              <option value="10957-21194" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '10957-21194' ? 'selected' : '' }}>₱10,957 - ₱21,194</option>
-              <option value="21195-42290" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '21195-42290' ? 'selected' : '' }}>₱21,195 - ₱42,290</option>
-              <option value="42291-84480" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '42291-84480' ? 'selected' : '' }}>₱42,291 - ₱84,480</option>
-              <option value="84481-140800" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '84481-140800' ? 'selected' : '' }}>₱84,481 - ₱140,800</option>
-              <option value="140801-211200" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '140801-211200' ? 'selected' : '' }}>₱140,801 - ₱211,200</option>
-              <option value=">211200" {{ old('monthly_family_income_bracket', $existingApplication->monthly_family_income_bracket ?? '') == '>211200' ? 'selected' : '' }}>Above ₱211,200</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Other Income Sources</label>
-            <textarea name="other_income_sources" rows="3" placeholder="e.g., Relatives - ₱5,000, Government Assistance - ₱2,000" class="w-full border border-red-500 rounded-md px-3 py-2">{{ old('other_income_sources', $existingApplication->other_income_sources ?? '') }}</textarea>
-            <p class="text-sm text-gray-500 mt-1">List other sources of income and amounts (if any)</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- House Profile & Utilities Section -->
-      <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">House Profile & Utilities</h2>
-        <div class="space-y-6">
-          <!-- Vehicle Ownership -->
-          <div>
-            <label class="block font-medium mb-1">Vehicle Ownership</label>
-            <textarea name="vehicle_ownership" rows="2" placeholder="e.g., Car - 1, Motorcycle - 2, Bicycle - 1" class="w-full border border-red-500 rounded-md px-3 py-2">{{ old('vehicle_ownership', $existingApplication->vehicle_ownership ?? '') }}</textarea>
-          </div>
-
-          <!-- Appliances -->
-          <div>
-            <label class="block font-medium mb-1">Appliances</label>
-            <textarea name="appliances" rows="3" placeholder="e.g., TV - 2, Refrigerator - 1, Washing Machine - 1, Air Conditioner - 1" class="w-full border border-red-500 rounded-md px-3 py-2">{{ old('appliances', $existingApplication->appliances ?? '') }}</textarea>
-          </div>
-
-          <!-- House Information -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block font-medium mb-1">House Ownership</label>
-              <select name="house_ownership" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">Select Ownership</option>
-                <option value="owned" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'owned' ? 'selected' : '' }}>Owned</option>
-                <option value="rented" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'rented' ? 'selected' : '' }}>Rented</option>
-                <option value="government" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'government' ? 'selected' : '' }}>Government Housing</option>
-                <option value="inherited" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'inherited' ? 'selected' : '' }}>Inherited</option>
-                <option value="other" {{ old('house_ownership', $existingApplication->house_ownership ?? '') == 'other' ? 'selected' : '' }}>Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block font-medium mb-1">House Material</label>
-              <select name="house_material" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">Select Material</option>
-                <option value="concrete" {{ old('house_material', $existingApplication->house_material ?? '') == 'concrete' ? 'selected' : '' }}>Concrete</option>
-                <option value="half-concrete" {{ old('house_material', $existingApplication->house_material ?? '') == 'half-concrete' ? 'selected' : '' }}>Half Concrete</option>
-                <option value="wood" {{ old('house_material', $existingApplication->house_material ?? '') == 'wood' ? 'selected' : '' }}>Wood</option>
-                <option value="bamboo" {{ old('house_material', $existingApplication->house_material ?? '') == 'bamboo' ? 'selected' : '' }}>Bamboo</option>
-                <option value="mixed" {{ old('house_material', $existingApplication->house_material ?? '') == 'mixed' ? 'selected' : '' }}>Mixed Materials</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block font-medium mb-1">House Type</label>
-              <select name="house_type" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">Select Type</option>
-                <option value="single" {{ old('house_type', $existingApplication->house_type ?? '') == 'single' ? 'selected' : '' }}>Single</option>
-                <option value="duplex" {{ old('house_type', $existingApplication->house_type ?? '') == 'duplex' ? 'selected' : '' }}>Duplex</option>
-                <option value="multi-unit" {{ old('house_type', $existingApplication->house_type ?? '') == 'multi-unit' ? 'selected' : '' }}>Multi-unit</option>
-                <option value="apartment" {{ old('house_type', $existingApplication->house_type ?? '') == 'apartment' ? 'selected' : '' }}>Apartment</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Utilities -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block font-medium mb-1">Cooking Utilities</label>
-              <select name="cooking_utilities" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">Select Cooking Utility</option>
-                <option value="lpg" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'lpg' ? 'selected' : '' }}>LPG</option>
-                <option value="wood" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'wood' ? 'selected' : '' }}>Wood</option>
-                <option value="kerosene" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'kerosene' ? 'selected' : '' }}>Kerosene</option>
-                <option value="electric" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'electric' ? 'selected' : '' }}>Electric</option>
-                <option value="charcoal" {{ old('cooking_utilities', $existingApplication->cooking_utilities ?? '') == 'charcoal' ? 'selected' : '' }}>Charcoal</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block font-medium mb-1">Water Source</label>
-              <select name="water_source" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">Select Water Source</option>
-                <option value="piped" {{ old('water_source', $existingApplication->water_source ?? '') == 'piped' ? 'selected' : '' }}>Piped Water</option>
-                <option value="well" {{ old('water_source', $existingApplication->water_source ?? '') == 'well' ? 'selected' : '' }}>Well</option>
-                <option value="spring" {{ old('water_source', $existingApplication->water_source ?? '') == 'spring' ? 'selected' : '' }}>Spring</option>
-                <option value="rainwater" {{ old('water_source', $existingApplication->water_source ?? '') == 'rainwater' ? 'selected' : '' }}>Rainwater</option>
-                <option value="bottled" {{ old('water_source', $existingApplication->water_source ?? '') == 'bottled' ? 'selected' : '' }}>Bottled Water</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-medium mb-1">Electricity Source</label>
-            <select name="electricity_source" class="w-full border border-red-500 rounded-md px-3 py-2">
-              <option value="">Select Electricity Source</option>
-              <option value="grid" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'grid' ? 'selected' : '' }}>Grid Connection</option>
-              <option value="solar" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'solar' ? 'selected' : '' }}>Solar Power</option>
-              <option value="generator" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'generator' ? 'selected' : '' }}>Generator</option>
-              <option value="battery" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'battery' ? 'selected' : '' }}>Battery</option>
-              <option value="none" {{ old('electricity_source', $existingApplication->electricity_source ?? '') == 'none' ? 'selected' : '' }}>No Electricity</option>
-            </select>
-          </div>
-
-          <!-- Monthly Bills -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block font-medium mb-1">Monthly Electric Bill (₱)</label>
-              <input type="number" name="monthly_bills_electric" step="0.01" value="{{ old('monthly_bills_electric', $existingApplication->monthly_bills_electric ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
-            <div>
-              <label class="block font-medium mb-1">Monthly Telephone Bill (₱)</label>
-              <input type="number" name="monthly_bills_telephone" step="0.01" value="{{ old('monthly_bills_telephone', $existingApplication->monthly_bills_telephone ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
-            <div>
-              <label class="block font-medium mb-1">Monthly Internet Bill (₱)</label>
-              <input type="number" name="monthly_bills_internet" step="0.01" value="{{ old('monthly_bills_internet', $existingApplication->monthly_bills_internet ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
-          </div>
+        <h2 class="text-xl font-semibold text-bsu-red mb-6">Essay / Question</h2>
+        <div>
+          <label class="block font-medium mb-1">Reason for Applying</label>
+          <textarea name="reason_for_applying" rows="5" 
+            class="w-full border border-red-500 rounded-md px-3 py-2"
+            placeholder="Please explain your reason for applying for this scholarship...">{{ old('reason_for_applying', $existingApplication->reason_for_applying ?? '') }}</textarea>
         </div>
       </section>
 
@@ -652,11 +479,8 @@ if (!$user) {
         Print Application
       </button>
     </div>
-  <style>
-    .form-input {
-      @apply border rounded px-4 py-2 w-full bg-white dark:bg-gray-700 dark:text-white;
-    }
-  </style>
+  </div>
+
   <script>
     const birthdateInput = document.getElementById('birthdate');
     const ageInput = document.getElementById('age');
@@ -684,32 +508,6 @@ if (!$user) {
       ageInput.value = calculateAge(birthDate);
     }
 
-    // Handle Living Arrangement "Others" option
-    function handleLivingArrangementChange(select) {
-      const otherInput = document.getElementById('living_arrangement_other');
-      if (select.value === 'Others') {
-        otherInput.classList.remove('hidden');
-        otherInput.required = true;
-      } else {
-        otherInput.classList.add('hidden');
-        otherInput.required = false;
-        otherInput.value = '';
-      }
-    }
-
-    // Handle Transportation "Others" option
-    function handleTransportationChange(select) {
-      const otherInput = document.getElementById('transportation_other');
-      if (select.value === 'Others') {
-        otherInput.classList.remove('hidden');
-        otherInput.required = true;
-      } else {
-        otherInput.classList.add('hidden');
-        otherInput.required = false;
-        otherInput.value = '';
-      }
-    }
-
     // Handle existing scholarship checkbox
     function toggleScholarshipDetails() {
       const yesRadio = document.querySelector('input[name="has_existing_scholarship"][value="1"]');
@@ -731,18 +529,6 @@ if (!$user) {
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
       toggleScholarshipDetails();
-      
-      // Check if living arrangement is "Others"
-      const livingArrangementSelect = document.querySelector('select[name="living_arrangement"]');
-      if (livingArrangementSelect && livingArrangementSelect.value === 'Others') {
-        handleLivingArrangementChange(livingArrangementSelect);
-      }
-      
-      // Check if transportation is "Others"
-      const transportationSelect = document.querySelector('select[name="transportation"]');
-      if (transportationSelect && transportationSelect.value === 'Others') {
-        handleTransportationChange(transportationSelect);
-      }
     });
 
     // Print Application Function

@@ -128,7 +128,7 @@ class Scholar extends Model
      */
     public function getGwaAttribute(): float
     {
-        return $this->user->form->gwa ?? 0.0;
+        return $this->user->form->previous_gwa ?? 0.0;
     }
 
     /**

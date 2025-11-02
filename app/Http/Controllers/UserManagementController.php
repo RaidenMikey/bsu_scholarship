@@ -223,7 +223,7 @@ class UserManagementController extends Controller
         $form = Form::where('user_id', $userId)->first();
 
         $hasApplication = $form !== null;
-        $gwa = $form ? floatval($form->gwa) : null;
+        $gwa = $form ? floatval($form->previous_gwa) : null;
 
         $scholarships = collect();
         if ($hasApplication) {
@@ -366,9 +366,8 @@ class UserManagementController extends Controller
         }
 
         $existingApplication = Form::where('user_id', session('user_id'))->first();
-        $existingLevels = $existingApplication ? json_decode($existingApplication->level, true) : [];
 
-        return view('student.forms.application_form', compact('existingApplication', 'existingLevels'));
+        return view('student.forms.application_form', compact('existingApplication'));
     }
 
     /**
@@ -399,7 +398,7 @@ class UserManagementController extends Controller
 
         $user = User::with('appliedScholarships')->find(session('user_id'));
         $form = Form::where('user_id', $user->id)->first();
-        $gwa = $form?->gwa;
+        $gwa = $form?->previous_gwa;
 
         $scholarships = collect();
 

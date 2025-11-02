@@ -116,7 +116,7 @@ class Scholarship extends Model
     {
         switch ($condition->name) {
             case 'gwa':
-                return $this->meetsGwaRequirement($formData->gwa);
+                return $this->meetsGwaRequirement($formData->previous_gwa);
                 
             case 'year_level':
                 return $this->meetsYearLevelRequirement($condition->value, $formData->year_level);
@@ -274,7 +274,7 @@ class Scholarship extends Model
     {
         switch ($conditionName) {
             case 'gwa':
-                return $formData->gwa ?? 'Not specified';
+                return $formData->previous_gwa ?? 'Not specified';
             case 'year_level':
                 return $formData->year_level ?? 'Not specified';
             case 'income':
