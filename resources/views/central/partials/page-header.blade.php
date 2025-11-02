@@ -10,11 +10,11 @@
         @endisset
     </div>
     <a href="{{ route('central.dashboard') }}" 
-       class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold bg-white hover:bg-bsu-red hover:text-white text-bsu-red rounded-lg border-2 border-bsu-red transition-colors whitespace-nowrap">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+       class="group inline-flex items-center justify-center px-4 py-2 text-sm font-semibold bg-white text-bsu-red rounded-lg border-2 border-bsu-red transition-all duration-200 whitespace-nowrap hover:bg-bsu-red">
+        <svg class="w-4 h-4 mr-2 transition-colors duration-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
-        Back to Dashboard
+        <span class="transition-colors duration-200 group-hover:text-white">Back to Dashboard</span>
     </a>
 </div>
 
