@@ -73,7 +73,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'Cultural Arts Scholarship',
-                'scholarship_type' => 'public',
+                'scholarship_type' => 'private',
                 'description'      => 'Supports students active in cultural and performing arts.',
                 'submission_deadline' => Carbon::now()->addWeeks(6),
                 'application_start_date' => Carbon::now()->subDays(3),
@@ -145,7 +145,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'First Generation Scholar',
-                'scholarship_type' => 'public',
+                'scholarship_type' => 'private',
                 'description'      => 'Supporting first-generation college students in their academic journey.',
                 'submission_deadline' => Carbon::now()->addMonths(1),
                 'application_start_date' => Carbon::now()->subDays(2),

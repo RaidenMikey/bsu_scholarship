@@ -6,8 +6,10 @@ use App\Http\Controllers\ApplicationManagementController;
 use App\Http\Controllers\ScholarshipManagementController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ReportController;
-use App\Models\Form;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StudentApplicationController;
+use App\Http\Controllers\SFAOEvaluationController;
+use App\Http\Controllers\CentralApplicationController;
 use Illuminate\Http\Request;
 
 // --------------------------------------------------
@@ -20,17 +22,17 @@ Route::get('/', fn() => view('home'));
 // AUTHENTICATION ROUTES
 // --------------------------------------------------
 
-Route::get('/login', [UserManagementController::class, 'showLogin'])->name('login');
-Route::post('/login', [UserManagementController::class, 'login']);
-Route::get('/logout', [UserManagementController::class, 'logout']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/logout', [AuthController::class, 'logout']);
 
-Route::get('/register', [UserManagementController::class, 'showRegister'])->name('register');
-Route::post('/register', [UserManagementController::class, 'register']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 
 // Email Verification
-Route::get('/email/verify', [UserManagementController::class, 'showVerificationNotice'])->name('verification.notice');
-Route::get('/email/verify/{id}/{hash}', [UserManagementController::class, 'verifyEmail'])->name('verification.verify');
-Route::post('/email/verification-notification', [UserManagementController::class, 'resendVerification'])->name('verification.send');
+Route::get('/email/verify', [AuthController::class, 'showVerificationNotice'])->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
+Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->name('verification.send');
 
 // --------------------------------------------------
 // SHARED ROUTES
@@ -57,9 +59,9 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     Route::post('/submit-application', [FormController::class, 'submit'])->name('submit');
     
     // Applications
-    Route::get('/applications', [ApplicationManagementController::class, 'studentApplications'])->name('applications');
-    Route::post('/apply', [ApplicationManagementController::class, 'apply'])->name('apply');
-    Route::post('/unapply', [ApplicationManagementController::class, 'unapply'])->name('unapply');
+    Route::get('/applications', [StudentApplicationController::class, 'index'])->name('applications');
+    Route::post('/apply', [StudentApplicationController::class, 'apply'])->name('apply');
+    Route::post('/unapply', [StudentApplicationController::class, 'withdraw'])->name('unapply');
     
     // Document Uploads (Legacy - Redirect to new multi-stage application)
     Route::get('/upload-documents/{scholarship_id}', function($scholarship_id) {
@@ -91,13 +93,13 @@ Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.'
     Route::get('/applicants/{user_id}/documents', [ApplicationManagementController::class, 'viewDocuments'])->name('viewDocuments');
     
     // Document Evaluation System (4-Stage Process)
-    Route::get('/evaluation/{user_id}', [ApplicationManagementController::class, 'showEvaluation'])->name('evaluation.show');
-    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents', [ApplicationManagementController::class, 'evaluateSfaoDocuments'])->name('evaluation.sfao-documents');
-    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents/evaluate', [ApplicationManagementController::class, 'submitSfaoEvaluation'])->name('evaluation.sfao-submit');
-    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents', [ApplicationManagementController::class, 'evaluateScholarshipDocuments'])->name('evaluation.scholarship-documents');
-    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents/evaluate', [ApplicationManagementController::class, 'submitScholarshipEvaluation'])->name('evaluation.scholarship-submit');
-    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/final', [ApplicationManagementController::class, 'finalEvaluation'])->name('evaluation.final');
-    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/final/submit', [ApplicationManagementController::class, 'submitFinalEvaluation'])->name('evaluation.final-submit');
+    Route::get('/evaluation/{user_id}', [SFAOEvaluationController::class, 'showEvaluation'])->name('evaluation.show');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents', [SFAOEvaluationController::class, 'evaluateSfaoDocuments'])->name('evaluation.sfao-documents');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents/evaluate', [SFAOEvaluationController::class, 'submitSfaoEvaluation'])->name('evaluation.sfao-submit');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents', [SFAOEvaluationController::class, 'evaluateScholarshipDocuments'])->name('evaluation.scholarship-documents');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents/evaluate', [SFAOEvaluationController::class, 'submitScholarshipEvaluation'])->name('evaluation.scholarship-submit');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/final', [SFAOEvaluationController::class, 'finalEvaluation'])->name('evaluation.final');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/final/submit', [SFAOEvaluationController::class, 'submitFinalEvaluation'])->name('evaluation.final-submit');
     
     // Application Management
     Route::post('/applications/{id}/approve', [ApplicationManagementController::class, 'sfaoApproveApplication'])->name('applications.approve');
@@ -147,9 +149,9 @@ Route::middleware(['web', 'checkUserExists:central'])
 
         
         // Application Management
-        Route::post('/applications/{id}/approve', [ApplicationManagementController::class, 'centralApproveApplication'])->name('applications.approve');
-        Route::post('/applications/{id}/reject', [ApplicationManagementController::class, 'centralRejectApplication'])->name('applications.reject');
-        Route::post('/applications/{id}/claim', [ApplicationManagementController::class, 'centralClaimGrant'])->name('applications.claim');
+        Route::post('/applications/{id}/approve', [CentralApplicationController::class, 'approve'])->name('applications.approve');
+        Route::post('/applications/{id}/reject', [CentralApplicationController::class, 'reject'])->name('applications.reject');
+        Route::post('/applications/{id}/claim', [CentralApplicationController::class, 'claimGrant'])->name('applications.claim');
         
         // Staff Management
         Route::post('/staff/invite', [UserManagementController::class, 'inviteStaff'])->name('staff.invite');
@@ -173,7 +175,7 @@ Route::middleware(['web', 'checkUserExists:central'])
         });
 
         // Endorsed Applicants Validation
-        Route::get('/endorsed-applications/{application}/validate', [ApplicationManagementController::class, 'showEndorsedValidation'])->name('endorsed.validate');
+        Route::get('/endorsed-applications/{application}/validate', [CentralApplicationController::class, 'showEndorsedValidation'])->name('endorsed.validate');
     });
 
 
@@ -184,41 +186,6 @@ Route::middleware(['web', 'checkUserExists:central'])
 // SFAO password setup after email verification
 Route::get('/sfao/password-setup', [UserManagementController::class, 'showSFAOPasswordSetup'])->name('sfao.password.setup');
 Route::post('/sfao/password-setup', [UserManagementController::class, 'setupSFAOPassword'])->name('sfao.password.setup');
-
-// --------------------------------------------------
-// TEST ROUTES (Forms)
-// --------------------------------------------------
-
-// Test scholarship edit functionality
-Route::get('/test-scholarship-edit/{id}', function ($id) {
-    $scholarship = \App\Models\Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($id);
-    return view('central.scholarships.create_scholarship', compact('scholarship'));
-});
-
-// Show raw HTML form
-Route::get('/application-form', function () {
-    $existingApplication = Form::where('user_id', auth()->id())->first();
-
-    if (!$existingApplication) {
-        return redirect()->back()->with('error', 'No form found for this user.');
-    }
-
-    return view('forms.application_form', compact('existingApplication'));
-});
-
-// Handle PDF download
-Route::post('/application-form/download', function (Request $request) {
-    $request->validate([
-        'form_id' => 'required|integer|exists:forms,id',
-    ]);
-
-    $form = Form::findOrFail($request->form_id);
-
-    $pdf = Pdf::loadView('student.forms.application_form_pdf', compact('form'))
-              ->setPaper('A4', 'portrait');
-
-    return $pdf->download('application_form.pdf');
-});
 
 // =====================================================
 // NOTIFICATION ROUTES
@@ -257,89 +224,4 @@ Route::post('/notifications/mark-all-read', function () {
         ]);
     
     return response()->json(['success' => true]);
-});
-
-// Debug route for testing applications
-Route::get('/debug/applications', function() {
-    $students = App\Models\User::where('role', 'student')->with('applications.scholarship')->take(5)->get();
-    $result = [];
-    foreach($students as $student) {
-        $result[] = [
-            'name' => $student->name,
-            'applications_count' => $student->applications->count(),
-            'application_statuses' => $student->applications->pluck('status')->toArray(),
-            'has_applications' => $student->applications->count() > 0
-        ];
-    }
-    return response()->json($result);
-});
-
-// Test route for creating a test notification
-Route::get('/debug/create-test-notification', function() {
-    $user = App\Models\User::where('role', 'student')->first();
-    if (!$user) {
-        return response()->json(['error' => 'No student user found']);
-    }
-    
-    $notification = App\Models\Notification::create([
-        'user_id' => $user->id,
-        'type' => 'application_status',
-        'title' => 'Document Evaluation Update',
-        'message' => 'Your scholarship application documents have been evaluated. Please review the details below for any required actions.',
-        'data' => [
-            'scholarship_name' => 'Academic Excellence Scholarship',
-            'status' => 'pending', // Change to 'rejected' to test rejected documents
-            'remarks' => 'Your application is under review. Please ensure all documents are clear and legible. Some documents may require resubmission if quality is insufficient.',
-            'evaluated_by' => 'Dr. Maria Santos - SFAO Director',
-            'document_status' => [
-                'approved' => 3,
-                'pending' => 2,
-                'rejected' => 1
-            ],
-            'pending_documents' => ['Transcript of Records', 'Certificate of Good Moral Character'],
-            'rejected_documents' => ['Birth Certificate (expired)']
-        ],
-        'is_read' => false
-    ]);
-    
-    return response()->json([
-        'success' => true,
-        'notification' => $notification,
-        'message' => 'Test notification created successfully'
-    ]);
-});
-
-// Test route for creating a rejected notification
-Route::get('/debug/create-rejected-notification', function() {
-    $user = App\Models\User::where('role', 'student')->first();
-    if (!$user) {
-        return response()->json(['error' => 'No student user found']);
-    }
-    
-    $notification = App\Models\Notification::create([
-        'user_id' => $user->id,
-        'type' => 'application_status',
-        'title' => 'Document Evaluation - Rejected Documents',
-        'message' => 'Some of your submitted documents have been rejected and require resubmission. Please review the details below.',
-        'data' => [
-            'scholarship_name' => 'Merit Scholarship Program',
-            'status' => 'rejected',
-            'remarks' => 'Several documents were rejected due to poor quality, incorrect format, or missing information. Please resubmit the corrected documents as soon as possible.',
-            'evaluated_by' => 'Prof. Juan Dela Cruz - SFAO Evaluator',
-            'document_status' => [
-                'approved' => 2,
-                'pending' => 0,
-                'rejected' => 3
-            ],
-            'pending_documents' => [],
-            'rejected_documents' => ['Birth Certificate (blurry)', 'Transcript of Records (incomplete)', 'Certificate of Good Moral Character (expired)']
-        ],
-        'is_read' => false
-    ]);
-    
-    return response()->json([
-        'success' => true,
-        'notification' => $notification,
-        'message' => 'Rejected notification created successfully'
-    ]);
 });

@@ -141,10 +141,10 @@
             🌐 External
           </button>
           
-          <button @click="tab = 'scholarships'; subTab = 'public'; sidebarOpen = false"
+          <button @click="tab = 'scholarships'; subTab = 'private'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="(tab === 'scholarships' && subTab === 'public') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🏛️ Public
+                  :class="(tab === 'scholarships' && subTab === 'private') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+            🏛️ Private
           </button>
           
           <button @click="tab = 'scholarships'; subTab = 'government'; sidebarOpen = false"

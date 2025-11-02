@@ -278,8 +278,8 @@ class ApplicationManagementController extends Controller
             $scholarshipsQuery->where('scholarship_type', 'internal');
         } elseif ($scholarshipTypeFilter === 'scholarships-external') {
             $scholarshipsQuery->where('scholarship_type', 'external');
-        } elseif ($scholarshipTypeFilter === 'scholarships-public') {
-            $scholarshipsQuery->where('scholarship_type', 'public');
+        } elseif ($scholarshipTypeFilter === 'scholarships-private') {
+            $scholarshipsQuery->where('scholarship_type', 'private');
         } elseif ($scholarshipTypeFilter === 'scholarships-government') {
             $scholarshipsQuery->where('scholarship_type', 'government');
         }
@@ -612,8 +612,8 @@ class ApplicationManagementController extends Controller
             $scholarshipsQuery->where('scholarship_type', 'internal');
         } elseif ($scholarshipTypeFilter === 'scholarships-external') {
             $scholarshipsQuery->where('scholarship_type', 'external');
-        } elseif ($scholarshipTypeFilter === 'scholarships-public') {
-            $scholarshipsQuery->where('scholarship_type', 'public');
+        } elseif ($scholarshipTypeFilter === 'scholarships-private') {
+            $scholarshipsQuery->where('scholarship_type', 'private');
         } elseif ($scholarshipTypeFilter === 'scholarships-government') {
             $scholarshipsQuery->where('scholarship_type', 'government');
         }

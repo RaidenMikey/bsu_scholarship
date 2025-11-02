@@ -11,7 +11,7 @@ return new class extends Migration {
         Schema::create('scholarships', function (Blueprint $table) {
             $table->id();
             $table->string('scholarship_name');
-            $table->enum('scholarship_type', ['internal', 'external', 'public', 'government'])->default('internal');
+            $table->enum('scholarship_type', ['internal', 'external', 'private', 'government'])->default('internal');
             $table->text('description');
             $table->date('submission_deadline'); // Changed from deadline
             $table->date('application_start_date')->nullable(); // When applications can start
