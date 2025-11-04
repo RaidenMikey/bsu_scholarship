@@ -11,6 +11,35 @@ class FormController extends Controller
     {
         $userId = session('user_id');
 
+        // 🧩 Combine birthdate parts if form has separate MM/DD/YYYY fields
+        // This handles the case where JavaScript might not have combined them
+        if ($request->filled('birthdate')) {
+            // Birthdate already combined by JavaScript (from hidden field)
+            $birthdate = $request->birthdate;
+        } elseif ($request->filled(['birth_mm', 'birth_dd', 'birth_yyyy'])) {
+            // Fallback: Combine separate inputs server-side
+            try {
+                $month = str_pad($request->birth_mm, 2, '0', STR_PAD_LEFT);
+                $day = str_pad($request->birth_dd, 2, '0', STR_PAD_LEFT);
+                $year = $request->birth_yyyy;
+                
+                if (checkdate($month, $day, $year)) {
+                    $birthdate = sprintf('%d-%s-%s', $year, $month, $day);
+                } else {
+                    $birthdate = null;
+                }
+            } catch (\Exception $e) {
+                $birthdate = null;
+            }
+        } else {
+            $birthdate = null;
+        }
+
+        // Merge birthdate into request if it was constructed
+        if ($birthdate !== null && !$request->filled('birthdate')) {
+            $request->merge(['birthdate' => $birthdate]);
+        }
+
         $validated = $request->validate([
             // ------------------- Personal Data -------------------
             'last_name'           => 'nullable|string',

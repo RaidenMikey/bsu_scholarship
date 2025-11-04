@@ -68,36 +68,36 @@ if (!$user) {
         <!-- Row 1: Last Name, First Name, Middle Name -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Last Name: <span class="text-red-500">*</span></label>
-            <input type="text" name="last_name" required value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Last Name: <span class="text-red-500">*</span></label>
+            <input type="text" name="last_name" required value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">First Name: <span class="text-red-500">*</span></label>
-            <input type="text" name="first_name" required value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">First Name: <span class="text-red-500">*</span></label>
+            <input type="text" name="first_name" required value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Middle Name:</label>
-            <input type="text" name="middle_name" value="{{ old('middle_name', $existingApplication->middle_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Middle Name:</label>
+            <input type="text" name="middle_name" value="{{ old('middle_name', $existingApplication->middle_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 2: Age, Sex, Civil Status -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Age:</label>
-            <input type="number" name="age" id="age" value="{{ old('age', $existingApplication->age ?? '') }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white" readonly title="Age will be automatically calculated when birthdate is entered">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Age:</label>
+            <input type="number" name="age" id="age" value="{{ old('age', $existingApplication->age ?? '') }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white transition-colors" readonly title="Age will be automatically calculated when birthdate is entered">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[150px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex:</label>
-            <select name="sex" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex:</label>
+            <select name="sex" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
               <option value="male" {{ old('sex', $existingApplication->sex ?? '') == 'male' ? 'selected' : '' }}>Male</option>
               <option value="female" {{ old('sex', $existingApplication->sex ?? '') == 'female' ? 'selected' : '' }}>Female</option>
             </select>
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Civil Status:</label>
-            <select name="civil_status" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Civil Status:</label>
+            <select name="civil_status" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
               <option value="Single" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
               <option value="Married" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
@@ -111,7 +111,7 @@ if (!$user) {
         <!-- Row 3: Birthdate (mm/dd/yyyy) and Birthplace -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthdate:</label>
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthdate:</label>
             @php
               $birthdate = old('birthdate', optional($existingApplication)->birthdate?->format('Y-m-d') ?? '');
               $birthMonth = $birthdate ? date('m', strtotime($birthdate)) : '';
@@ -120,54 +120,54 @@ if (!$user) {
             @endphp
             <div class="flex items-start gap-1">
               <div>
-                <input type="number" id="birth_month" min="1" max="12" placeholder="mm" value="{{ $birthMonth }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white" maxlength="2">
+                <input type="number" id="birth_mm" name="birth_mm" min="1" max="12" placeholder="mm" value="{{ $birthMonth }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="2">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">mm</label>
               </div>
               <span class="pt-1 text-gray-600 dark:text-gray-400">/</span>
               <div>
-                <input type="number" id="birth_day" min="1" max="31" placeholder="dd" value="{{ $birthDay }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white" maxlength="2">
+                <input type="number" id="birth_dd" name="birth_dd" min="1" max="31" placeholder="dd" value="{{ $birthDay }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="2">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">dd</label>
               </div>
               <span class="pt-1 text-gray-600 dark:text-gray-400">/</span>
               <div>
-                <input type="number" id="birth_year" min="1900" max="2010" placeholder="yyyy" value="{{ $birthYear }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white" maxlength="4">
+                <input type="number" id="birth_yyyy" name="birth_yyyy" min="1900" max="2010" placeholder="yyyy" value="{{ $birthYear }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="4">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">yyyy</label>
               </div>
               <input type="hidden" name="birthdate" id="birthdate" value="{{ $birthdate }}">
             </div>
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthplace:</label>
-            <input type="text" name="birthplace" value="{{ old('birthplace', $existingApplication->birthplace ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthplace:</label>
+            <input type="text" name="birthplace" value="{{ old('birthplace', $existingApplication->birthplace ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 4: Email Address and Contact Number -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address:</label>
-            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address:</label>
+            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number:</label>
-            <input type="text" name="contact_number" value="{{ old('contact_number', $existingApplication->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number:</label>
+            <input type="text" name="contact_number" value="{{ old('contact_number', $existingApplication->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 5: Permanent Home Address -->
         <div class="flex flex-wrap items-start gap-4">
-          <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap text-sm pt-1">Permanent Home Address:</label>
+          <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap pt-1">Permanent Home Address:</label>
           <div class="flex flex-wrap gap-4 flex-1">
             <div class="flex-1 min-w-[200px]">
-              <input type="text" name="street_barangay" value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <input type="text" name="street_barangay" value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Street / Barangay</label>
             </div>
             <div class="flex-1 min-w-[200px]">
-              <input type="text" name="town_city" value="{{ old('town_city', $existingApplication->town_city ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <input type="text" name="town_city" value="{{ old('town_city', $existingApplication->town_city ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Town / City / Municipality</label>
             </div>
-            <div class="flex-1 min-w-[150px]">
-              <input type="text" name="province" value="{{ old('province', $existingApplication->province ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <div class="w-32 min-w-[120px]">
+              <input type="text" name="province" value="{{ old('province', $existingApplication->province ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Province</label>
             </div>
           </div>
@@ -176,56 +176,65 @@ if (!$user) {
         <!-- Row 6: Zip Code and Citizenship -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Zip Code:</label>
-            <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Zip Code:</label>
+            <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Citizenship:</label>
-            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Citizenship:</label>
+            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 7: Type of Disability and Tribal Membership -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Type of Disability (if applicable):</label>
-            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Type of Disability (if applicable):</label>
+            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Tribal Membership:</label>
-            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tribal Membership:</label>
+            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
         </div>
       </section>
 
       <!-- Academic Data Section -->
-      <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">Academic Data</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block mb-1 font-medium text-gray-700">SR Code</label>
+      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Academic Data</h2>
+        
+        <div class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-1">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">SR Code</label>
             <input type="text" name="sr_code" 
               value="{{ old('sr_code', $existingApplication->sr_code ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
 
-          <div>
-            <label class="block mb-1 font-medium text-gray-700">Educational Level</label>
-            <select name="education_level" class="w-full border border-red-500 rounded-md p-2">
-                <option value="">-- Select Educational Level --</option>
-                <option value="Undergraduate" {{ old('education_level', $existingApplication->education_level ?? '') == 'Undergraduate' ? 'selected' : '' }}>Undergraduate</option>
-                <option value="Graduate School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Graduate School' ? 'selected' : '' }}>Graduate School</option>
-                <option value="Integrated School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Integrated School' ? 'selected' : '' }}>Integrated School</option>
-            </select>
+          <div class="md:col-span-3">
+            <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Educational Level</label>
+            <div class="flex flex-wrap items-center justify-between w-full">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="education_level" value="Undergraduate" {{ old('education_level', $existingApplication->education_level ?? '') == 'Undergraduate' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Undergraduate</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="education_level" value="Graduate School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Graduate School' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Graduate School</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="education_level" value="Integrated School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Integrated School' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Integrated School</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Program</label>
-            <select name="program" class="w-full border border-red-500 rounded-md p-2">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Program</label>
+            <select name="program" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select Program --</option>
                 @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
                     <option value="{{ $program }}" 
@@ -237,8 +246,8 @@ if (!$user) {
           </div>
 
           <div>
-            <label class="block mb-1 font-medium text-gray-700">College/Department</label>
-            <select name="college_department" class="w-full border border-red-500 rounded-md p-2">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department</label>
+            <select name="college_department" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select College/Department --</option>
                 <option value="CICS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CICS' ? 'selected' : '' }}>CICS (College of Information and Computing Sciences)</option>
                 <option value="CTE" {{ old('college_department', $existingApplication->college_department ?? '') == 'CTE' ? 'selected' : '' }}>CTE (College of Teacher Education)</option>
@@ -248,10 +257,10 @@ if (!$user) {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Grade/Year Level</label>
-            <select name="year_level" class="w-full border border-red-500 rounded-md p-2">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Grade/Year Level</label>
+            <select name="year_level" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select Grade/Year Level --</option>
                 <option value="1st Year" {{ old('year_level', $existingApplication->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
                 <option value="2nd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
@@ -261,210 +270,216 @@ if (!$user) {
             </select>
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Campus</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Campus</label>
             <input type="text" name="campus" 
               value="{{ old('campus', $existingApplication->campus ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Previous GWA</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Previous GWA</label>
             <input type="number" name="previous_gwa" step="0.01" min="1.00" max="5.00" 
                    placeholder="0.00"
                    value="{{ old('previous_gwa', $existingApplication->previous_gwa ?? '') }}"
-                   class="w-full border border-red-500 rounded-md p-2">
+                   class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
         </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Honors Received</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Honors Received</label>
             <input type="text" name="honors_received" placeholder="If any"
               value="{{ old('honors_received', $existingApplication->honors_received ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Units Enrolled</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Units Enrolled</label>
             <input type="number" name="units_enrolled" min="1" max="30"
               value="{{ old('units_enrolled', $existingApplication->units_enrolled ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Scholarship Applied</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Scholarship Applied</label>
             <input type="text" name="scholarship_applied" 
               value="{{ old('scholarship_applied', $existingApplication->scholarship_applied ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Semester</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Semester</label>
             <input type="text" name="semester" placeholder="e.g., 1st Semester"
               value="{{ old('semester', $existingApplication->semester ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700">Academic Year</label>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Academic Year</label>
             <input type="text" name="academic_year" placeholder="e.g., 2025-2026"
               value="{{ old('academic_year', $existingApplication->academic_year ?? '') }}"
-              class="w-full border border-red-500 rounded-md p-2">
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
-        <div class="mt-6">
-          <label class="block mb-1 font-medium text-gray-700">Do you have existing scholarships?</label>
+        <div>
+          <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Do you have existing scholarships?</label>
           <div class="flex items-center gap-6 mt-1">
-            <label class="flex items-center gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
               <input type="radio" name="has_existing_scholarship" value="1" onchange="toggleScholarshipDetails()"
-                {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 1 ? 'checked' : '' }}>
-              <span>Yes</span>
+                {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 1 ? 'checked' : '' }}
+                class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700 dark:text-gray-300">Yes</span>
             </label>
-            <label class="flex items-center gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
               <input type="radio" name="has_existing_scholarship" value="0" onchange="toggleScholarshipDetails()"
-                {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 0 ? 'checked' : '' }}>
-              <span>No</span>
+                {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 0 ? 'checked' : '' }}
+                class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700 dark:text-gray-300">No</span>
             </label>
           </div>
         </div>
 
-        <div class="mt-4" id="scholarship_details_container">
-          <label class="block mb-1 font-medium text-gray-700">If yes, provide scholarship details</label>
+        <div id="scholarship_details_container">
+          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">If yes, provide scholarship details</label>
           <input type="text" name="existing_scholarship_details" id="existing_scholarship_details"
             value="{{ old('existing_scholarship_details', $existingApplication->existing_scholarship_details ?? '') }}"
-            class="w-full border border-red-500 rounded-md p-2">
+            class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+        </div>
         </div>
       </section>
 
       <!-- Family Data Section -->
-      <section>
-        <h2 class="text-xl font-semibold text-bsu-red mb-4">Family Data</h2>
-
+      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Family Data</h2>
+        
+        <div class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Father Section -->
-        <div class="border border-gray-300 rounded-lg p-4 mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-2">Father's Information</h3>
+        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+          <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">Father's Information</h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block font-medium mb-2">Father Status</label>
-              <div class="flex items-center gap-6">
+          <div class="space-y-3">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father Status:</label>
+              <div class="flex items-center gap-6 flex-1">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="father_status" value="living" {{ old('father_status', $existingApplication->father_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                  <span class="text-gray-700">Living</span>
+                  <span class="text-gray-700 dark:text-gray-300">Living</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="father_status" value="deceased" {{ old('father_status', $existingApplication->father_status ?? '') == 'deceased' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                  <span class="text-gray-700">Deceased</span>
+                  <span class="text-gray-700 dark:text-gray-300">Deceased</span>
                 </label>
               </div>
             </div>
 
-            <div>
-              <label class="block font-medium mb-1">Father's Name</label>
-              <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block font-medium mb-1">Father's Address</label>
-              <input type="text" name="father_address" value="{{ old('father_address', $existingApplication->father_address ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Name:</label>
+              <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
 
-            <div>
-              <label class="block font-medium mb-1">Father's Contact</label>
-              <input type="text" name="father_contact" value="{{ old('father_contact', $existingApplication->father_contact ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Address:</label>
+              <input type="text" name="father_address" value="{{ old('father_address', $existingApplication->father_address ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
-          </div>
 
-          <div>
-            <label class="block font-medium mb-1">Father's Occupation</label>
-            <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Contact:</label>
+              <input type="text" name="father_contact" value="{{ old('father_contact', $existingApplication->father_contact ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            </div>
+
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Occupation:</label>
+              <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            </div>
           </div>
         </div>
 
         <!-- Mother Section -->
-        <div class="border border-gray-300 rounded-lg p-4 mb-6">
-          <h3 class="text-lg font-semibold text-gray-700 mb-2">Mother's Information</h3>
+        <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+          <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">Mother's Information</h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block font-medium mb-2">Mother Status</label>
-              <div class="flex items-center gap-6">
+          <div class="space-y-3">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother Status:</label>
+              <div class="flex items-center gap-6 flex-1">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="mother_status" value="living" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                  <span class="text-gray-700">Living</span>
+                  <span class="text-gray-700 dark:text-gray-300">Living</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="mother_status" value="deceased" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'deceased' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                  <span class="text-gray-700">Deceased</span>
+                  <span class="text-gray-700 dark:text-gray-300">Deceased</span>
                 </label>
               </div>
             </div>
 
-            <div>
-              <label class="block font-medium mb-1">Mother's Name</label>
-              <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block font-medium mb-1">Mother's Address</label>
-              <input type="text" name="mother_address" value="{{ old('mother_address', $existingApplication->mother_address ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Name:</label>
+              <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
 
-            <div>
-              <label class="block font-medium mb-1">Mother's Contact</label>
-              <input type="text" name="mother_contact" value="{{ old('mother_contact', $existingApplication->mother_contact ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Address:</label>
+              <input type="text" name="mother_address" value="{{ old('mother_address', $existingApplication->mother_address ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
-          </div>
 
-          <div>
-            <label class="block font-medium mb-1">Mother's Occupation</label>
-            <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Contact:</label>
+              <input type="text" name="mother_contact" value="{{ old('mother_contact', $existingApplication->mother_contact ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            </div>
+
+            <div class="flex items-center gap-4">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Occupation:</label>
+              <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            </div>
           </div>
         </div>
-
-        <!-- Estimated Gross Annual Income Section -->
-        <div class="border border-gray-300 rounded-lg p-4 mb-6">
-          <label class="block font-medium mb-3 text-gray-700">Estimated gross annual income:</label>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="estimated_gross_annual_income" value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-              <span class="text-gray-700">Not over P 250,000.00</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="estimated_gross_annual_income" value="over_250000_not_over_400000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_250000_not_over_400000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-              <span class="text-gray-700">Over P 250,000 but not over P 400,000</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="estimated_gross_annual_income" value="over_400000_not_over_800000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_400000_not_over_800000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-              <span class="text-gray-700">Over P 400,000 but not over P 800,000</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="estimated_gross_annual_income" value="over_800000_not_over_2000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_800000_not_over_2000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-              <span class="text-gray-700">Over P 800,000 but not over P 2,000,000</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="estimated_gross_annual_income" value="over_2000000_not_over_8000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_2000000_not_over_8000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-              <span class="text-gray-700">Over P 2,000,000 but not over P 8,000,000</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="estimated_gross_annual_income" value="over_8000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_8000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-              <span class="text-gray-700">Over P 8,000,000</span>
-            </label>
-          </div>
         </div>
 
-        <div class="mb-4">
-          <label class="block font-medium mb-1">Number of Siblings</label>
-          <input type="number" name="siblings_count" value="{{ old('siblings_count', $existingApplication->siblings_count ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Estimated Gross Annual Income Section -->
+          <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+            <label class="block font-medium mb-3 text-gray-700 dark:text-gray-300">Estimated gross annual income:</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Not over P 250,000.00</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="over_250000_not_over_400000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_250000_not_over_400000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Over P 250,000 but not over P 400,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="over_400000_not_over_800000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_400000_not_over_800000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Over P 400,000 but not over P 800,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="over_800000_not_over_2000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_800000_not_over_2000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Over P 800,000 but not over P 2,000,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="over_2000000_not_over_8000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_2000000_not_over_8000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Over P 2,000,000 but not over P 8,000,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="over_8000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_8000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <span class="text-gray-700 dark:text-gray-300">Over P 8,000,000</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Number of Siblings -->
+          <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+            <label class="block font-medium mb-1 text-gray-700 dark:text-gray-300">Number of Siblings</label>
+            <input type="number" name="siblings_count" value="{{ old('siblings_count', $existingApplication->siblings_count ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          </div>
+        </div>
         </div>
       </section>
 
       <!-- Essay / Question Section -->
       <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">Essay / Question</h2>
+        <h2 class="text-xl font-semibold text-bsu-red mb-6">PLEASE ANSWER THE FOLLOWING QUESTIONS IN YOUR OWN HANDWRITING</h2>
         <div>
           <label class="block font-medium mb-1">Reason for Applying</label>
           <textarea name="reason_for_applying" rows="5" 
@@ -529,9 +544,9 @@ if (!$user) {
   </div>
 
   <script>
-    const birthMonthInput = document.getElementById('birth_month');
-    const birthDayInput = document.getElementById('birth_day');
-    const birthYearInput = document.getElementById('birth_year');
+    const birthMonthInput = document.getElementById('birth_mm');
+    const birthDayInput = document.getElementById('birth_dd');
+    const birthYearInput = document.getElementById('birth_yyyy');
     const birthdateHiddenInput = document.getElementById('birthdate');
     const ageInput = document.getElementById('age');
 
