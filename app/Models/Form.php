@@ -54,13 +54,12 @@ class Form extends Model
         'father_address',
         'father_contact',
         'father_occupation',
-        'father_income_bracket',
         'mother_status',
         'mother_name',
         'mother_address',
         'mother_contact',
         'mother_occupation',
-        'mother_income_bracket',
+        'estimated_gross_annual_income',
         'siblings_count',
 
         // ------------------- Essay / Question -------------------

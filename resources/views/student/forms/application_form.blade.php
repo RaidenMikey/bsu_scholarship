@@ -61,121 +61,141 @@ if (!$user) {
       @csrf
 
       <!-- Personal Data Section -->
-      <section>
-        <h2 class="text-3xl font-bold text-red-800 mb-6 border-b-2 border-red-700 pb-2">Personal Data</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label class="block font-semibold text-gray-700 mb-1">Last Name <span class="text-red-500">*</span></label>
-              <input type="text" name="last_name" required value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-            <div>
-              <label class="block font-semibold text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
-              <input type="text" name="first_name" required value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-            <div>
-              <label class="block font-semibold text-gray-700 mb-1">Middle Name</label>
-              <input type="text" name="middle_name" value="{{ old('middle_name', $existingApplication->middle_name ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
+      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Personal Data</h2>
+        
+        <div class="space-y-5">
+        <!-- Row 1: Last Name, First Name, Middle Name -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Last Name: <span class="text-red-500">*</span></label>
+            <input type="text" name="last_name" required value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Age</label>
-            <input type="number" name="age" id="age"
-              value="{{ old('age', $existingApplication->age ?? '') }}"
-              class="w-full border border-red-500 px-3 py-2 rounded-md bg-gray-100" readonly
-              title="Age will be automatically calculated when birthdate is entered">
-            <small class="text-gray-500 text-xs">Age will be automatically calculated when birthdate is entered</small>
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">First Name: <span class="text-red-500">*</span></label>
+            <input type="text" name="first_name" required value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Middle Name:</label>
+            <input type="text" name="middle_name" value="{{ old('middle_name', $existingApplication->middle_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          </div>
+        </div>
 
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Sex</label>
-            <select name="sex" class="w-full border border-red-500 px-3 py-2 rounded-md">
-                <option value="">-- Select Sex --</option>
-                <option value="male" {{ old('sex', $existingApplication->sex ?? '') == 'male' ? 'selected' : '' }}>Male</option>
-                <option value="female" {{ old('sex', $existingApplication->sex ?? '') == 'female' ? 'selected' : '' }}>Female</option>
+        <!-- Row 2: Age, Sex, Civil Status -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Age:</label>
+            <input type="number" name="age" id="age" value="{{ old('age', $existingApplication->age ?? '') }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white" readonly title="Age will be automatically calculated when birthdate is entered">
+          </div>
+          <div class="flex items-center gap-2 flex-1 min-w-[150px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex:</label>
+            <select name="sex" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <option value="">-- Select --</option>
+              <option value="male" {{ old('sex', $existingApplication->sex ?? '') == 'male' ? 'selected' : '' }}>Male</option>
+              <option value="female" {{ old('sex', $existingApplication->sex ?? '') == 'female' ? 'selected' : '' }}>Female</option>
             </select>
           </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Civil Status</label>
-            <select name="civil_status" class="w-full border border-red-500 px-3 py-2 rounded-md">
-                <option value="">-- Select Civil Status --</option>
-                <option value="Single" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
-                <option value="Married" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
-                <option value="Widowed" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Widowed' ? 'selected' : '' }}>Widowed</option>
-                <option value="Divorced" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Divorced' ? 'selected' : '' }}>Divorced</option>
-                <option value="Separated" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Separated' ? 'selected' : '' }}>Separated</option>
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Civil Status:</label>
+            <select name="civil_status" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <option value="">-- Select --</option>
+              <option value="Single" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
+              <option value="Married" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
+              <option value="Widowed" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Widowed' ? 'selected' : '' }}>Widowed</option>
+              <option value="Divorced" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Divorced' ? 'selected' : '' }}>Divorced</option>
+              <option value="Separated" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Separated' ? 'selected' : '' }}>Separated</option>
             </select>
           </div>
+        </div>
 
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Birthdate</label>
-            <input type="date" name="birthdate" id="birthdate"
-              value="{{ old('birthdate', optional($existingApplication)->birthdate?->format('Y-m-d') ?? '') }}"
-              class="w-full border border-red-500 px-3 py-2 rounded-md">
-          </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Birthplace</label>
-            <input type="text" name="birthplace" value="{{ old('birthplace', $existingApplication->birthplace ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-          </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Email</label>
-            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-          </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Contact Number</label>
-            <input type="text" name="contact_number" value="{{ old('contact_number', $existingApplication->contact_number ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
-          </div>
-
-          <div class="md:col-span-2 grid grid-cols-7 gap-4">
-            <div class="col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Street / Barangay</label>
-              <input type="text" name="street_barangay" 
-                    value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" 
-                    class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-
-            <div class="col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Town / City / Municipality</label>
-              <input type="text" name="town_city" 
-                    value="{{ old('town_city', $existingApplication->town_city ?? '') }}" 
-                    class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-
-            <div class="col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Province</label>
-              <input type="text" name="province" 
-                    value="{{ old('province', $existingApplication->province ?? '') }}" 
-                    class="w-full border border-red-500 px-3 py-2 rounded-md">
-            </div>
-
-            <div class="col-span-1">
-              <label class="block font-semibold text-gray-700 mb-1">ZIP Code</label>
-              <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" 
-                  value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" 
-                  class="w-full border border-red-500 px-3 py-2 rounded-md text-center"
-                  title="ZIP Code must be 4 digits">
+        <!-- Row 3: Birthdate (mm/dd/yyyy) and Birthplace -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthdate:</label>
+            @php
+              $birthdate = old('birthdate', optional($existingApplication)->birthdate?->format('Y-m-d') ?? '');
+              $birthMonth = $birthdate ? date('m', strtotime($birthdate)) : '';
+              $birthDay = $birthdate ? date('d', strtotime($birthdate)) : '';
+              $birthYear = $birthdate ? date('Y', strtotime($birthdate)) : '';
+            @endphp
+            <div class="flex items-start gap-1">
+              <div>
+                <input type="number" id="birth_month" min="1" max="12" placeholder="mm" value="{{ $birthMonth }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white" maxlength="2">
+                <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">mm</label>
+              </div>
+              <span class="pt-1 text-gray-600 dark:text-gray-400">/</span>
+              <div>
+                <input type="number" id="birth_day" min="1" max="31" placeholder="dd" value="{{ $birthDay }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white" maxlength="2">
+                <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">dd</label>
+              </div>
+              <span class="pt-1 text-gray-600 dark:text-gray-400">/</span>
+              <div>
+                <input type="number" id="birth_year" min="1900" max="2010" placeholder="yyyy" value="{{ $birthYear }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white" maxlength="4">
+                <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">yyyy</label>
+              </div>
+              <input type="hidden" name="birthdate" id="birthdate" value="{{ $birthdate }}">
             </div>
           </div>
-
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Citizenship</label>
-            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthplace:</label>
+            <input type="text" name="birthplace" value="{{ old('birthplace', $existingApplication->birthplace ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
+        </div>
 
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Disability</label>
-            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+        <!-- Row 4: Email Address and Contact Number -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address:</label>
+            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number:</label>
+            <input type="text" name="contact_number" value="{{ old('contact_number', $existingApplication->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          </div>
+        </div>
 
-          <div>
-            <label class="block font-semibold text-gray-700 mb-1">Tribe</label>
-            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="w-full border border-red-500 px-3 py-2 rounded-md">
+        <!-- Row 5: Permanent Home Address -->
+        <div class="flex flex-wrap items-start gap-4">
+          <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap text-sm pt-1">Permanent Home Address:</label>
+          <div class="flex flex-wrap gap-4 flex-1">
+            <div class="flex-1 min-w-[200px]">
+              <input type="text" name="street_barangay" value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Street / Barangay</label>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+              <input type="text" name="town_city" value="{{ old('town_city', $existingApplication->town_city ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Town / City / Municipality</label>
+            </div>
+            <div class="flex-1 min-w-[150px]">
+              <input type="text" name="province" value="{{ old('province', $existingApplication->province ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Province</label>
+            </div>
           </div>
+        </div>
+
+        <!-- Row 6: Zip Code and Citizenship -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Zip Code:</label>
+            <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
+          </div>
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Citizenship:</label>
+            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          </div>
+        </div>
+
+        <!-- Row 7: Type of Disability and Tribal Membership -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Type of Disability (if applicable):</label>
+            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white">
+          </div>
+          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+            <label class="font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">Tribal Membership:</label>
+            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 focus:outline-none bg-white dark:bg-gray-700 dark:text-white">
+          </div>
+        </div>
         </div>
       </section>
 
@@ -325,12 +345,17 @@ if (!$user) {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block font-medium mb-1">Father Status</label>
-              <select name="father_status" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">-- Select Status --</option>
-                <option value="living" {{ old('father_status', $existingApplication->father_status ?? '') == 'living' ? 'selected' : '' }}>Living</option>
-                <option value="deceased" {{ old('father_status', $existingApplication->father_status ?? '') == 'deceased' ? 'selected' : '' }}>Deceased</option>
-              </select>
+              <label class="block font-medium mb-2">Father Status</label>
+              <div class="flex items-center gap-6">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="father_status" value="living" {{ old('father_status', $existingApplication->father_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                  <span class="text-gray-700">Living</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="father_status" value="deceased" {{ old('father_status', $existingApplication->father_status ?? '') == 'deceased' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                  <span class="text-gray-700">Deceased</span>
+                </label>
+              </div>
             </div>
 
             <div>
@@ -351,16 +376,9 @@ if (!$user) {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block font-medium mb-1">Father's Occupation</label>
-              <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
-
-            <div>
-              <label class="block font-medium mb-1">Father's Income Bracket</label>
-              <input type="text" name="father_income_bracket" value="{{ old('father_income_bracket', $existingApplication->father_income_bracket ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
+          <div>
+            <label class="block font-medium mb-1">Father's Occupation</label>
+            <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
           </div>
         </div>
 
@@ -370,12 +388,17 @@ if (!$user) {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block font-medium mb-1">Mother Status</label>
-              <select name="mother_status" class="w-full border border-red-500 rounded-md px-3 py-2">
-                <option value="">-- Select Status --</option>
-                <option value="living" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'living' ? 'selected' : '' }}>Living</option>
-                <option value="deceased" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'deceased' ? 'selected' : '' }}>Deceased</option>
-              </select>
+              <label class="block font-medium mb-2">Mother Status</label>
+              <div class="flex items-center gap-6">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="mother_status" value="living" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                  <span class="text-gray-700">Living</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="mother_status" value="deceased" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'deceased' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                  <span class="text-gray-700">Deceased</span>
+                </label>
+              </div>
             </div>
 
             <div>
@@ -396,16 +419,40 @@ if (!$user) {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block font-medium mb-1">Mother's Occupation</label>
-              <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
+          <div>
+            <label class="block font-medium mb-1">Mother's Occupation</label>
+            <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+          </div>
+        </div>
 
-            <div>
-              <label class="block font-medium mb-1">Mother's Income Bracket</label>
-              <input type="text" name="mother_income_bracket" value="{{ old('mother_income_bracket', $existingApplication->mother_income_bracket ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-            </div>
+        <!-- Estimated Gross Annual Income Section -->
+        <div class="border border-gray-300 rounded-lg p-4 mb-6">
+          <label class="block font-medium mb-3 text-gray-700">Estimated gross annual income:</label>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="estimated_gross_annual_income" value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700">Not over P 250,000.00</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="estimated_gross_annual_income" value="over_250000_not_over_400000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_250000_not_over_400000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700">Over P 250,000 but not over P 400,000</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="estimated_gross_annual_income" value="over_400000_not_over_800000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_400000_not_over_800000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700">Over P 400,000 but not over P 800,000</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="estimated_gross_annual_income" value="over_800000_not_over_2000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_800000_not_over_2000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700">Over P 800,000 but not over P 2,000,000</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="estimated_gross_annual_income" value="over_2000000_not_over_8000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_2000000_not_over_8000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700">Over P 2,000,000 but not over P 8,000,000</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="estimated_gross_annual_income" value="over_8000000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_8000000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <span class="text-gray-700">Over P 8,000,000</span>
+            </label>
           </div>
         </div>
 
@@ -482,30 +529,79 @@ if (!$user) {
   </div>
 
   <script>
-    const birthdateInput = document.getElementById('birthdate');
+    const birthMonthInput = document.getElementById('birth_month');
+    const birthDayInput = document.getElementById('birth_day');
+    const birthYearInput = document.getElementById('birth_year');
+    const birthdateHiddenInput = document.getElementById('birthdate');
     const ageInput = document.getElementById('age');
+
+    function updateBirthdate() {
+      const month = birthMonthInput.value;
+      const day = birthDayInput.value;
+      const year = birthYearInput.value;
+
+      if (month && day && year && year.length === 4) {
+        const monthNum = parseInt(month);
+        const dayNum = parseInt(day);
+        const yearNum = parseInt(year);
+        
+        // Basic validation
+        if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31 && yearNum >= 1900 && yearNum <= 2010) {
+          const monthStr = month.padStart(2, '0');
+          const dayStr = day.padStart(2, '0');
+          const dateString = `${year}-${monthStr}-${dayStr}`;
+          const birthDate = new Date(dateString);
+          
+          // Validate date (check if date is valid)
+          if (birthDate.getFullYear() == yearNum && 
+              (birthDate.getMonth() + 1) == monthNum && 
+              birthDate.getDate() == dayNum) {
+            birthdateHiddenInput.value = dateString;
+            calculateAge(birthDate);
+          } else {
+            birthdateHiddenInput.value = '';
+            ageInput.value = '';
+          }
+        } else {
+          birthdateHiddenInput.value = '';
+          ageInput.value = '';
+        }
+      } else {
+        birthdateHiddenInput.value = '';
+        ageInput.value = '';
+      }
+    }
 
     function calculateAge(birthDate) {
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const m = today.getMonth() - birthDate.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-      return age;
+      ageInput.value = age > 0 ? age : '';
     }
 
-    birthdateInput.addEventListener('input', () => {
-      if (birthdateInput.value) {
-        const birthDate = new Date(birthdateInput.value);
-        ageInput.value = calculateAge(birthDate);
-      } else {
-        ageInput.value = '';
+    // Add event listeners to birthdate inputs
+    birthMonthInput.addEventListener('input', updateBirthdate);
+    birthDayInput.addEventListener('input', updateBirthdate);
+    birthYearInput.addEventListener('input', updateBirthdate);
+
+    // Auto-advance to next field when max length is reached
+    birthMonthInput.addEventListener('input', function() {
+      if (this.value.length === 2 && parseInt(this.value) <= 12) {
+        birthDayInput.focus();
       }
     });
 
-    // Optional: pre-fill age on page load
-    if (birthdateInput.value) {
-      const birthDate = new Date(birthdateInput.value);
-      ageInput.value = calculateAge(birthDate);
+    birthDayInput.addEventListener('input', function() {
+      if (this.value.length === 2 && parseInt(this.value) <= 31) {
+        birthYearInput.focus();
+      }
+    });
+
+    // Pre-calculate age on page load if birthdate exists
+    if (birthdateHiddenInput.value) {
+      const birthDate = new Date(birthdateHiddenInput.value);
+      calculateAge(birthDate);
     }
 
     // Handle existing scholarship checkbox

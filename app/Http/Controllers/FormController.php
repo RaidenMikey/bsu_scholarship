@@ -53,13 +53,12 @@ class FormController extends Controller
             'father_address'       => 'nullable|string',
             'father_contact'       => 'nullable|string',
             'father_occupation'    => 'nullable|string',
-            'father_income_bracket' => 'nullable|string',
             'mother_status'        => 'nullable|in:living,deceased',
             'mother_name'          => 'nullable|string',
             'mother_address'       => 'nullable|string',
             'mother_contact'       => 'nullable|string',
             'mother_occupation'    => 'nullable|string',
-            'mother_income_bracket' => 'nullable|string',
+            'estimated_gross_annual_income' => 'nullable|string|in:not_over_250000,over_250000_not_over_400000,over_400000_not_over_800000,over_800000_not_over_2000000,over_2000000_not_over_8000000,over_8000000',
             'siblings_count'       => 'nullable|integer',
 
             // ------------------- Essay / Question -------------------

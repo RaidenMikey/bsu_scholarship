@@ -80,13 +80,12 @@ class FormsTableSeeder extends Seeder
                 'father_address' => fake()->city,
                 'father_contact' => fake()->phoneNumber,
                 'father_occupation' => fake()->jobTitle,
-                'father_income_bracket' => fake()->randomElement(['<10957', '10957-21194', '21195-42290', '42291-84480', '84481-140800']),
                 'mother_status' => fake()->randomElement(['living', 'deceased']),
                 'mother_name' => 'Mrs. ' . fake()->lastName . ' ' . $lastName, // Realistic mother name
                 'mother_address' => fake()->city,
                 'mother_contact' => fake()->phoneNumber,
                 'mother_occupation' => fake()->jobTitle,
-                'mother_income_bracket' => fake()->randomElement(['<10957', '10957-21194', '21195-42290', '42291-84480', '84481-140800']),
+                'estimated_gross_annual_income' => fake()->randomElement(['not_over_250000', 'over_250000_not_over_400000', 'over_400000_not_over_800000', 'over_800000_not_over_2000000', 'over_2000000_not_over_8000000', 'over_8000000']),
                 'siblings_count' => fake()->numberBetween(0, 5),
 
                 // Essay / Question

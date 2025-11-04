@@ -64,15 +64,14 @@ return new class extends Migration
             $table->string('father_address')->nullable();
             $table->string('father_contact')->nullable();
             $table->string('father_occupation')->nullable();
-            $table->string('father_income_bracket')->nullable();
 
             $table->enum('mother_status', ['living', 'deceased'])->nullable();
             $table->string('mother_name')->nullable();
             $table->string('mother_address')->nullable();
             $table->string('mother_contact')->nullable();
             $table->string('mother_occupation')->nullable();
-            $table->string('mother_income_bracket')->nullable();
 
+            $table->string('estimated_gross_annual_income')->nullable();
             $table->integer('siblings_count')->nullable();
 
             // ------------------- ESSAY / QUESTION -------------------
