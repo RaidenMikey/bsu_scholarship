@@ -18,11 +18,12 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         
         // Call campus seeder first so campus_id exists before users
+        // Scholarships must be seeded before Forms since Forms now require scholarship_id
         $this->call([
             CampusSeeder::class,
             UsersTableSeeder::class,
-            FormsTableSeeder::class,
             ScholarshipsTableSeeder::class,
+            FormsTableSeeder::class,
             NotificationSeeder::class,
             ApplicationsAndScholarsSeeder::class,
         ]);

@@ -12,14 +12,23 @@ class FormPrintController extends Controller
     /**
      * Print application form as DOCX
      */
-    public function printApplication()
+    public function printApplication($scholarship_id = null)
     {
         if (!session()->has('user_id') || session('role') !== 'student') {
             return redirect('/login')->with('session_expired', true);
         }
 
         $user = User::find(session('user_id'));
-        $form = Form::where('user_id', $user->id)->first();
+        
+        // If scholarship_id is provided, get form for that scholarship
+        if ($scholarship_id) {
+            $form = Form::where('user_id', $user->id)
+                ->where('scholarship_id', $scholarship_id)
+                ->first();
+        } else {
+            // Legacy: get first form for user
+            $form = Form::where('user_id', $user->id)->first();
+        }
 
         if (!$form) {
             return redirect()->back()->with('error', 'Application form not found.');
@@ -173,13 +182,13 @@ class FormPrintController extends Controller
             '{{previous_gwa}}' => $form->previous_gwa ?? '',
             '{{honors_received}}' => $form->honors_received ?? '',
             '{{units_enrolled}}' => $form->units_enrolled ?? '',
-            '{{scholarship_applied}}' => trim($form->existing_scholarship_details ?? ($form->scholarship_applied ?? '')),
+            '{{scholarship_applied}}' => $form->scholarship_applied ?? '',
             '{{semester}}' => $form->semester ?? '',
             '{{academic_year}}' => $form->academic_year ?? '',
             '{{has_existing_scholarship}}' => $form->has_existing_scholarship ? 'Yes' : 'No',
             '{{scholarship_yes}}' => $scholarship_yes,
             '{{scholarship_no}}' => $scholarship_no,
-            '{{existing_scholarship_details}}' => $form->existing_scholarship_details ?? '',
+            '{{existing_scholarship_details}}' => trim($form->existing_scholarship_details ?? ''),
 
             // Family Data
             '{{father_status}}' => ucfirst($form->father_status ?? ''),
@@ -226,8 +235,17 @@ class FormPrintController extends Controller
             $templateProcessor->setValue($variableName, $value ?? '');
         }
 
-        // Generate filename
-        $filename = 'application_form_' . $user->id . '_' . date('Y-m-d') . '.docx';
+        // Generate filename based on scholarship_applied
+        if (!empty($form->scholarship_applied)) {
+            // Clean scholarship name for filename (remove special characters, replace spaces with underscores)
+            $scholarshipName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $form->scholarship_applied);
+            $scholarshipName = preg_replace('/_+/', '_', $scholarshipName); // Replace multiple underscores with single
+            $scholarshipName = trim($scholarshipName, '_'); // Remove leading/trailing underscores
+            $filename = 'SFAO_Application_Form_' . $scholarshipName . '.docx';
+        } else {
+            // Fallback to original format if no scholarship_applied
+            $filename = 'SFAO_Application_Form_' . $user->id . '_' . date('Y-m-d') . '.docx';
+        }
         
         // Save the processed document
         $outputPath = storage_path('app/temp/' . $filename);
@@ -237,8 +255,30 @@ class FormPrintController extends Controller
         
         $templateProcessor->saveAs($outputPath);
 
-        // Download the file
+        // Direct download - no redirect page needed
         return response()->download($outputPath, $filename)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Download file route (called from download-redirect view)
+     */
+    public function downloadFile()
+    {
+        if (!session()->has('download_file_path')) {
+            return redirect()->back()->with('error', 'Download file not found.');
+        }
+
+        $filePath = session('download_file_path');
+        $filename = session('download_filename');
+        
+        // Clear session
+        session()->forget(['download_file_path', 'download_filename']);
+        
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'File not found.');
+        }
+
+        return response()->download($filePath, $filename)->deleteFileAfterSend(true);
     }
 }
 

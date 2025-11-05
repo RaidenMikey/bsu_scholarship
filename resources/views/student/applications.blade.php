@@ -27,19 +27,10 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">My Applications</h1>
-                <p class="text-gray-600">Track your scholarship applications and their status</p>
-            </div>
-            <a href="{{ route('student.dashboard') }}" 
-               class="bg-bsu-red hover:bg-bsu-redDark text-white px-6 py-3 rounded-lg font-medium transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Back to Dashboard
-            </a>
-        </div>
+        @include('student.partials.page-header', [
+          'title' => 'My Applications',
+          'subtitle' => 'Track your scholarship applications and their status'
+        ])
     </div>
 
     <!-- Statistics Cards -->

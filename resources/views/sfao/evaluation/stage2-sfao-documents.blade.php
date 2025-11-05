@@ -86,7 +86,7 @@
                                         @endif
                                     </div>
                                     <div class="ml-4">
-                                        <a href="{{ asset('storage/' . $document->file_path) }}" 
+                                        <a href="{{ $document->getViewUrl() }}" 
                                            target="_blank" 
                                            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -48,17 +48,15 @@ if (!$user) {
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white font-sans py-10 px-4">
   <div class="max-w-5xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-xl p-8">
     
-    <a href="{{ url('/student') }}"
-      class="inline-block mb-6 text-sm text-white bg-bsu-red hover:bg-bsu-redDark px-4 py-2 rounded transition">
-      ← Back to Dashboard
-    </a>
-
-    <h1 class="text-3xl font-bold text-center text-bsu-red dark:text-bsu-light mb-8">
-      Application Form for Student Scholarship / Financial Assistance
-    </h1>
+    @include('student.partials.page-header', [
+      'title' => 'Application Form for Student Scholarship / Financial Assistance'
+    ])
 
     <form action="{{ url('/student/submit-application') }}" method="POST" id="mainForm" class="space-y-10">
       @csrf
+      @if(isset($scholarship))
+        <input type="hidden" name="scholarship_id" value="{{ $scholarship->id }}">
+      @endif
 
       <!-- Personal Data Section -->
       <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -301,9 +299,17 @@ if (!$user) {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Scholarship Applied</label>
-            <input type="text" name="scholarship_applied" 
-              value="{{ old('scholarship_applied', $existingApplication->scholarship_applied ?? '') }}"
-              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            @if(isset($scholarship))
+              <input type="text" name="scholarship_applied" 
+                value="{{ old('scholarship_applied', $scholarship->scholarship_name) }}"
+                readonly
+                class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white transition-colors cursor-not-allowed">
+            @else
+              <input type="text" name="scholarship_applied" 
+                value=""
+                disabled
+                class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-gray-400 transition-colors cursor-not-allowed">
+            @endif
           </div>
           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Semester</label>
@@ -523,22 +529,23 @@ if (!$user) {
     </form>
     
     <!-- Buttons container -->
-    <div class="flex justify-between mt-6">
-      <!-- Submit Button (targets mainForm) -->
+    <div class="flex justify-center mt-6">
+      <!-- Save and Print Button -->
       <button form="mainForm" type="submit"
-        class="bg-bsu-red text-white px-6 py-2 rounded hover:bg-red-700 transition duration-300">
-        Submit Application
-      </button>
-
-      <!-- Print Button -->
-      <button type="button" onclick="printApplication()"
-        class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-300">
+        class="flex items-center gap-2 bg-bsu-red text-white px-8 py-3 rounded-lg hover:bg-red-700 transition duration-300 text-lg font-semibold shadow-lg">
+        <!-- Save Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+        </svg>
         <!-- Print Icon -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
         </svg>
-        Print Application
+        Save and Print Application
       </button>
+      
+      <!-- Hidden input to trigger print after save -->
+      <input type="hidden" form="mainForm" name="print_after_save" value="1">
     </div>
   </div>
 
@@ -640,12 +647,6 @@ if (!$user) {
     document.addEventListener('DOMContentLoaded', function() {
       toggleScholarshipDetails();
     });
-
-    // Print Application Function
-    function printApplication() {
-      // Open the PDF in a new window for printing
-      window.open('{{ url("/student/print-application") }}', '_blank');
-    }
   </script>
 </body>
 </html>

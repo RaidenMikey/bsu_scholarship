@@ -107,21 +107,17 @@ class ApplicationManagementController extends Controller
             ->where('scholarship_id', $scholarshipId)
             ->delete();
 
-        // Find the student document row
-        $studentDocument = SfaoRequirement::where('user_id', $userId)
+        // Find all submitted documents for this user and scholarship
+        $submittedDocuments = StudentSubmittedDocument::where('user_id', $userId)
             ->where('scholarship_id', $scholarshipId)
-            ->first();
+            ->get();
 
-        if ($studentDocument) {
-            // Delete files from storage if they exist
-            foreach (['form_137', 'grades', 'certificate', 'application_form'] as $field) {
-                if (!empty($studentDocument->$field) && Storage::disk('public')->exists($studentDocument->$field)) {
-                    Storage::disk('public')->delete($studentDocument->$field);
-                }
+        // Delete files from storage and then delete the database records
+        foreach ($submittedDocuments as $document) {
+            if (!empty($document->file_path) && Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
             }
-
-            // Delete the DB row
-            $studentDocument->delete();
+            $document->delete();
         }
 
         return back()->with('success', 'You have successfully un-applied, and your documents were removed.');

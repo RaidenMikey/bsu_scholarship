@@ -10,23 +10,11 @@
 <div class="bg-gray-50 py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="flex items-center justify-between mb-4">
-                <a href="{{ route('student.dashboard') }}" 
-                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    Back to Dashboard
-                </a>
-                <div class="text-right">
-                    <p class="text-sm text-gray-500">Application ID: #{{ $scholarship->id }}</p>
-                    <p class="text-xs text-gray-400">Deadline: {{ \Carbon\Carbon::parse($scholarship->submission_deadline)->format('M d, Y') }}</p>
-                </div>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-900">Apply for Scholarship</h1>
-            <p class="mt-2 text-lg text-gray-600">{{ $scholarship->scholarship_name }}</p>
-            <p class="text-sm text-gray-500">Grant Amount: ₱{{ number_format($scholarship->grant_amount, 2) }}</p>
+        <div class="mb-8">
+            @include('student.partials.page-header', [
+              'title' => 'Apply for Scholarship',
+              'subtitle' => $scholarship->scholarship_name . ' - Grant Amount: ₱' . number_format($scholarship->grant_amount, 2) . ' | Deadline: ' . \Carbon\Carbon::parse($scholarship->submission_deadline)->format('M d, Y')
+            ])
         </div>
 
         <!-- Progress Indicator -->
@@ -122,6 +110,26 @@
             </div>
         @endif
 
+        @if($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Main Content -->
         <div class="bg-white rounded-lg shadow-lg p-6">
             @if($currentStage == 1)
@@ -140,9 +148,12 @@
                                 Form 137 <span class="text-red-500">*</span>
                             </label>
                             <input type="file" name="form_137" id="form_137" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                   accept=".pdf,.jpg,.jpeg,.png" required>
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG (Max 10MB)</p>
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('form_137') border-red-500 @enderror"
+                                   accept=".pdf,.jpg,.jpeg,.png,.docx" required>
+                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
+                            @error('form_137')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Grades -->
@@ -151,9 +162,12 @@
                                 Grades <span class="text-red-500">*</span>
                             </label>
                             <input type="file" name="grades" id="grades" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                   accept=".pdf,.jpg,.jpeg,.png" required>
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG (Max 10MB)</p>
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('grades') border-red-500 @enderror"
+                                   accept=".pdf,.jpg,.jpeg,.png,.docx" required>
+                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
+                            @error('grades')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Certificate -->
@@ -162,9 +176,12 @@
                                 Certificate (Optional)
                             </label>
                             <input type="file" name="certificate" id="certificate" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                   accept=".pdf,.jpg,.jpeg,.png">
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG (Max 10MB)</p>
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('certificate') border-red-500 @enderror"
+                                   accept=".pdf,.jpg,.jpeg,.png,.docx">
+                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
+                            @error('certificate')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Application Form -->
@@ -173,9 +190,12 @@
                                 Application Form <span class="text-red-500">*</span>
                             </label>
                             <input type="file" name="application_form" id="application_form" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                   accept=".pdf,.jpg,.jpeg,.png" required>
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG (Max 10MB)</p>
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('application_form') border-red-500 @enderror"
+                                   accept=".pdf,.jpg,.jpeg,.png,.docx" required>
+                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
+                            @error('application_form')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -204,8 +224,8 @@
                                     </label>
                                     <input type="file" name="scholarship_doc_{{ $doc->id }}" 
                                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                           accept=".pdf,.jpg,.jpeg,.png" {{ $doc->is_mandatory ? 'required' : '' }}>
-                                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, or PNG (Max 10MB)</p>
+                                           accept=".pdf,.jpg,.jpeg,.png,.docx" {{ $doc->is_mandatory ? 'required' : '' }}>
+                                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
                                     @if($doc->description)
                                         <p class="text-xs text-gray-600 mt-1">{{ $doc->description }}</p>
                                     @endif
@@ -267,7 +287,7 @@
                                             <p class="text-xs text-green-600">{{ ucfirst($doc->document_category) }} Document</p>
                                         </div>
                                     </div>
-                                    <a href="{{ Storage::url($doc->file_path) }}" target="_blank" 
+                                    <a href="{{ $doc->getViewUrl() }}" target="_blank" 
                                        class="inline-flex items-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition-colors"
                                        title="View document">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

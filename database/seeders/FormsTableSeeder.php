@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Form;
+use App\Models\Scholarship;
 use Illuminate\Support\Facades\DB;
 
 class FormsTableSeeder extends Seeder
@@ -18,8 +19,13 @@ class FormsTableSeeder extends Seeder
 
         // Get only student users with their campus information
         $studentUsers = User::where('role', 'student')->with('campus')->get();
+        
+        // Get available scholarships (optional - forms can exist without scholarships)
+        $scholarships = Scholarship::all();
 
         foreach ($studentUsers as $user) {
+            // Assign a random scholarship to each form (or null if no scholarships exist)
+            $scholarship = $scholarships->isNotEmpty() ? $scholarships->random() : null;
             // Extract name parts from user's name for consistency
             $nameParts = explode(' ', $user->name);
             $firstName = $nameParts[0];
@@ -28,6 +34,7 @@ class FormsTableSeeder extends Seeder
 
             Form::create([
                 'user_id' => $user->id,
+                'scholarship_id' => $scholarship ? $scholarship->id : null,
                 // Personal Data
                 'last_name' => $lastName,
                 'first_name' => $firstName,

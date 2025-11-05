@@ -28,20 +28,12 @@
 </head>
 <body class="bg-bsu-light font-sans">
 
-    <!-- Header -->
-    <header class="bg-bsu-red text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 class="text-2xl font-bold">BSU Scholarship System</h1>
-            <a href="{{ route('student.dashboard') }}" class="bg-white text-bsu-red font-semibold px-3 py-2 rounded hover:bg-gray-100">Dashboard</a>
-        </div>
-    </header>
-
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto mt-12 p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-3xl font-bold text-bsu-red mb-2 text-center">Upload Required Documents</h2>
-        <p class="text-center text-lg text-gray-700 mb-6">
-            For <span class="font-semibold text-bsu-red">{{ $scholarship->scholarship_name }}</span>
-        </p>
+        @include('student.partials.page-header', [
+          'title' => 'Upload Required Documents',
+          'subtitle' => 'For ' . $scholarship->scholarship_name
+        ])
 
         <!-- Success Message -->
         @if(session('success'))
@@ -67,26 +59,26 @@
 
             <div>
                 <label class="block font-semibold mb-2 text-gray-700">Form 137 <span class="text-red-500">*</span></label>
-                <input type="file" name="form_137" accept=".pdf,.jpg,.png" required
+                <input type="file" name="form_137" accept=".pdf,.jpg,.png,.docx" required
                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-bsu-red">
             </div>
 
             <div>
                 <label class="block font-semibold mb-2 text-gray-700">Copy of Grades (Previous Semester) <span class="text-red-500">*</span></label>
-                <input type="file" name="grades" accept=".pdf,.jpg,.png" required
+                <input type="file" name="grades" accept=".pdf,.jpg,.png,.docx" required
                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-bsu-red">
             </div>
 
             <div>
                 <label class="block font-semibold mb-2 text-gray-700">Certificate of Employment (if government employee)</label>
-                <input type="file" name="certificate" accept=".pdf,.jpg,.png"
+                <input type="file" name="certificate" accept=".pdf,.jpg,.png,.docx"
                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-bsu-red">
                 <p class="text-sm text-gray-500 mt-1">Optional if not applicable</p>
             </div>
 
             <div>
                 <label class="block font-semibold mb-2 text-gray-700">Application Form <span class="text-red-500">*</span></label>
-                <input type="file" name="application_form" accept=".pdf,.jpg,.png" required
+                <input type="file" name="application_form" accept=".pdf,.jpg,.png,.docx" required
                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-bsu-red">
             </div>
 

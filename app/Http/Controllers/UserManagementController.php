@@ -360,14 +360,73 @@ class UserManagementController extends Controller
     /**
      * Show application form
      */
-    public function showApplicationForm()
+    public function showApplicationForm($scholarship_id = null)
     {
         if (!session()->has('user_id') || session('role') !== 'student') {
             return redirect('/login')->with('session_expired', true);
         }
 
-        $existingApplication = Form::where('user_id', session('user_id'))->first();
+        $userId = session('user_id');
+        
+        // If scholarship_id is provided, check if form exists for this scholarship
+        if ($scholarship_id) {
+            $scholarship = Scholarship::findOrFail($scholarship_id);
+            
+            // First try to get form for this specific scholarship
+            $existingApplication = Form::where('user_id', $userId)
+                ->where('scholarship_id', $scholarship_id)
+                ->first();
+            
+            // If no scholarship-specific form exists, get general form or any form to pre-fill
+            if (!$existingApplication) {
+                // Try to get general form first (scholarship_id = null)
+                $existingApplication = Form::where('user_id', $userId)
+                    ->whereNull('scholarship_id')
+                    ->first();
+                
+                // If no general form, get any form for this user to pre-fill
+                if (!$existingApplication) {
+                    $existingApplication = Form::where('user_id', $userId)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+                }
+                
+                // If we have a form to pre-fill, create a new instance for this scholarship
+                // but don't set scholarship_applied yet - it will be set when saving
+                if ($existingApplication) {
+                    // Create a new form object with pre-filled data from existing form
+                    $existingApplication = $existingApplication->replicate();
+                    $existingApplication->scholarship_id = $scholarship_id;
+                    $existingApplication->scholarship_applied = $scholarship->scholarship_name;
+                    $existingApplication->id = null; // Ensure it's a new record
+                } else {
+                    // Create a new empty form object with just the scholarship_applied pre-filled
+                    $existingApplication = new \App\Models\Form();
+                    $existingApplication->scholarship_applied = $scholarship->scholarship_name;
+                }
+            } else {
+                // Form exists for this scholarship - ensure scholarship_applied is set correctly
+                if (!$existingApplication->scholarship_applied || $existingApplication->scholarship_applied !== $scholarship->scholarship_name) {
+                    $existingApplication->scholarship_applied = $scholarship->scholarship_name;
+                }
+            }
+            
+            return view('student.forms.application_form', compact('existingApplication', 'scholarship'));
+        }
 
+        // No scholarship_id - get the general form (for form tab)
+        // First try to get form with null scholarship_id, otherwise get any form for this user
+        $existingApplication = Form::where('user_id', $userId)
+            ->whereNull('scholarship_id')
+            ->first();
+        
+        // If no general form exists, get any form for this user to pre-populate
+        if (!$existingApplication) {
+            $existingApplication = Form::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+        
         return view('student.forms.application_form', compact('existingApplication'));
     }
 
@@ -667,10 +726,22 @@ class UserManagementController extends Controller
         }
 
         $request->validate([
-            'form_137'         => 'required|file|mimes:pdf,jpg,png|max:10240',
-            'grades'           => 'required|file|mimes:pdf,jpg,png|max:10240',
-            'certificate'      => 'nullable|file|mimes:pdf,jpg,png|max:10240',
-            'application_form' => 'required|file|mimes:pdf,jpg,png|max:10240',
+            'form_137'         => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx', 'max:10240'],
+            'grades'           => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx', 'max:10240'],
+            'certificate'      => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,docx', 'max:10240'],
+            'application_form' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx', 'max:10240'],
+        ], [
+            'form_137.required' => 'Form 137 is required.',
+            'form_137.mimes' => 'Form 137 must be a PDF, JPG, PNG, or DOCX file.',
+            'form_137.max' => 'Form 137 must not exceed 10MB.',
+            'grades.required' => 'Grades document is required.',
+            'grades.mimes' => 'Grades must be a PDF, JPG, PNG, or DOCX file.',
+            'grades.max' => 'Grades must not exceed 10MB.',
+            'certificate.mimes' => 'Certificate must be a PDF, JPG, PNG, or DOCX file.',
+            'certificate.max' => 'Certificate must not exceed 10MB.',
+            'application_form.required' => 'Application Form is required.',
+            'application_form.mimes' => 'Application Form must be a PDF, JPG, PNG, or DOCX file.',
+            'application_form.max' => 'Application Form must not exceed 10MB.',
         ]);
 
         $userId = session('user_id');
@@ -729,6 +800,40 @@ class UserManagementController extends Controller
         $scholarship = Scholarship::with(['requiredDocuments'])->findOrFail($scholarship_id);
         $userId = session('user_id');
         
+        // Check if form exists for this scholarship
+        $form = Form::where('user_id', $userId)
+            ->where('scholarship_id', $scholarship_id)
+            ->first();
+        
+        // If form exists, check if scholarship_applied matches the current scholarship
+        if ($form) {
+            // Compare scholarship_applied with the current scholarship name
+            if (!$form->scholarship_applied || $form->scholarship_applied !== $scholarship->scholarship_name) {
+                // Scholarship_applied doesn't match - redirect to form to update it
+                return redirect()->route('student.forms.application_form.scholarship', ['scholarship_id' => $scholarship_id])
+                    ->with('info', 'Please update the application form with the correct scholarship name before proceeding.');
+            }
+        } else {
+            // No form exists for this scholarship - check if user has a general form or any form
+            $generalForm = Form::where('user_id', $userId)
+                ->whereNull('scholarship_id')
+                ->first();
+            
+            // If no form exists at all, redirect to form page first
+            if (!$generalForm) {
+                // Check if user has any form at all
+                $anyForm = Form::where('user_id', $userId)->first();
+                if (!$anyForm) {
+                    return redirect()->route('student.forms.application_form.scholarship', ['scholarship_id' => $scholarship_id])
+                        ->with('info', 'Please complete the application form first before uploading documents.');
+                }
+            }
+            
+            // User has a form but not for this scholarship - redirect to create form for this scholarship
+            return redirect()->route('student.forms.application_form.scholarship', ['scholarship_id' => $scholarship_id])
+                ->with('info', 'Please complete the application form for this scholarship before proceeding.');
+        }
+        
         // Get existing submitted documents
         $submittedDocuments = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)->get();
         
@@ -775,12 +880,59 @@ class UserManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $request->validate([
-            'form_137'         => 'required|file|mimes:pdf,jpg,png|max:10240',
-            'grades'           => 'required|file|mimes:pdf,jpg,png|max:10240',
-            'certificate'      => 'nullable|file|mimes:pdf,jpg,png|max:10240',
-            'application_form' => 'required|file|mimes:pdf,jpg,png|max:10240',
+        // Custom validation with better DOCX support
+        $validator = \Validator::make($request->all(), [
+            'form_137'         => ['required', 'file', 'max:10240'],
+            'grades'           => ['required', 'file', 'max:10240'],
+            'certificate'      => ['nullable', 'file', 'max:10240'],
+            'application_form' => ['required', 'file', 'max:10240'],
+        ], [
+            'form_137.required' => 'Form 137 is required.',
+            'form_137.max' => 'Form 137 must not exceed 10MB.',
+            'grades.required' => 'Grades document is required.',
+            'grades.max' => 'Grades must not exceed 10MB.',
+            'certificate.max' => 'Certificate must not exceed 10MB.',
+            'application_form.required' => 'Application Form is required.',
+            'application_form.max' => 'Application Form must not exceed 10MB.',
         ]);
+
+        // Custom validation for file types (checking both extension and MIME type)
+        $validator->after(function ($validator) use ($request) {
+            $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'docx'];
+            $allowedMimes = [
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/msword' // Fallback for older DOCX files
+            ];
+
+            $files = [
+                'form_137' => $request->file('form_137'),
+                'grades' => $request->file('grades'),
+                'certificate' => $request->file('certificate'),
+                'application_form' => $request->file('application_form'),
+            ];
+
+            foreach ($files as $field => $file) {
+                if ($file) {
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $mimeType = $file->getMimeType();
+
+                    // Accept if either extension OR MIME type is in allowed lists
+                    if (!in_array($extension, $allowedExtensions) && !in_array($mimeType, $allowedMimes)) {
+                        $fieldName = ucfirst(str_replace('_', ' ', $field));
+                        $validator->errors()->add($field, $fieldName . ' must be a PDF, JPG, PNG, or DOCX file. (Got: ' . $extension . ' / ' . $mimeType . ')');
+                    }
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
         $userId = session('user_id');
         
@@ -841,14 +993,24 @@ class UserManagementController extends Controller
 
         // Validate files based on scholarship requirements
         $validationRules = [];
+        $customMessages = [];
         foreach ($requiredDocs as $doc) {
             $fieldName = 'scholarship_doc_' . $doc->id;
-            $rule = $doc->is_mandatory ? 'required' : 'nullable';
-            $rule .= '|file|mimes:pdf,jpg,png|max:10240';
-            $validationRules[$fieldName] = $rule;
+            $validationRules[$fieldName] = [
+                $doc->is_mandatory ? 'required' : 'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png,docx',
+                'max:10240'
+            ];
+            
+            if ($doc->is_mandatory) {
+                $customMessages[$fieldName . '.required'] = strip_tags($doc->document_name) . ' is required.';
+            }
+            $customMessages[$fieldName . '.mimes'] = strip_tags($doc->document_name) . ' must be a PDF, JPG, PNG, or DOCX file.';
+            $customMessages[$fieldName . '.max'] = strip_tags($doc->document_name) . ' must not exceed 10MB.';
         }
 
-        $request->validate($validationRules);
+        $request->validate($validationRules, $customMessages);
 
         // Process each scholarship required document
         foreach ($requiredDocs as $doc) {
@@ -1286,5 +1448,65 @@ class UserManagementController extends Controller
         }
         
         return $now->diffInDays($deadlineDate);
+    }
+
+    /**
+     * View document (especially for DOCX files)
+     */
+    public function viewDocument($id)
+    {
+        $document = StudentSubmittedDocument::findOrFail($id);
+        
+        // Check if file exists
+        if (!Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'Document not found');
+        }
+        
+        $filePath = Storage::disk('public')->path($document->file_path);
+        $fileType = strtolower($document->file_type);
+        
+        // For DOCX files, use viewer with multiple options
+        if ($fileType === 'docx') {
+            $fileUrl = asset('storage/' . ltrim($document->file_path, '/'));
+            $encodedUrl = urlencode($fileUrl);
+            
+            // Check if we're on localhost
+            $isLocalhost = in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']) || 
+                          str_contains(request()->getHost(), '.local');
+            
+            // Try multiple viewer options
+            $viewers = [];
+            
+            // Option 1: Google Docs Viewer (works with public URLs)
+            if (!$isLocalhost) {
+                $viewers[] = [
+                    'name' => 'Google Docs Viewer',
+                    'url' => "https://docs.google.com/viewer?url=" . $encodedUrl . "&embedded=true"
+                ];
+            }
+            
+            // Option 2: Microsoft Office Online Viewer (works with public URLs)
+            if (!$isLocalhost) {
+                $viewers[] = [
+                    'name' => 'Microsoft Office Viewer',
+                    'url' => "https://view.officeapps.live.com/op/view.aspx?src=" . $encodedUrl
+                ];
+            }
+            
+            // Direct download URL as fallback
+            $downloadUrl = asset('storage/' . ltrim($document->file_path, '/'));
+            
+            return view('document-viewer', [
+                'document' => $document,
+                'viewers' => $viewers,
+                'downloadUrl' => $downloadUrl,
+                'isLocalhost' => $isLocalhost
+            ]);
+        }
+        
+        // For PDF and images, serve directly
+        return response()->file($filePath, [
+            'Content-Type' => Storage::disk('public')->mimeType($document->file_path),
+        ]);
     }
 }

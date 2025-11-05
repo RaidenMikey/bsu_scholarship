@@ -43,6 +43,9 @@ Route::post('/email/verification-notification', [AuthController::class, 'resendV
 Route::post('/upload-profile-picture/{role}', [UserManagementController::class, 'uploadProfilePicture'])
     ->whereIn('role', ['student', 'sfao', 'central']);
 
+// Document Viewer (for DOCX files)
+Route::get('/document/view/{id}', [UserManagementController::class, 'viewDocument'])->name('document.view');
+
 // --------------------------------------------------
 // STUDENT ROUTES
 // --------------------------------------------------
@@ -57,6 +60,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     
     // Application Form
     Route::get('/form', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form');
+    Route::get('/form/{scholarship_id}', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form.scholarship');
     Route::post('/submit-application', [FormController::class, 'submit'])->name('submit');
     
     // Applications
@@ -79,6 +83,8 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     
     // Print Application
     Route::get('/print-application', [FormPrintController::class, 'printApplication'])->name('print-application');
+    Route::get('/print-application/{scholarship_id}', [FormPrintController::class, 'printApplication'])->name('print-application.scholarship');
+    Route::get('/download-file', [FormPrintController::class, 'downloadFile'])->name('download-file');
 });
 
 // --------------------------------------------------

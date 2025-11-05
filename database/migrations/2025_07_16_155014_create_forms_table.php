@@ -18,6 +18,8 @@ return new class extends Migration
 
             // Link to users table
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            // Link to scholarships table (nullable - form can exist without scholarship)
+            $table->foreignId('scholarship_id')->nullable()->constrained('scholarships')->onDelete('cascade');
 
             // ------------------- PERSONAL DATA -------------------
             $table->string('last_name');

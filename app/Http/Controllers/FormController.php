@@ -41,6 +41,9 @@ class FormController extends Controller
         }
 
         $validated = $request->validate([
+            // ------------------- Scholarship -------------------
+            'scholarship_id'      => 'nullable|exists:scholarships,id',
+            
             // ------------------- Personal Data -------------------
             'last_name'           => 'nullable|string',
             'first_name'          => 'nullable|string',
@@ -109,12 +112,49 @@ class FormController extends Controller
 
         // Inject user_id into validated data
         $validated['user_id'] = $userId;
+        $scholarshipId = $validated['scholarship_id'] ?? null;
 
-        // Insert or update the form based on user_id
-        Form::updateOrCreate(
-            ['user_id' => $userId],
-            $validated
-        );
+        // If scholarship_id is provided, create/update a scholarship-specific form
+        // This allows multiple forms per user (one per scholarship application)
+        if ($scholarshipId) {
+            // Get the scholarship to set scholarship_applied field
+            $scholarship = \App\Models\Scholarship::find($scholarshipId);
+            if ($scholarship) {
+                $validated['scholarship_applied'] = $scholarship->scholarship_name;
+            }
+            
+            // Create or update form for this specific scholarship
+            Form::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'scholarship_id' => $scholarshipId
+                ],
+                $validated
+            );
+        } else {
+            // No scholarship_id - update/create general form (for Application Form tab)
+            // Don't include scholarship_applied for general forms
+            unset($validated['scholarship_applied']);
+            
+            Form::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'scholarship_id' => null
+                ],
+                $validated
+            );
+        }
+
+        // If print flag is set, redirect to print after saving
+        if ($request->has('print_after_save') && $request->print_after_save) {
+            if ($scholarshipId) {
+                // If scholarship_id exists, redirect to scholarship-specific print (which redirects to application process)
+                return redirect()->route('student.print-application.scholarship', ['scholarship_id' => $scholarshipId])->with('success', 'Application saved successfully. Preparing your document...');
+            } else {
+                // If no scholarship_id, just print and stay on form page
+                return redirect()->route('student.print-application')->with('success', 'Application saved successfully. Preparing your document...');
+            }
+        }
 
         return redirect('/student')->with('success', 'Application saved successfully.');
     }

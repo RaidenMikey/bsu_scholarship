@@ -182,7 +182,7 @@
                                         </p>
                                     </div>
                                     <div class="flex items-center space-x-2">
-                                        <a href="{{ asset('storage/' . $document->file_path) }}" target="_blank" 
+                                        <a href="{{ $document->getViewUrl() }}" target="_blank" 
                                            class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
                                             View Document
                                         </a>

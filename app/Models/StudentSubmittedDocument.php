@@ -123,8 +123,23 @@ class StudentSubmittedDocument extends Model
             'jpg', 'jpeg' => 'JPEG Image',
             'png' => 'PNG Image',
             'gif' => 'GIF Image',
+            'docx' => 'Word Document',
             default => strtoupper($this->file_type) . ' File'
         };
+    }
+
+    public function getViewUrl()
+    {
+        $fileType = strtolower($this->file_type);
+        
+        // For DOCX files, use custom viewer route
+        if ($fileType === 'docx') {
+            return route('document.view', ['id' => $this->id]);
+        }
+        
+        // For PDF and images, return direct URL
+        $fileUrl = asset('storage/' . ltrim($this->file_path, '/'));
+        return $fileUrl;
     }
 
     public function getMandatoryStatusDisplayName()

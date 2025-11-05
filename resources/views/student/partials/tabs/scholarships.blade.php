@@ -174,7 +174,7 @@
                         ❌ Unapply
                     </button>
                 @else
-                    <form method="GET" action="{{ route('student.upload-documents', ['scholarship_id' => $scholarship->id]) }}">
+                    <form method="GET" action="{{ route('student.apply', ['scholarship_id' => $scholarship->id]) }}">
                         <button type="submit" 
                                 class="w-full px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow transition-colors">
                             🎓 Apply
