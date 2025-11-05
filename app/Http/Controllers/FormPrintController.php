@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\Form;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -10,7 +11,14 @@ use PhpOffice\PhpWord\TemplateProcessor;
 class FormPrintController extends Controller
 {
     /**
-     * Print application form as DOCX
+     * Print application form as PDF
+     * 
+     * 1. Fetches the form data from DB (Form::find($id))
+     * 2. Loads the official .docx template (storage/app/templates/...)
+     * 3. Uses PHPWord to replace placeholders with database values
+     * 4. Saves the filled file as .docx
+     * 5. Converts it to .pdf using LibreOffice
+     * 6. Returns a download response (PDF, or DOCX if conversion fails)
      */
     public function printApplication($scholarship_id = null)
     {
@@ -20,19 +28,17 @@ class FormPrintController extends Controller
 
         $user = User::find(session('user_id'));
         
-        // If scholarship_id is provided, get form for that scholarship
-        if ($scholarship_id) {
-            $form = Form::where('user_id', $user->id)
-                ->where('scholarship_id', $scholarship_id)
-                ->first();
-        } else {
-            // Legacy: get first form for user
-            $form = Form::where('user_id', $user->id)->first();
-        }
+        // Get the user's form (one form per user)
+        $form = Form::where('user_id', $user->id)
+            ->latest('updated_at')
+            ->first();
 
         if (!$form) {
-            return redirect()->back()->with('error', 'Application form not found.');
+            return redirect()->back()->with('error', 'Application form not found. Please save the form first before printing.');
         }
+        
+        // Refresh the form model to ensure we have the latest data
+        $form->refresh();
 
         // Path to your Word template
         // Primary location: storage/app/templates/ (secure, not web-accessible)
@@ -70,6 +76,20 @@ class FormPrintController extends Controller
         $birthdateMonth = $form->birthdate ? $form->birthdate->format('m') : '';
         $birthdateDay = $form->birthdate ? $form->birthdate->format('d') : '';
         $birthdateYear = $form->birthdate ? $form->birthdate->format('Y') : '';
+
+        // Recalculate age from birthdate (same logic as JavaScript in the form)
+        // This ensures age is always current, not using outdated stored value
+        $calculatedAge = '';
+        if ($form->birthdate) {
+            $today = now();
+            $birthdate = $form->birthdate;
+            $age = $today->year - $birthdate->year;
+            $monthDiff = $today->month - $birthdate->month;
+            if ($monthDiff < 0 || ($monthDiff === 0 && $today->day < $birthdate->day)) {
+                $age--;
+            }
+            $calculatedAge = $age > 0 ? $age : '';
+        }
 
         // Format date_signed
         $dateSignedFormatted = $form->date_signed ? $form->date_signed->format('m/d/Y') : '';
@@ -148,7 +168,7 @@ class FormPrintController extends Controller
             '{{last_name}}' => $form->last_name ?? '',
             '{{first_name}}' => $form->first_name ?? '',
             '{{middle_name}}' => $form->middle_name ?? '',
-            '{{age}}' => $form->age ?? '',
+            '{{age}}' => $calculatedAge !== '' ? $calculatedAge : ($form->age ?? ''),
             '{{sex}}' => ucfirst($form->sex ?? ''),
             '{{civil_status}}' => $form->civil_status ?? '',
             '{{birthdate}}' => $birthdateFormatted,
@@ -231,8 +251,45 @@ class FormPrintController extends Controller
             $variableName = preg_replace('/^(?:\{\{|\[\[|\$\{)/', '', $placeholder);
             // Remove closing delimiters: }}, ]], }
             $variableName = preg_replace('/(?:\}\}|\]\]|})$/', '', $variableName);
+            
+            // Log replacement for debugging (can be removed in production)
+            if (config('app.debug')) {
+                Log::debug('Replacing placeholder', [
+                    'placeholder' => $placeholder,
+                    'variable_name' => $variableName,
+                    'value' => $value,
+                    'value_type' => gettype($value)
+                ]);
+            }
+            
             // PHPWord setValue expects just the variable name (without ${})
-            $templateProcessor->setValue($variableName, $value ?? '');
+            // Try to replace - if it fails, it means placeholder doesn't exist in template
+            try {
+                $templateProcessor->setValue($variableName, (string)($value ?? ''));
+            } catch (\Exception $e) {
+                // Log if replacement fails (placeholder might not exist in template)
+                if (config('app.debug')) {
+                    Log::warning('Placeholder replacement failed', [
+                        'variable_name' => $variableName,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+        
+        // Log form data for debugging
+        if (config('app.debug')) {
+            Log::info('Printing form', [
+                'form_id' => $form->id,
+                'user_id' => $form->user_id,
+                'updated_at' => $form->updated_at,
+                'form_data_sample' => [
+                    'last_name' => $form->last_name,
+                    'first_name' => $form->first_name,
+                    'age' => $form->age,
+                    'sr_code' => $form->sr_code,
+                ]
+            ]);
         }
 
         // Generate filename based on scholarship_applied
@@ -248,15 +305,175 @@ class FormPrintController extends Controller
         }
         
         // Save the processed document
-        $outputPath = storage_path('app/temp/' . $filename);
-        if (!is_dir(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
+        $tempDir = storage_path('app/temp');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
         }
         
-        $templateProcessor->saveAs($outputPath);
+        $docxPath = $tempDir . '/' . $filename;
+        $templateProcessor->saveAs($docxPath);
 
-        // Direct download - no redirect page needed
-        return response()->download($outputPath, $filename)->deleteFileAfterSend(true);
+        // Convert DOCX to PDF using LibreOffice
+        $pdfFilename = str_replace('.docx', '.pdf', $filename);
+        $pdfPath = $this->convertToPdf($docxPath, $tempDir);
+        
+        if ($pdfPath && file_exists($pdfPath)) {
+            // Clean up DOCX file after conversion
+            if (file_exists($docxPath)) {
+                @unlink($docxPath);
+            }
+            
+            // Return PDF for download
+            return response()->download($pdfPath, $pdfFilename)->deleteFileAfterSend(true);
+        } else {
+            // Fallback: if PDF conversion fails, return DOCX with notification
+            session()->flash('warning', 'PDF conversion unavailable. LibreOffice is not installed. Downloading DOCX instead. Please install LibreOffice to enable PDF conversion.');
+            return response()->download($docxPath, $filename)->deleteFileAfterSend(true);
+        }
+    }
+
+    /**
+     * Convert DOCX to PDF using LibreOffice
+     * 
+     * @param string $docxPath Path to the DOCX file
+     * @param string $outputDir Directory to save the PDF
+     * @return string|null Path to the generated PDF file, or null if conversion fails
+     */
+    private function convertToPdf($docxPath, $outputDir)
+    {
+        // Check if LibreOffice is installed
+        $libreOfficePath = $this->findLibreOffice();
+        
+        if (!$libreOfficePath) {
+            Log::warning('LibreOffice not found. PDF conversion skipped. Returning DOCX instead.', [
+                'os' => PHP_OS_FAMILY,
+                'checked_paths' => $this->getLibreOfficePaths()
+            ]);
+            return null;
+        }
+
+        // Escape paths for shell command (handle spaces and special characters)
+        $escapedDocxPath = escapeshellarg($docxPath);
+        $escapedOutputDir = escapeshellarg($outputDir);
+
+        // Build LibreOffice command for headless PDF conversion
+        // --headless: Run without GUI
+        // --convert-to pdf: Convert to PDF format
+        // --outdir: Output directory
+        $command = sprintf(
+            '%s --headless --convert-to pdf --outdir %s %s 2>&1',
+            escapeshellarg($libreOfficePath),
+            $escapedOutputDir,
+            $escapedDocxPath
+        );
+
+        // Execute conversion
+        $output = [];
+        $returnCode = 0;
+        exec($command, $output, $returnCode);
+
+        // Check if conversion was successful
+        if ($returnCode === 0) {
+            // LibreOffice generates PDF with the same name as DOCX (just .pdf extension)
+            $pdfPath = $outputDir . '/' . basename($docxPath, '.docx') . '.pdf';
+            
+            if (file_exists($pdfPath)) {
+                return $pdfPath;
+            }
+        }
+
+        // Log error if conversion failed
+        Log::error('PDF conversion failed', [
+            'command' => $command,
+            'return_code' => $returnCode,
+            'output' => implode("\n", $output),
+            'docx_path' => $docxPath
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Get list of possible LibreOffice paths for current OS
+     * 
+     * @return array List of possible paths
+     */
+    private function getLibreOfficePaths()
+    {
+        $possiblePaths = [];
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            // Windows paths
+            $programFiles = getenv('ProgramFiles') ?: 'C:\\Program Files';
+            $programFilesX86 = getenv('ProgramFiles(x86)') ?: 'C:\\Program Files (x86)';
+            
+            $possiblePaths = [
+                $programFiles . '\\LibreOffice\\program\\soffice.exe',
+                $programFilesX86 . '\\LibreOffice\\program\\soffice.exe',
+                'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
+                'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe',
+            ];
+        } elseif (PHP_OS_FAMILY === 'Darwin') {
+            // macOS paths
+            $possiblePaths = [
+                '/Applications/LibreOffice.app/Contents/MacOS/soffice',
+                '/usr/local/bin/soffice',
+                '/opt/homebrew/bin/soffice',
+            ];
+        } else {
+            // Linux paths
+            $possiblePaths = [
+                '/usr/bin/libreoffice',
+                '/usr/bin/soffice',
+                '/usr/local/bin/libreoffice',
+                '/usr/local/bin/soffice',
+                '/snap/bin/libreoffice',
+            ];
+        }
+
+        return $possiblePaths;
+    }
+
+    /**
+     * Find LibreOffice executable path
+     * 
+     * @return string|null Path to LibreOffice executable, or null if not found
+     */
+    private function findLibreOffice()
+    {
+        $possiblePaths = $this->getLibreOfficePaths();
+
+        // Check which path exists
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                // On Windows, .exe files don't need is_executable check
+                if (PHP_OS_FAMILY === 'Windows' || is_executable($path)) {
+                    Log::info('LibreOffice found', ['path' => $path]);
+                    return $path;
+                }
+            }
+        }
+
+        // Try to find it in PATH
+        if (PHP_OS_FAMILY === 'Windows') {
+            $foundPath = shell_exec('where soffice 2>nul');
+        } else {
+            $foundPath = shell_exec('which libreoffice soffice 2>/dev/null');
+        }
+        
+        if ($foundPath) {
+            $foundPath = trim($foundPath);
+            // Handle multiple results (take first one)
+            $foundPath = explode("\n", $foundPath)[0];
+            if ($foundPath && file_exists($foundPath)) {
+                if (PHP_OS_FAMILY === 'Windows' || is_executable($foundPath)) {
+                    Log::info('LibreOffice found in PATH', ['path' => $foundPath]);
+                    return $foundPath;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

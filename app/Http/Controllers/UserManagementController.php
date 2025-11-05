@@ -368,63 +368,25 @@ class UserManagementController extends Controller
 
         $userId = session('user_id');
         
-        // If scholarship_id is provided, check if form exists for this scholarship
+        // Get the user's form (one form per user)
+        $existingApplication = Form::where('user_id', $userId)
+            ->latest('updated_at')
+            ->first();
+        
+        // If scholarship_id is provided, set scholarship_applied for display
         if ($scholarship_id) {
             $scholarship = Scholarship::findOrFail($scholarship_id);
             
-            // First try to get form for this specific scholarship
-            $existingApplication = Form::where('user_id', $userId)
-                ->where('scholarship_id', $scholarship_id)
-                ->first();
-            
-            // If no scholarship-specific form exists, get general form or any form to pre-fill
-            if (!$existingApplication) {
-                // Try to get general form first (scholarship_id = null)
-                $existingApplication = Form::where('user_id', $userId)
-                    ->whereNull('scholarship_id')
-                    ->first();
-                
-                // If no general form, get any form for this user to pre-fill
-                if (!$existingApplication) {
-                    $existingApplication = Form::where('user_id', $userId)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
-                }
-                
-                // If we have a form to pre-fill, create a new instance for this scholarship
-                // but don't set scholarship_applied yet - it will be set when saving
-                if ($existingApplication) {
-                    // Create a new form object with pre-filled data from existing form
-                    $existingApplication = $existingApplication->replicate();
-                    $existingApplication->scholarship_id = $scholarship_id;
-                    $existingApplication->scholarship_applied = $scholarship->scholarship_name;
-                    $existingApplication->id = null; // Ensure it's a new record
-                } else {
-                    // Create a new empty form object with just the scholarship_applied pre-filled
-                    $existingApplication = new \App\Models\Form();
-                    $existingApplication->scholarship_applied = $scholarship->scholarship_name;
-                }
+            // If form exists, ensure scholarship_applied is set correctly
+            if ($existingApplication) {
+                $existingApplication->scholarship_applied = $scholarship->scholarship_name;
             } else {
-                // Form exists for this scholarship - ensure scholarship_applied is set correctly
-                if (!$existingApplication->scholarship_applied || $existingApplication->scholarship_applied !== $scholarship->scholarship_name) {
-                    $existingApplication->scholarship_applied = $scholarship->scholarship_name;
-                }
+                // Create a new empty form object with just the scholarship_applied pre-filled
+                $existingApplication = new \App\Models\Form();
+                $existingApplication->scholarship_applied = $scholarship->scholarship_name;
             }
             
             return view('student.forms.application_form', compact('existingApplication', 'scholarship'));
-        }
-
-        // No scholarship_id - get the general form (for form tab)
-        // First try to get form with null scholarship_id, otherwise get any form for this user
-        $existingApplication = Form::where('user_id', $userId)
-            ->whereNull('scholarship_id')
-            ->first();
-        
-        // If no general form exists, get any form for this user to pre-populate
-        if (!$existingApplication) {
-            $existingApplication = Form::where('user_id', $userId)
-                ->orderBy('created_at', 'desc')
-                ->first();
         }
         
         return view('student.forms.application_form', compact('existingApplication'));
@@ -799,40 +761,6 @@ class UserManagementController extends Controller
 
         $scholarship = Scholarship::with(['requiredDocuments'])->findOrFail($scholarship_id);
         $userId = session('user_id');
-        
-        // Check if form exists for this scholarship
-        $form = Form::where('user_id', $userId)
-            ->where('scholarship_id', $scholarship_id)
-            ->first();
-        
-        // If form exists, check if scholarship_applied matches the current scholarship
-        if ($form) {
-            // Compare scholarship_applied with the current scholarship name
-            if (!$form->scholarship_applied || $form->scholarship_applied !== $scholarship->scholarship_name) {
-                // Scholarship_applied doesn't match - redirect to form to update it
-                return redirect()->route('student.forms.application_form.scholarship', ['scholarship_id' => $scholarship_id])
-                    ->with('info', 'Please update the application form with the correct scholarship name before proceeding.');
-            }
-        } else {
-            // No form exists for this scholarship - check if user has a general form or any form
-            $generalForm = Form::where('user_id', $userId)
-                ->whereNull('scholarship_id')
-                ->first();
-            
-            // If no form exists at all, redirect to form page first
-            if (!$generalForm) {
-                // Check if user has any form at all
-                $anyForm = Form::where('user_id', $userId)->first();
-                if (!$anyForm) {
-                    return redirect()->route('student.forms.application_form.scholarship', ['scholarship_id' => $scholarship_id])
-                        ->with('info', 'Please complete the application form first before uploading documents.');
-                }
-            }
-            
-            // User has a form but not for this scholarship - redirect to create form for this scholarship
-            return redirect()->route('student.forms.application_form.scholarship', ['scholarship_id' => $scholarship_id])
-                ->with('info', 'Please complete the application form for this scholarship before proceeding.');
-        }
         
         // Get existing submitted documents
         $submittedDocuments = StudentSubmittedDocument::byUserAndScholarship($userId, $scholarship_id)->get();

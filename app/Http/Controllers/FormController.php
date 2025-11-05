@@ -40,10 +40,26 @@ class FormController extends Controller
             $request->merge(['birthdate' => $birthdate]);
         }
 
+        // Recalculate age from birthdate if birthdate is provided
+        // This ensures age is always current, matching the JavaScript calculation
+        if ($request->filled('birthdate')) {
+            try {
+                $birthdateObj = \Carbon\Carbon::parse($request->birthdate);
+                $today = now();
+                $age = $today->year - $birthdateObj->year;
+                $monthDiff = $today->month - $birthdateObj->month;
+                if ($monthDiff < 0 || ($monthDiff === 0 && $today->day < $birthdateObj->day)) {
+                    $age--;
+                }
+                if ($age > 0) {
+                    $request->merge(['age' => $age]);
+                }
+            } catch (\Exception $e) {
+                // If birthdate parsing fails, keep the submitted age value
+            }
+        }
+
         $validated = $request->validate([
-            // ------------------- Scholarship -------------------
-            'scholarship_id'      => 'nullable|exists:scholarships,id',
-            
             // ------------------- Personal Data -------------------
             'last_name'           => 'nullable|string',
             'first_name'          => 'nullable|string',
@@ -112,46 +128,30 @@ class FormController extends Controller
 
         // Inject user_id into validated data
         $validated['user_id'] = $userId;
-        $scholarshipId = $validated['scholarship_id'] ?? null;
 
-        // If scholarship_id is provided, create/update a scholarship-specific form
-        // This allows multiple forms per user (one per scholarship application)
-        if ($scholarshipId) {
-            // Get the scholarship to set scholarship_applied field
-            $scholarship = \App\Models\Scholarship::find($scholarshipId);
+        // If scholarship_id is provided in the form, set scholarship_applied field
+        if ($request->filled('scholarship_id')) {
+            $scholarship = \App\Models\Scholarship::find($request->scholarship_id);
             if ($scholarship) {
                 $validated['scholarship_applied'] = $scholarship->scholarship_name;
             }
-            
-            // Create or update form for this specific scholarship
-            Form::updateOrCreate(
-                [
-                    'user_id' => $userId,
-                    'scholarship_id' => $scholarshipId
-                ],
-                $validated
-            );
-        } else {
-            // No scholarship_id - update/create general form (for Application Form tab)
-            // Don't include scholarship_applied for general forms
-            unset($validated['scholarship_applied']);
-            
-            Form::updateOrCreate(
-                [
-                    'user_id' => $userId,
-                    'scholarship_id' => null
-                ],
-                $validated
-            );
         }
+
+        // Create or update form for this user (one form per user)
+        Form::updateOrCreate(
+            [
+                'user_id' => $userId
+            ],
+            $validated
+        );
 
         // If print flag is set, redirect to print after saving
         if ($request->has('print_after_save') && $request->print_after_save) {
-            if ($scholarshipId) {
-                // If scholarship_id exists, redirect to scholarship-specific print (which redirects to application process)
-                return redirect()->route('student.print-application.scholarship', ['scholarship_id' => $scholarshipId])->with('success', 'Application saved successfully. Preparing your document...');
+            // If scholarship_id exists in request, redirect to scholarship-specific print
+            if ($request->filled('scholarship_id')) {
+                return redirect()->route('student.print-application.scholarship', ['scholarship_id' => $request->scholarship_id])->with('success', 'Application saved successfully. Preparing your document...');
             } else {
-                // If no scholarship_id, just print and stay on form page
+                // Just print and stay on form page
                 return redirect()->route('student.print-application')->with('success', 'Application saved successfully. Preparing your document...');
             }
         }

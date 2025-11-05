@@ -14,7 +14,6 @@ class Form extends Model
     protected $fillable = [
         // ------------------- Personal Data -------------------
         'user_id',
-        'scholarship_id',
         'last_name',
         'first_name',
         'middle_name',
@@ -91,11 +90,4 @@ class Form extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Get the scholarship that this form is for.
-     */
-    public function scholarship()
-    {
-        return $this->belongsTo(Scholarship::class, 'scholarship_id');
-    }
 }

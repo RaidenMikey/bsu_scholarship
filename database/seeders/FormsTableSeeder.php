@@ -34,7 +34,6 @@ class FormsTableSeeder extends Seeder
 
             Form::create([
                 'user_id' => $user->id,
-                'scholarship_id' => $scholarship ? $scholarship->id : null,
                 // Personal Data
                 'last_name' => $lastName,
                 'first_name' => $firstName,
