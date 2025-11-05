@@ -249,10 +249,10 @@ if (!$user) {
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department</label>
             <select name="college_department" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select College/Department --</option>
-                <option value="CICS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CICS' ? 'selected' : '' }}>CICS (College of Information and Computing Sciences)</option>
-                <option value="CTE" {{ old('college_department', $existingApplication->college_department ?? '') == 'CTE' ? 'selected' : '' }}>CTE (College of Teacher Education)</option>
-                <option value="CABEIHM" {{ old('college_department', $existingApplication->college_department ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM (College of Accountancy, Business, Economics and International Hospitality Management)</option>
-                <option value="CAS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CAS' ? 'selected' : '' }}>CAS (College of Arts and Sciences)</option>
+                <option value="CICS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
+                <option value="CTE" {{ old('college_department', $existingApplication->college_department ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
+                <option value="CABEIHM" {{ old('college_department', $existingApplication->college_department ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
+                <option value="CAS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
             </select>
           </div>
         </div>
@@ -266,7 +266,6 @@ if (!$user) {
                 <option value="2nd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
                 <option value="3rd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
                 <option value="4th Year" {{ old('year_level', $existingApplication->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
-                <option value="5th Year" {{ old('year_level', $existingApplication->year_level ?? '') == '5th Year' ? 'selected' : '' }}>5th Year</option>
             </select>
           </div>
           <div>
@@ -339,7 +338,7 @@ if (!$user) {
         </div>
 
         <div id="scholarship_details_container">
-          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">If yes, provide scholarship details</label>
+          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">If Yes, please specify:</label>
           <input type="text" name="existing_scholarship_details" id="existing_scholarship_details"
             value="{{ old('existing_scholarship_details', $existingApplication->existing_scholarship_details ?? '') }}"
             class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">

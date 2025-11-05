@@ -5,6 +5,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\ApplicationManagementController;
 use App\Http\Controllers\ScholarshipManagementController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\FormPrintController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentApplicationController;
@@ -77,7 +78,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
     Route::get('/apply/{scholarship_id}/progress', [UserManagementController::class, 'getApplicationProgress'])->name('apply.progress');
     
     // Print Application
-    Route::get('/print-application', [UserManagementController::class, 'printApplication'])->name('print-application');
+    Route::get('/print-application', [FormPrintController::class, 'printApplication'])->name('print-application');
 });
 
 // --------------------------------------------------
