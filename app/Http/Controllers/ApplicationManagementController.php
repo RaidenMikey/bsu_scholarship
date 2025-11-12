@@ -167,8 +167,10 @@ class ApplicationManagementController extends Controller
         $statusFilter = $request->get('status_filter', 'all');
 
         // Build the query - SFAO sees all students in their domain
+        // Exclude students who are already scholars (they will be shown in Scholars tab)
         $query = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
+            ->whereDoesntHave('scholars') // Exclude scholars from applicants tab
             ->with(['applications.scholarship', 'form', 'campus'])
             ->leftJoin('student_submitted_documents', function($join) {
                 $join->on('users.id', '=', 'student_submitted_documents.user_id')
@@ -311,6 +313,56 @@ class ApplicationManagementController extends Controller
 
         $reports = $reportsQuery->orderBy('created_at', 'desc')->paginate(10);
 
+        // Get scholars data for the scholars tab (students who have scholar records)
+        $scholarsQuery = \App\Models\Scholar::with(['user', 'scholarship', 'user.campus'])
+            ->whereHas('user', function($query) use ($campusIds) {
+                $query->whereIn('campus_id', $campusIds);
+            });
+
+        // Apply campus filter for scholars
+        if ($campusFilter !== 'all') {
+            $scholarsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply status filter for scholars
+        if ($statusFilter !== 'all' && $statusFilter !== 'not_applied') {
+            $scholarsQuery->where('status', $statusFilter);
+        }
+
+        // Apply sorting for scholars
+        $scholarsSortBy = $request->get('scholars_sort_by', 'created_at');
+        $scholarsSortOrder = $request->get('scholars_sort_order', 'desc');
+        
+        switch ($scholarsSortBy) {
+            case 'name':
+                $scholarsQuery->leftJoin('users as sort_users', 'scholars.user_id', '=', 'sort_users.id')
+                    ->orderBy('sort_users.name', $scholarsSortOrder)
+                    ->select('scholars.*');
+                break;
+            case 'email':
+                $scholarsQuery->leftJoin('users as sort_users', 'scholars.user_id', '=', 'sort_users.id')
+                    ->orderBy('sort_users.email', $scholarsSortOrder)
+                    ->select('scholars.*');
+                break;
+            case 'scholarship':
+                $scholarsQuery->leftJoin('scholarships as sort_scholarships', 'scholars.scholarship_id', '=', 'sort_scholarships.id')
+                    ->orderBy('sort_scholarships.scholarship_name', $scholarsSortOrder)
+                    ->select('scholars.*');
+                break;
+            case 'status':
+                $scholarsQuery->orderBy('scholars.status', $scholarsSortOrder);
+                break;
+            case 'type':
+                $scholarsQuery->orderBy('scholars.type', $scholarsSortOrder);
+                break;
+            default:
+                $scholarsQuery->orderBy('scholars.created_at', $scholarsSortOrder);
+        }
+
+        $scholars = $scholarsQuery->get();
+
         // Get the active tab from session, query parameter, or default to 'scholarships'
         $activeTab = session('active_tab', $request->get('tab', 'scholarships'));
 
@@ -321,10 +373,11 @@ class ApplicationManagementController extends Controller
             'campus_filter' => $campusFilter,
             'status_filter' => $statusFilter,
             'students_count' => $students->count(),
+            'scholars_count' => $scholars->count(),
             'active_tab' => $activeTab
         ]);
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab'));
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder'));
     }
 
     /**

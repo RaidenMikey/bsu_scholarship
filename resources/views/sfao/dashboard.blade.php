@@ -151,6 +151,12 @@
         👥 Applicants
       </button>
 
+      <button @click="tab = 'scholars'; sidebarOpen = false"
+              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
+              :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+        🎓 Scholars
+      </button>
+
       <button @click="tab = 'reports'; sidebarOpen = false"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
               :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
@@ -204,6 +210,7 @@
     <!-- Tabs -->
     @include('sfao.partials.tabs.scholarships') <!-- Scholarship Lists -->
     @include('sfao.partials.tabs.applicants')   <!-- Applicants Lists -->
+    @include('sfao.partials.tabs.scholars')     <!-- Scholars Lists -->
     @include('sfao.partials.tabs.reports')      <!-- Reports -->
     @include('sfao.partials.tabs.account')      <!-- Account -->
   </main>

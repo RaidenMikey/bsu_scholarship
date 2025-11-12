@@ -24,10 +24,13 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (session()->has('user_id')) {
+            // Redirect central admin to their login page if they try to access regular login
+            if (session('role') === 'central') {
+                return redirect('/central/login');
+            }
             return redirect(match (session('role')) {
                 'student' => route('student.dashboard'),
                 'sfao'    => '/sfao',
-                'central' => '/central',
                 default   => '/'
             });
         }
@@ -51,6 +54,11 @@ class AuthController extends Controller
             return back()->withErrors(['Invalid credentials']);
         }
 
+        // Prevent central admin from using regular login
+        if ($user->role === 'central') {
+            return back()->withErrors(['Central admin users must use the central admin login page.']);
+        }
+
         if (!$user->hasVerifiedEmail()) {
             return back()->withErrors(['Your email is not verified. Please check your inbox.']);
         }
@@ -67,9 +75,77 @@ class AuthController extends Controller
         return redirect(match ($user->role) {
             'student' => '/student',
             'sfao'    => '/sfao',
-            'central' => '/central',
             default   => '/'
         });
+    }
+
+    /**
+     * Show central admin login form
+     * Only accessible via direct URL - no navigation links should point here
+     */
+    public function showCentralLogin(Request $request)
+    {
+        // Prevent access if coming from internal navigation (referrer check)
+        // This ensures the page can only be accessed by typing the URL directly
+        $referrer = $request->headers->get('referer');
+        if ($referrer) {
+            $referrerUrl = parse_url($referrer);
+            $referrerHost = $referrerUrl['host'] ?? null;
+            $referrerPath = $referrerUrl['path'] ?? null;
+            $currentHost = $request->getHost();
+            
+            // Allow if referrer is from different site (external)
+            // Allow if coming from /login (programmatic redirect for central admin)
+            // Block if referrer is from same site and not /login (internal navigation via links/buttons)
+            if ($referrerHost === $currentHost && $referrerPath !== '/login') {
+                return redirect('/')->withErrors(['Access denied.']);
+            }
+        }
+
+        if (session()->has('user_id')) {
+            if (session('role') === 'central') {
+                return redirect()->route('central.dashboard');
+            }
+            return redirect(match (session('role')) {
+                'student' => route('student.dashboard'),
+                'sfao'    => '/sfao',
+                default   => '/'
+            });
+        }
+        return view('auth.centrallogin');
+    }
+
+    /**
+     * Handle central admin login request
+     */
+    public function centralLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['Invalid credentials']);
+        }
+
+        // Only allow central admin role
+        if ($user->role !== 'central') {
+            return back()->withErrors(['This login page is only for central admin users.']);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            return back()->withErrors(['Your email is not verified. Please check your inbox.']);
+        }
+
+        session([
+            'user_id' => $user->id,
+            'role' => $user->role,
+        ]);
+
+        return redirect()->route('central.dashboard');
     }
 
     /**
