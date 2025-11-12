@@ -165,6 +165,18 @@ class ApplicationManagementController extends Controller
         $sortOrder = $request->get('sort_order', 'asc');
         $campusFilter = $request->get('campus_filter', 'all');
         $statusFilter = $request->get('status_filter', 'all');
+        
+        // Get active tab to determine status filter if tab-based filtering is used
+        $activeTab = $request->get('tab', 'scholarships');
+        
+        // If tab is a status-specific applicants tab, override status filter
+        // Note: 'approved' and 'claimed' are excluded since approved applicants become scholars
+        if (str_starts_with($activeTab, 'applicants-')) {
+            $statusFromTab = str_replace('applicants-', '', $activeTab);
+            if (in_array($statusFromTab, ['not_applied', 'in_progress', 'pending', 'rejected'])) {
+                $statusFilter = $statusFromTab;
+            }
+        }
 
         // Build the query - SFAO sees all students in their domain
         // Exclude students who are already scholars (they will be shown in Scholars tab)
@@ -243,8 +255,10 @@ class ApplicationManagementController extends Controller
             });
         });
 
-        // Apply status filtering
-        if ($statusFilter !== 'all') {
+        // Note: Status filtering is now done client-side via Alpine.js in the view
+        // This allows tab switching without page refresh, similar to Scholarships dropdown
+        // Only apply status filter if explicitly requested via form submission (not tab-based)
+        if ($statusFilter !== 'all' && !str_starts_with($activeTab, 'applicants-')) {
             $students = $students->filter(function($student) use ($statusFilter) {
                 if ($statusFilter === 'not_applied') {
                     return !$student->has_applications;
@@ -326,8 +340,9 @@ class ApplicationManagementController extends Controller
             });
         }
 
-        // Apply status filter for scholars
-        if ($statusFilter !== 'all' && $statusFilter !== 'not_applied') {
+        // Apply status filter for scholars (only if not using tab-based filtering)
+        // Tab-based filtering (scholars-new, scholars-old) is done client-side
+        if ($statusFilter !== 'all' && $statusFilter !== 'not_applied' && !str_starts_with($activeTab, 'scholars-')) {
             $scholarsQuery->where('status', $statusFilter);
         }
 
@@ -363,8 +378,10 @@ class ApplicationManagementController extends Controller
 
         $scholars = $scholarsQuery->get();
 
-        // Get the active tab from session, query parameter, or default to 'scholarships'
-        $activeTab = session('active_tab', $request->get('tab', 'scholarships'));
+        // Use the activeTab we already determined earlier (or get from request if not set)
+        if (!isset($activeTab)) {
+            $activeTab = session('active_tab', $request->get('tab', 'scholarships'));
+        }
 
         // Debug: Log the filtering parameters
         \Illuminate\Support\Facades\Log::info('SFAO Dashboard Filtering', [

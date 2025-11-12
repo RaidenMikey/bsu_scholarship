@@ -1,8 +1,15 @@
-<div x-show="tab === 'applicants'" x-transition x-cloak class="px-4 py-6">
+<div x-show="tab === 'applicants' || tab === 'applicants-not_applied' || tab === 'applicants-in_progress' || tab === 'applicants-pending' || tab === 'applicants-rejected'" x-transition x-cloak class="px-4 py-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">👥 Students Under Your Campus</h2>
+        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
+            <span x-show="tab === 'applicants'">👥 All Applicants</span>
+            <span x-show="tab === 'applicants-not_applied'">⚪ Not Applied</span>
+            <span x-show="tab === 'applicants-in_progress'">🔵 In Progress</span>
+            <span x-show="tab === 'applicants-pending'">⏳ Pending</span>
+            <span x-show="tab === 'applicants-rejected'">❌ Rejected</span>
+        </h2>
         <p class="text-gray-600 dark:text-gray-300">
-          Students from {{ $sfaoCampus->name }}
+          <span x-show="tab === 'applicants'">All students from {{ $sfaoCampus->name }}</span>
+          <span x-show="tab !== 'applicants'">Students with this status from {{ $sfaoCampus->name }}</span>
           @if($sfaoCampus->extensionCampuses->count() > 0)
             and its extension campuses: {{ $sfaoCampus->extensionCampuses->pluck('name')->join(', ') }}
           @endif
@@ -13,7 +20,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <form method="GET" action="{{ route('sfao.dashboard') }}" class="space-y-4">
             <!-- Hidden field to maintain tab -->
-            <input type="hidden" name="tab" value="applicants">
+            <input type="hidden" name="tab" :value="tab">
             
             <!-- Filter Row -->
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -47,16 +54,14 @@
                     </select>
                 </div>
 
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2" x-show="tab === 'applicants'">
                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
                     <select name="status_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
                         <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>All Status</option>
                         <option value="not_applied" {{ ($statusFilter ?? 'all') === 'not_applied' ? 'selected' : '' }}>Not Applied</option>
                         <option value="in_progress" {{ ($statusFilter ?? 'all') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                         <option value="pending" {{ ($statusFilter ?? 'all') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ ($statusFilter ?? 'all') === 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="rejected" {{ ($statusFilter ?? 'all') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                        <option value="claimed" {{ ($statusFilter ?? 'all') === 'claimed' ? 'selected' : '' }}>Claimed</option>
                     </select>
                 </div>
 
@@ -64,16 +69,16 @@
                     <button type="submit" class="bg-bsu-red text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
                         Apply
                     </button>
-                    <a href="/sfao?tab=applicants" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
+                    <button type="button" @click="tab = 'applicants'; window.location.href = '/sfao?tab=applicants'" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
                         Clear
-                    </a>
+                    </button>
                 </div>
             </div>
         </form>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div class="flex items-center">
                 <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -88,19 +93,6 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div class="flex items-center">
-                <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->filter(function($student) { return in_array('approved', $student->application_status ?? []); })->count() }}</p>
-                </div>
-            </div>
-        </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div class="flex items-center">
@@ -169,7 +161,13 @@
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach($students as $index => $student)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <tr x-show="
+                                tab === 'applicants' ||
+                                (tab === 'applicants-not_applied' && {{ !$student->has_applications ? 'true' : 'false' }}) ||
+                                (tab === 'applicants-in_progress' && {{ in_array('in_progress', $student->application_status ?? []) ? 'true' : 'false' }}) ||
+                                (tab === 'applicants-pending' && {{ in_array('pending', $student->application_status ?? []) ? 'true' : 'false' }}) ||
+                                (tab === 'applicants-rejected' && {{ in_array('rejected', $student->application_status ?? []) ? 'true' : 'false' }})
+                            " class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                     {{ $index + 1 }}
                                 </td>
@@ -193,14 +191,7 @@
                                         <div class="flex flex-col space-y-2">
                                             @foreach($student->application_status as $status)
                                                 <div class="flex items-center space-x-2">
-                                                    @if($status === 'approved')
-                                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                        </svg>
-                                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                            ✓ Approved
-                                                        </span>
-                                                    @elseif($status === 'rejected')
+                                                    @if($status === 'rejected')
                                                         <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                         </svg>
@@ -213,13 +204,6 @@
                                                         </svg>
                                                         <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                                                             ⏳ Pending
-                                                        </span>
-                                                    @elseif($status === 'claimed')
-                                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                        </svg>
-                                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                            💰 Claimed
                                                         </span>
                                                     @else
                                                         <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">

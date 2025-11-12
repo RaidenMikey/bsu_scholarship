@@ -1,8 +1,14 @@
-<div x-show="tab === 'scholars'" x-transition x-cloak class="px-4 py-6">
+<div x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" x-transition x-cloak class="px-4 py-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">🎓 Scholars Under Your Campus</h2>
+        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
+            <span x-show="tab === 'scholars'">🔵 All Scholars</span>
+            <span x-show="tab === 'scholars-new'">🟢 New Scholars</span>
+            <span x-show="tab === 'scholars-old'">🟡 Old Scholars</span>
+        </h2>
         <p class="text-gray-600 dark:text-gray-300">
-          Students who have been accepted as scholars from {{ $sfaoCampus->name }}
+          <span x-show="tab === 'scholars'">All students who have been accepted as scholars from {{ $sfaoCampus->name }}</span>
+          <span x-show="tab === 'scholars-new'">Scholars who have not yet received any grant from {{ $sfaoCampus->name }}</span>
+          <span x-show="tab === 'scholars-old'">Continuing scholars with one or more grants from {{ $sfaoCampus->name }}</span>
           @if($sfaoCampus->extensionCampuses->count() > 0)
             and its extension campuses: {{ $sfaoCampus->extensionCampuses->pluck('name')->join(', ') }}
           @endif
@@ -13,7 +19,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
         <form method="GET" action="{{ route('sfao.dashboard') }}" class="space-y-4">
             <!-- Hidden field to maintain tab -->
-            <input type="hidden" name="tab" value="scholars">
+            <input type="hidden" name="tab" :value="tab">
             
             <!-- Filter Row -->
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -63,9 +69,9 @@
                     <button type="submit" class="bg-bsu-red text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
                         Apply
                     </button>
-                    <a href="/sfao?tab=scholars" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
+                    <button type="button" @click="tab = 'scholars'; window.location.href = '/sfao?tab=scholars'" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
                         Clear
-                    </a>
+                    </button>
                 </div>
             </div>
         </form>
@@ -154,7 +160,11 @@
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach($scholars as $index => $scholar)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <tr x-show="
+                                tab === 'scholars' ||
+                                (tab === 'scholars-new' && '{{ $scholar->type }}' === 'new') ||
+                                (tab === 'scholars-old' && '{{ $scholar->type }}' === 'old')
+                            " class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                     {{ $index + 1 }}
                                 </td>
