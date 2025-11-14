@@ -76,7 +76,7 @@ class ScholarshipManagementController extends Controller
 
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
-            'scholarship_type' => 'required|in:internal,external,private,government',
+            'scholarship_type' => 'required|in:private,government',
             'description'      => 'required|string',
             'submission_deadline' => 'required|date|after:today',
             'application_start_date' => 'nullable|date|before:submission_deadline',
@@ -196,7 +196,7 @@ class ScholarshipManagementController extends Controller
 
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
-            'scholarship_type' => 'required|in:internal,external,private,government',
+            'scholarship_type' => 'required|in:private,government',
             'description'      => 'required|string',
             'submission_deadline' => 'required|date|after:today',
             'application_start_date' => 'nullable|date|before:submission_deadline',

@@ -1,6 +1,6 @@
 <!-- central/partials/tabs/scholarships.blade.php -->
 
-<div x-show="tab === 'scholarships' || tab === 'scholarships-internal' || tab === 'scholarships-external' || tab === 'scholarships-private' || tab === 'scholarships-government'" x-transition x-cloak>
+<div x-show="tab === 'scholarships' || tab === 'scholarships-private' || tab === 'scholarships-government'" x-transition x-cloak>
 
     <!-- Header with Type Filter -->
     <div class="mb-6">
@@ -8,15 +8,11 @@
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
                     <span x-show="tab === 'scholarships'">📚 All Scholarships</span>
-                    <span x-show="tab === 'scholarships-internal'">🔵 Internal Scholarships</span>
-                    <span x-show="tab === 'scholarships-external'">🟣 External Scholarships</span>
                     <span x-show="tab === 'scholarships-private'">🟢 Private Scholarships</span>
                     <span x-show="tab === 'scholarships-government'">🟠 Government Scholarships</span>
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
                     <span x-show="tab === 'scholarships'">Manage all scholarship programs</span>
-                    <span x-show="tab === 'scholarships-internal'">Internal university scholarship programs</span>
-                    <span x-show="tab === 'scholarships-external'">External partner scholarship programs</span>
                     <span x-show="tab === 'scholarships-private'">Private scholarship programs</span>
                     <span x-show="tab === 'scholarships-government'">Government scholarship programs</span>
                 </p>
@@ -51,8 +47,6 @@
         @forelse($scholarships as $scholarship)
         <div x-data="{ open: false }" 
              x-show="tab === 'scholarships' || 
-                     (tab === 'scholarships-internal' && '{{ $scholarship->scholarship_type }}' === 'internal') ||
-                     (tab === 'scholarships-external' && '{{ $scholarship->scholarship_type }}' === 'external') ||
                      (tab === 'scholarships-private' && '{{ $scholarship->scholarship_type }}' === 'private') ||
                      (tab === 'scholarships-government' && '{{ $scholarship->scholarship_type }}' === 'government')"
              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8"
@@ -273,20 +267,6 @@
     </div>
 
     <!-- Empty State for Filtered Types -->
-    <div x-show="tab === 'scholarships-internal' && !hasVisibleScholarships('internal')" 
-         class="col-span-full text-center py-12">
-        <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🔵</div>
-        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Internal Scholarships</h3>
-        <p class="text-gray-500 dark:text-gray-500">There are currently no internal scholarship programs available.</p>
-    </div>
-
-    <div x-show="tab === 'scholarships-external' && !hasVisibleScholarships('external')" 
-         class="col-span-full text-center py-12">
-        <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🟣</div>
-        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No External Scholarships</h3>
-        <p class="text-gray-500 dark:text-gray-500">There are currently no external scholarship programs available.</p>
-    </div>
-
     <div x-show="tab === 'scholarships-private' && !hasVisibleScholarships('private')" 
          class="col-span-full text-center py-12">
         <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🟢</div>

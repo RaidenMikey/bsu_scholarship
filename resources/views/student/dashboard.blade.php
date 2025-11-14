@@ -129,17 +129,6 @@
             🎓 All Scholarships
           </button>
           
-          <button @click="tab = 'scholarships'; subTab = 'internal'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="(tab === 'scholarships' && subTab === 'internal') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🏫 Internal
-          </button>
-          
-          <button @click="tab = 'scholarships'; subTab = 'external'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="(tab === 'scholarships' && subTab === 'external') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🌐 External
-          </button>
           
           <button @click="tab = 'scholarships'; subTab = 'private'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"

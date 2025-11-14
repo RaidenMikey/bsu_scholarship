@@ -35,7 +35,7 @@
     if (localStorage.getItem('activeTab') === 'reports' || localStorage.getItem('activeTab') === 'statistics') {
       this.reportsDropdownOpen = true;
     }
-    if (localStorage.getItem('activeTab') === 'scholarships' || localStorage.getItem('activeTab') === 'scholarships-internal' || localStorage.getItem('activeTab') === 'scholarships-external' || localStorage.getItem('activeTab') === 'scholarships-private' || localStorage.getItem('activeTab') === 'scholarships-government') {
+    if (localStorage.getItem('activeTab') === 'scholarships' || localStorage.getItem('activeTab') === 'scholarships-private' || localStorage.getItem('activeTab') === 'scholarships-government') {
       this.scholarshipsDropdownOpen = true;
     }
   ">
@@ -102,7 +102,7 @@
       <div class="space-y-1">
         <button @click="scholarshipsDropdownOpen = !scholarshipsDropdownOpen; tab = 'scholarships'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
-                :class="tab === 'scholarships' || tab === 'scholarships-internal' || tab === 'scholarships-external' || tab === 'scholarships-private' || tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholarships' || tab === 'scholarships-private' || tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <span>🎓 Scholarships</span>
           <svg class="w-4 h-4 transition-transform" :class="scholarshipsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -122,16 +122,6 @@
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                   :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
             📚 All Scholarships
-          </button>
-          <button @click="tab = 'scholarships-internal'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholarships-internal' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🔵 Internal
-          </button>
-          <button @click="tab = 'scholarships-external'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholarships-external' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🟣 External
           </button>
           <button @click="tab = 'scholarships-private'; sidebarOpen = false"
                   class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"

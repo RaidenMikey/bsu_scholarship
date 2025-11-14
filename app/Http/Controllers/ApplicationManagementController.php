@@ -286,11 +286,7 @@ class ApplicationManagementController extends Controller
         }]);
         
         // Apply scholarship type filter
-        if ($scholarshipTypeFilter === 'scholarships-internal') {
-            $scholarshipsQuery->where('scholarship_type', 'internal');
-        } elseif ($scholarshipTypeFilter === 'scholarships-external') {
-            $scholarshipsQuery->where('scholarship_type', 'external');
-        } elseif ($scholarshipTypeFilter === 'scholarships-private') {
+        if ($scholarshipTypeFilter === 'scholarships-private') {
             $scholarshipsQuery->where('scholarship_type', 'private');
         } elseif ($scholarshipTypeFilter === 'scholarships-government') {
             $scholarshipsQuery->where('scholarship_type', 'government');
@@ -674,11 +670,7 @@ class ApplicationManagementController extends Controller
         $scholarshipsQuery = Scholarship::with(['conditions', 'requiredDocuments']);
         
         // Apply scholarship type filter
-        if ($scholarshipTypeFilter === 'scholarships-internal') {
-            $scholarshipsQuery->where('scholarship_type', 'internal');
-        } elseif ($scholarshipTypeFilter === 'scholarships-external') {
-            $scholarshipsQuery->where('scholarship_type', 'external');
-        } elseif ($scholarshipTypeFilter === 'scholarships-private') {
+        if ($scholarshipTypeFilter === 'scholarships-private') {
             $scholarshipsQuery->where('scholarship_type', 'private');
         } elseif ($scholarshipTypeFilter === 'scholarships-government') {
             $scholarshipsQuery->where('scholarship_type', 'government');

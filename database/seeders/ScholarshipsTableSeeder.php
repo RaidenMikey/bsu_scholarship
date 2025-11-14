@@ -20,7 +20,7 @@ class ScholarshipsTableSeeder extends Seeder
         $scholarships = [
             [
                 'scholarship_name' => 'Academic Excellence Scholarship',
-                'scholarship_type' => 'internal',
+                'scholarship_type' => 'private',
                 'description'      => 'Awarded to students with excellent academic performance.',
                 'submission_deadline' => Carbon::now()->addMonths(2),
                 'application_start_date' => Carbon::now()->subDays(7),
@@ -38,7 +38,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'Athletic Scholarship',
-                'scholarship_type' => 'internal',
+                'scholarship_type' => 'private',
                 'description'      => 'For students excelling in sports and athletics.',
                 'submission_deadline' => Carbon::now()->addMonths(1),
                 'application_start_date' => Carbon::now()->subDays(5),
@@ -55,7 +55,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'Leadership Grant',
-                'scholarship_type' => 'external',
+                'scholarship_type' => 'private',
                 'description'      => 'For students who have demonstrated strong leadership skills.',
                 'submission_deadline' => Carbon::now()->addMonths(3),
                 'application_start_date' => Carbon::now()->subDays(10),
@@ -108,7 +108,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'STEM Excellence Scholarship',
-                'scholarship_type' => 'internal',
+                'scholarship_type' => 'private',
                 'description'      => 'For students pursuing STEM programs with outstanding performance.',
                 'submission_deadline' => Carbon::now()->addMonths(2),
                 'application_start_date' => Carbon::now()->subDays(14),
@@ -127,7 +127,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'Community Service Grant',
-                'scholarship_type' => 'external',
+                'scholarship_type' => 'private',
                 'description'      => 'For students actively involved in community service and volunteer work.',
                 'submission_deadline' => Carbon::now()->addWeeks(8),
                 'application_start_date' => Carbon::now()->subDays(7),
@@ -163,7 +163,7 @@ class ScholarshipsTableSeeder extends Seeder
             ],
             [
                 'scholarship_name' => 'Research Excellence Grant',
-                'scholarship_type' => 'internal',
+                'scholarship_type' => 'private',
                 'description'      => 'For students engaged in research activities and academic projects.',
                 'submission_deadline' => Carbon::now()->addMonths(2),
                 'application_start_date' => Carbon::now()->subDays(5),

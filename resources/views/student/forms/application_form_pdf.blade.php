@@ -24,8 +24,8 @@
         <tr>
             <td width="50%">
                 Scholarship Applied For:
-                <span class="checkbox">{{ $form->scholarship_type == 'internal' ? '☑' : '☐' }}</span> Internal
-                <span class="checkbox">{{ $form->scholarship_type == 'external' ? '☑' : '☐' }}</span> External
+                <span class="checkbox">{{ $form->scholarship_type == 'private' ? '☑' : '☐' }}</span> Private
+                <span class="checkbox">{{ $form->scholarship_type == 'government' ? '☑' : '☐' }}</span> Government
             </td>
             <td>Name of Scholarship: <strong>{{ $form->scholarship_name ?? '' }}</strong></td>
         </tr>
