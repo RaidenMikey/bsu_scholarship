@@ -608,8 +608,8 @@ if (!$user) {
   </div>
 
   <!-- Unsaved Changes Modal -->
-  <div id="unsavedChangesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="if(event.target === this) hideUnsavedChangesModal()">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6" onclick="event.stopPropagation()">
+  <div id="unsavedChangesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" onclick="if(event.target === this) hideUnsavedChangesModal()">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 z-[10000]" onclick="event.stopPropagation()">
       <div class="flex items-center mb-4">
         <div class="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mr-4">
           <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -638,7 +638,7 @@ if (!$user) {
   <script>
     // Form change tracking
     let formHasChanges = false;
-    let initialFormData = '';
+    let initialFormValues = {};
     let pendingNavigationUrl = null;
 
     // Track form changes
@@ -646,38 +646,57 @@ if (!$user) {
       const form = document.getElementById('mainForm');
       if (!form) return;
 
-      // Get initial form data
-      initialFormData = new FormData(form).toString();
-
-      // Track all form inputs
+      // Get initial form values
       const inputs = form.querySelectorAll('input, select, textarea');
       inputs.forEach(input => {
-        input.addEventListener('input', () => {
-          formHasChanges = true;
-        });
-        input.addEventListener('change', () => {
-          formHasChanges = true;
-        });
+        const name = input.name;
+        if (name) {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            initialFormValues[name] = input.checked;
+          } else {
+            initialFormValues[name] = input.value || '';
+          }
+        }
       });
+
+      // Track all form inputs
+      inputs.forEach(input => {
+        const trackChange = () => {
+          formHasChanges = true;
+          console.log('Form change detected on:', input.name);
+        };
+        
+        input.addEventListener('input', trackChange);
+        input.addEventListener('change', trackChange);
+        
+        // For radio buttons and checkboxes
+        if (input.type === 'radio' || input.type === 'checkbox') {
+          input.addEventListener('click', trackChange);
+        }
+      });
+      
+      console.log('Form change tracking initialized, inputs:', inputs.length);
     }
 
     // Check if form has changes
     function hasFormChanges() {
-      if (!formHasChanges) return false;
-      
-      const form = document.getElementById('mainForm');
-      if (!form) return false;
-      
-      const currentFormData = new FormData(form).toString();
-      return currentFormData !== initialFormData;
+      // Simple check - if formHasChanges flag is true, we have changes
+      // This is set when any input is modified
+      return formHasChanges;
     }
 
     // Show unsaved changes modal
     function showUnsavedChangesModal(navigationUrl) {
       pendingNavigationUrl = navigationUrl;
       const modal = document.getElementById('unsavedChangesModal');
+      console.log('showUnsavedChangesModal called, modal element:', modal);
       if (modal) {
         modal.classList.remove('hidden');
+        modal.style.display = 'flex'; // Force display
+        console.log('Modal should be visible now, classes:', modal.className);
+        console.log('Modal display style:', window.getComputedStyle(modal).display);
+      } else {
+        console.error('Modal element not found!');
       }
     }
 
@@ -686,9 +705,13 @@ if (!$user) {
       const modal = document.getElementById('unsavedChangesModal');
       if (modal) {
         modal.classList.add('hidden');
+        modal.style.display = 'none'; // Force hide
       }
       pendingNavigationUrl = null;
     }
+    
+    // Make function globally accessible for onclick handlers
+    window.hideUnsavedChangesModal = hideUnsavedChangesModal;
 
     // Save form and navigate
     function saveAndNavigate() {
@@ -841,17 +864,45 @@ if (!$user) {
       // Track form changes
       trackFormChanges();
 
-      // Intercept back to dashboard link
-      const backToDashboardLink = document.getElementById('backToDashboardLink');
+      // Verify modal exists
+      const modal = document.getElementById('unsavedChangesModal');
+      console.log('Modal element on load:', modal);
+      if (!modal) {
+        console.error('CRITICAL: Unsaved changes modal not found in DOM!');
+      }
+
+      // Intercept back to dashboard link - try multiple ways
+      let backToDashboardLink = document.getElementById('backToDashboardLink');
+      
+      // If not found by ID, try to find by href
+      if (!backToDashboardLink) {
+        const links = document.querySelectorAll('a[href*="dashboard"]');
+        console.log('Found dashboard links:', links.length);
+        if (links.length > 0) {
+          backToDashboardLink = links[0];
+          console.log('Using first dashboard link found');
+        }
+      }
+      
       if (backToDashboardLink) {
+        console.log('Back to dashboard link found:', backToDashboardLink);
         backToDashboardLink.addEventListener('click', function(e) {
           e.preventDefault();
-          if (hasFormChanges()) {
+          e.stopPropagation();
+          
+          const hasChanges = hasFormChanges();
+          console.log('Back clicked, has changes:', hasChanges, 'formHasChanges flag:', formHasChanges);
+          
+          if (hasChanges) {
+            console.log('Showing modal');
             showUnsavedChangesModal(this.href);
           } else {
+            console.log('No changes, navigating directly');
             window.location.href = this.href;
           }
         });
+      } else {
+        console.error('Back to dashboard link not found!');
       }
 
       // Handle modal buttons
