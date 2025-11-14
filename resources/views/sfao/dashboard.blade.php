@@ -23,24 +23,11 @@
     sidebarOpen: false,
     tab: localStorage.getItem('sfaoTab') || '{{ $activeTab ?? "scholarships" }}',
     darkMode: localStorage.getItem('darkMode') === 'true',
-    scholarshipsDropdownOpen: false,
-    applicantsDropdownOpen: false,
-    scholarsDropdownOpen: false
+    showLogoutModal: false
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
     $watch('tab', val => localStorage.setItem('sfaoTab', val));
-    
-    // Handle dropdown states
-    if (localStorage.getItem('sfaoTab') === 'scholarships' || localStorage.getItem('sfaoTab') === 'scholarships-private' || localStorage.getItem('sfaoTab') === 'scholarships-government') {
-      this.scholarshipsDropdownOpen = true;
-    }
-    if (localStorage.getItem('sfaoTab') === 'applicants' || localStorage.getItem('sfaoTab') === 'applicants-not_applied' || localStorage.getItem('sfaoTab') === 'applicants-in_progress' || localStorage.getItem('sfaoTab') === 'applicants-pending' || localStorage.getItem('sfaoTab') === 'applicants-rejected') {
-      this.applicantsDropdownOpen = true;
-    }
-    if (localStorage.getItem('sfaoTab') === 'scholars' || localStorage.getItem('sfaoTab') === 'scholars-new' || localStorage.getItem('sfaoTab') === 'scholars-old') {
-      this.scholarsDropdownOpen = true;
-    }
   ">
 
 <head>
@@ -74,6 +61,28 @@
       }
     };
   </script>
+  <style>
+    /* Custom scrollbar styling - minimized and subtle */
+    nav::-webkit-scrollbar {
+      width: 6px;
+    }
+    nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    nav::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.3);
+      border-radius: 3px;
+    }
+    nav::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.5);
+    }
+    .dark nav::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.2);
+    }
+    .dark nav::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.4);
+    }
+  </style>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans">
@@ -85,13 +94,13 @@
        x-cloak></div>
 
   <!-- Sidebar -->
-  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform md:translate-x-0 transition-transform duration-300 z-50"
+  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform md:translate-x-0 transition-transform duration-300 z-50 flex flex-col"
          :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
          @keydown.escape.window="sidebarOpen = false"
          x-cloak>
 
-    <!-- Profile Info -->
-    <div class="flex flex-col items-center mt-6">
+    <!-- Profile Info - Fixed at top -->
+    <div class="flex flex-col items-center mt-6 flex-shrink-0">
       <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
         alt="Profile Picture"
         class="h-16 w-16 rounded-full border-2 border-white object-cover">
@@ -103,130 +112,82 @@
       </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="mt-6 space-y-2 px-4">
-      <!-- Scholarships Dropdown -->
+    <!-- Navigation - Scrollable -->
+    <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.3) transparent;">
+      <!-- Scholarships Header -->
       <div class="space-y-1">
-        <button @click="scholarshipsDropdownOpen = !scholarshipsDropdownOpen; tab = 'scholarships'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
-                :class="tab === 'scholarships' || tab === 'scholarships-private' || tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <span>🎓 Scholarships</span>
-          <svg class="w-4 h-4 transition-transform" :class="scholarshipsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        
-        <!-- Dropdown Menu -->
-        <div x-show="scholarshipsDropdownOpen" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform scale-95"
-             x-transition:enter-end="opacity-100 transform scale-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 transform scale-100"
-             x-transition:leave-end="opacity-0 transform scale-95"
-             class="ml-4 space-y-1">
-          <button @click="tab = 'scholarships'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            📚 All Scholarships
-          </button>
-          <button @click="tab = 'scholarships-private'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholarships-private' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🟢 Private
-          </button>
-          <button @click="tab = 'scholarships-government'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🟠 Government
-          </button>
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Scholarships
         </div>
+        <button @click="tab = 'scholarships'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          📚 All Scholarships
+        </button>
+        <button @click="tab = 'scholarships-private'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'scholarships-private' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          🟢 Private
+        </button>
+        <button @click="tab = 'scholarships-government'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          🟠 Government
+        </button>
       </div>
 
-      <!-- Applicants Dropdown -->
+      <!-- Applicants Header -->
       <div class="space-y-1">
-        <button @click="applicantsDropdownOpen = !applicantsDropdownOpen; tab = 'applicants'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
-                :class="tab === 'applicants' || tab === 'applicants-not_applied' || tab === 'applicants-in_progress' || tab === 'applicants-pending' || tab === 'applicants-rejected' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <span>👥 Applicants</span>
-          <svg class="w-4 h-4 transition-transform" :class="applicantsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        
-        <!-- Dropdown Menu -->
-        <div x-show="applicantsDropdownOpen" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform scale-95"
-             x-transition:enter-end="opacity-100 transform scale-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 transform scale-100"
-             x-transition:leave-end="opacity-0 transform scale-95"
-             class="ml-4 space-y-1">
-          <button @click="tab = 'applicants'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            📋 All Applicants
-          </button>
-          <button @click="tab = 'applicants-not_applied'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'applicants-not_applied' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            ⚪ Not Applied
-          </button>
-          <button @click="tab = 'applicants-in_progress'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'applicants-in_progress' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🔵 In Progress
-          </button>
-          <button @click="tab = 'applicants-pending'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'applicants-pending' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            ⏳ Pending
-          </button>
-          <button @click="tab = 'applicants-rejected'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'applicants-rejected' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            ❌ Rejected
-          </button>
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Applicants
         </div>
+        <button @click="tab = 'applicants'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          📋 All Applicants
+        </button>
+        <button @click="tab = 'applicants-not_applied'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'applicants-not_applied' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          ⚪ Not Applied
+        </button>
+        <button @click="tab = 'applicants-in_progress'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'applicants-in_progress' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          🔵 In Progress
+        </button>
+        <button @click="tab = 'applicants-pending'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'applicants-pending' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          ⏳ Pending
+        </button>
+        <button @click="tab = 'applicants-rejected'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'applicants-rejected' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          ❌ Rejected
+        </button>
       </div>
 
-      <!-- Scholars Dropdown -->
+      <!-- Scholars Header -->
       <div class="space-y-1">
-        <button @click="scholarsDropdownOpen = !scholarsDropdownOpen; tab = 'scholars'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition flex items-center justify-between"
-                :class="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <span>🎓 Scholars</span>
-          <svg class="w-4 h-4 transition-transform" :class="scholarsDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        
-        <!-- Dropdown Menu -->
-        <div x-show="scholarsDropdownOpen" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform scale-95"
-             x-transition:enter-end="opacity-100 transform scale-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 transform scale-100"
-             x-transition:leave-end="opacity-0 transform scale-95"
-             class="ml-4 space-y-1">
-          <button @click="tab = 'scholars'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🔵 All Scholars
-          </button>
-          <button @click="tab = 'scholars-new'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholars-new' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🟢 New Scholars
-          </button>
-          <button @click="tab = 'scholars-old'; sidebarOpen = false"
-                  class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                  :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-            🟡 Old Scholars
-          </button>
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Scholars
         </div>
+        <button @click="tab = 'scholars'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          🔵 All Scholars
+        </button>
+        <button @click="tab = 'scholars-new'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'scholars-new' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          🟢 New Scholars
+        </button>
+        <button @click="tab = 'scholars-old'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          🟡 Old Scholars
+        </button>
       </div>
 
       <button @click="tab = 'reports'; sidebarOpen = false"
@@ -234,14 +195,60 @@
               :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
         📊 Reports
       </button>
-
-      <button @click="tab = 'account'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'account' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        ⚙️ Account
-      </button>
     </nav>
+
+    <!-- Settings Section - Fixed at bottom -->
+    <div class="px-4 pb-4 flex-shrink-0 border-t border-bsu-redDark/30 dark:border-gray-700 pt-4">
+      <div class="space-y-1">
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Settings
+        </div>
+        <button @click="tab = 'account'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'account' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          ⚙️ Account
+        </button>
+        <button @click="showLogoutModal = true"
+                class="block w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm text-white dark:text-white">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
   </aside>
+
+  <!-- Logout Confirmation Modal -->
+  <div x-show="showLogoutModal" 
+       x-cloak
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+       @click.self="showLogoutModal = false">
+    <div x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95"
+         class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Confirm Logout</h3>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to logout?</p>
+      <div class="flex justify-end gap-3">
+        <button @click="showLogoutModal = false"
+                class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+          Cancel
+        </button>
+        <a href="{{ url('/logout') }}"
+           onclick="localStorage.removeItem('sfaoTab');"
+           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+          Logout
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Mobile Top Bar -->
   <header class="md:hidden flex justify-between items-center bg-bsu-red text-white dark:bg-gray-800 px-4 py-3">
