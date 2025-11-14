@@ -225,9 +225,12 @@ class UserManagementController extends Controller
 
         $hasApplication = $form !== null;
         $gwa = $form ? floatval($form->previous_gwa) : null;
+        
+        // Check if form is complete (all required fields filled)
+        $isFormComplete = $form ? $form->isComplete() : false;
 
         $scholarships = collect();
-        if ($hasApplication) {
+        if ($isFormComplete) {
             // Get all scholarships that allow new applications and filter by all conditions
             $allScholarships = Scholarship::where('is_active', true)
                 ->with('conditions')
@@ -548,10 +551,13 @@ class UserManagementController extends Controller
         $user = User::with('appliedScholarships')->find(session('user_id'));
         $form = Form::where('user_id', $user->id)->first();
         $gwa = $form?->previous_gwa;
+        
+        // Check if form is complete (all required fields filled)
+        $isFormComplete = $form ? $form->isComplete() : false;
 
         $scholarships = collect();
 
-        if ($form) {
+        if ($isFormComplete) {
             // Get scholarship type filter from request or view parameter
             $scholarshipTypeFilter = $request->get('type', 'all');
             

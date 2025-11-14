@@ -52,13 +52,44 @@ if (!$user) {
       'title' => 'Application Form for Student Scholarship / Financial Assistance'
     ])
 
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2 flex-1">
+          <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div id="progressBar" class="bg-bsu-red h-2.5 rounded-full transition-all duration-300" style="width: 20%"></div>
+          </div>
+        </div>
+        <span id="progressText" class="ml-4 text-sm font-medium text-gray-700 dark:text-gray-300">Stage 1 of 5</span>
+      </div>
+      <div class="flex justify-center space-x-2">
+        <div class="flex space-x-1" id="stageIndicators">
+          <div class="w-3 h-3 rounded-full bg-bsu-red stage-indicator" data-stage-indicator="1"></div>
+          <div class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600 stage-indicator" data-stage-indicator="2"></div>
+          <div class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600 stage-indicator" data-stage-indicator="3"></div>
+          <div class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600 stage-indicator" data-stage-indicator="4"></div>
+          <div class="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600 stage-indicator" data-stage-indicator="5"></div>
+        </div>
+      </div>
+      <div class="flex justify-center mt-2">
+        <div class="flex space-x-8 text-xs text-gray-600 dark:text-gray-400">
+          <span>Personal</span>
+          <span>Academic</span>
+          <span>Family</span>
+          <span>Essay</span>
+          <span>Certification</span>
+        </div>
+      </div>
+    </div>
+
     <form action="{{ url('/student/submit-application') }}" method="POST" id="mainForm" class="space-y-10">
       @csrf
       @if(isset($scholarship))
         <input type="hidden" name="scholarship_id" value="{{ $scholarship->id }}">
       @endif
 
-      <!-- Personal Data Section -->
+      <!-- Stage 1: Personal Data Section -->
+      <div class="form-stage" data-stage="1">
       <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Personal Data</h2>
         
@@ -196,8 +227,10 @@ if (!$user) {
         </div>
         </div>
       </section>
+      </div>
 
-      <!-- Academic Data Section -->
+      <!-- Stage 2: Academic Data Section -->
+      <div class="form-stage hidden" data-stage="2">
       <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Academic Data</h2>
         
@@ -268,9 +301,19 @@ if (!$user) {
           </div>
           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Campus</label>
-            <input type="text" name="campus" 
-              value="{{ old('campus', $existingApplication->campus ?? '') }}"
-              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <select name="campus" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <option value="">-- Select Campus --</option>
+              <option value="Alangilan Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Alangilan Campus' ? 'selected' : '' }}>Alangilan Campus</option>
+              <option value="Pablo Borbon Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Pablo Borbon Campus' ? 'selected' : '' }}>Pablo Borbon Campus</option>
+              <option value="Lipa Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Lipa Campus' ? 'selected' : '' }}>Lipa Campus</option>
+              <option value="Malvar Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Malvar Campus' ? 'selected' : '' }}>Malvar Campus</option>
+              <option value="Lemery Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Lemery Campus' ? 'selected' : '' }}>Lemery Campus</option>
+              <option value="Rosario Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Rosario Campus' ? 'selected' : '' }}>Rosario Campus</option>
+              <option value="San Juan Campus" {{ old('campus', $existingApplication->campus ?? '') == 'San Juan Campus' ? 'selected' : '' }}>San Juan Campus</option>
+              <option value="Lobo Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Lobo Campus' ? 'selected' : '' }}>Lobo Campus</option>
+              <option value="Balayan Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Balayan Campus' ? 'selected' : '' }}>Balayan Campus</option>
+              <option value="Nasugbu Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Nasugbu Campus' ? 'selected' : '' }}>Nasugbu Campus</option>
+            </select>
           </div>
           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Previous GWA</label>
@@ -351,8 +394,10 @@ if (!$user) {
         </div>
         </div>
       </section>
+      </div>
 
-      <!-- Family Data Section -->
+      <!-- Stage 3: Family Data Section -->
+      <div class="form-stage hidden" data-stage="3">
       <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Family Data</h2>
         
@@ -481,21 +526,26 @@ if (!$user) {
         </div>
         </div>
       </section>
+      </div>
 
-      <!-- Essay / Question Section -->
-      <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">PLEASE ANSWER THE FOLLOWING QUESTIONS IN YOUR OWN HANDWRITING</h2>
+      <!-- Stage 4: Essay / Question Section -->
+      <div class="form-stage hidden" data-stage="4">
+      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Essay / Question</h2>
         <div>
-          <label class="block font-medium mb-1">Reason for Applying</label>
-          <textarea name="reason_for_applying" rows="5" 
-            class="w-full border border-red-500 rounded-md px-3 py-2"
+          <label class="block font-medium mb-2 text-gray-700 dark:text-gray-300">PLEASE ANSWER THE FOLLOWING QUESTIONS IN YOUR OWN HANDWRITING</label>
+          <label class="block font-medium mb-1 text-gray-700 dark:text-gray-300">Reason for Applying</label>
+          <textarea name="reason_for_applying" rows="8" 
+            class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors"
             placeholder="Please explain your reason for applying for this scholarship...">{{ old('reason_for_applying', $existingApplication->reason_for_applying ?? '') }}</textarea>
         </div>
       </section>
+      </div>
 
-      <!-- Certification Section -->
-      <section class="mt-8">
-        <h2 class="text-xl font-semibold text-bsu-red mb-6">Certification</h2>
+      <!-- Stage 5: Certification Section -->
+      <div class="form-stage hidden" data-stage="5">
+      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Certification</h2>
         <div class="space-y-4">
           <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <p class="text-sm text-yellow-800">
@@ -506,14 +556,14 @@ if (!$user) {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block font-medium mb-1">Student Signature</label>
-              <input type="text" name="student_signature" placeholder="Type your full name as digital signature" value="{{ old('student_signature', $existingApplication->student_signature ?? '') }}" class="w-full border border-red-500 rounded-md px-3 py-2">
-              <p class="text-sm text-gray-500 mt-1">Type your full name as your digital signature</p>
+              <label class="block font-medium mb-1 text-gray-700 dark:text-gray-300">Student Signature</label>
+              <input type="text" name="student_signature" placeholder="Type your full name as digital signature" value="{{ old('student_signature', $existingApplication->student_signature ?? '') }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Type your full name as your digital signature</p>
             </div>
 
             <div>
-              <label class="block font-medium mb-1">Date Signed</label>
-              <input type="date" name="date_signed" value="{{ old('date_signed', optional($existingApplication)->date_signed?->format('Y-m-d') ?? date('Y-m-d')) }}" class="w-full border border-red-500 rounded-md px-3 py-2">
+              <label class="block font-medium mb-1 text-gray-700 dark:text-gray-300">Date Signed</label>
+              <input type="date" name="date_signed" value="{{ old('date_signed', optional($existingApplication)->date_signed?->format('Y-m-d') ?? date('Y-m-d')) }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
           </div>
 
@@ -526,30 +576,338 @@ if (!$user) {
           </div>
         </div>
       </section>
-    </form>
-    
-    <!-- Buttons container -->
-    <div class="flex justify-center mt-6">
-      <!-- Save and Print Button -->
-      <button form="mainForm" type="submit"
-        class="flex items-center gap-2 bg-bsu-red text-white px-8 py-3 rounded-lg hover:bg-red-700 transition duration-300 text-lg font-semibold shadow-lg">
-        <!-- Save Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
-        </svg>
-        <!-- Print Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
-        </svg>
-        Save and Print Application
-      </button>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="button" id="backBtn" onclick="previousStage()" class="hidden flex items-center gap-2 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition duration-300 font-semibold shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
+        <div class="flex-1"></div>
+        <button type="button" id="nextBtn" onclick="nextStage()" class="flex items-center gap-2 bg-bsu-red text-white px-6 py-3 rounded-lg hover:bg-red-700 transition duration-300 font-semibold shadow-lg">
+          Next
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button type="submit" id="completeBtn" form="mainForm" onclick="removePrintFlag()" class="hidden flex items-center gap-2 bg-bsu-red text-white px-8 py-3 rounded-lg hover:bg-red-700 transition duration-300 text-lg font-semibold shadow-lg">
+          <!-- Save Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+          </svg>
+          Complete Application
+        </button>
+      </div>
       
-      <!-- Hidden input to trigger print after save -->
-      <input type="hidden" form="mainForm" name="print_after_save" value="1">
+      <!-- Hidden input to trigger print after save (only for other submissions, not Complete button) -->
+      <input type="hidden" form="mainForm" name="print_after_save" id="printAfterSave" value="1">
+    </form>
+  </div>
+
+  <!-- Unsaved Changes Modal -->
+  <div id="unsavedChangesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="if(event.target === this) hideUnsavedChangesModal()">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6" onclick="event.stopPropagation()">
+      <div class="flex items-center mb-4">
+        <div class="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mr-4">
+          <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Unsaved Changes</h3>
+      </div>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">
+        Changes have been made to the form. Do you want to save the current changes before leaving?
+      </p>
+      <div class="flex justify-end space-x-3">
+        <button type="button" id="cancelLeaveBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          Cancel
+        </button>
+        <button type="button" id="discardChangesBtn" class="px-4 py-2 text-sm font-medium text-white bg-gray-600 dark:bg-gray-500 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+          Discard Changes
+        </button>
+        <button type="button" id="saveChangesBtn" class="px-4 py-2 text-sm font-medium text-white bg-bsu-red rounded-lg hover:bg-red-700 transition-colors">
+          Save Changes
+        </button>
+      </div>
     </div>
   </div>
 
   <script>
+    // Form change tracking
+    let formHasChanges = false;
+    let initialFormData = '';
+    let pendingNavigationUrl = null;
+
+    // Track form changes
+    function trackFormChanges() {
+      const form = document.getElementById('mainForm');
+      if (!form) return;
+
+      // Get initial form data
+      initialFormData = new FormData(form).toString();
+
+      // Track all form inputs
+      const inputs = form.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.addEventListener('input', () => {
+          formHasChanges = true;
+        });
+        input.addEventListener('change', () => {
+          formHasChanges = true;
+        });
+      });
+    }
+
+    // Check if form has changes
+    function hasFormChanges() {
+      if (!formHasChanges) return false;
+      
+      const form = document.getElementById('mainForm');
+      if (!form) return false;
+      
+      const currentFormData = new FormData(form).toString();
+      return currentFormData !== initialFormData;
+    }
+
+    // Show unsaved changes modal
+    function showUnsavedChangesModal(navigationUrl) {
+      pendingNavigationUrl = navigationUrl;
+      const modal = document.getElementById('unsavedChangesModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
+    }
+
+    // Hide unsaved changes modal
+    function hideUnsavedChangesModal() {
+      const modal = document.getElementById('unsavedChangesModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+      pendingNavigationUrl = null;
+    }
+
+    // Save form and navigate
+    function saveAndNavigate() {
+      const form = document.getElementById('mainForm');
+      if (!form) return;
+
+      // Remove print flag for save
+      const printInput = document.getElementById('printAfterSave');
+      if (printInput) {
+        printInput.remove();
+      }
+
+      // Create a hidden input to indicate this is a save-and-navigate action
+      const saveAndNavigateInput = document.createElement('input');
+      saveAndNavigateInput.type = 'hidden';
+      saveAndNavigateInput.name = 'save_and_navigate';
+      saveAndNavigateInput.value = pendingNavigationUrl || '{{ route("student.dashboard") }}';
+      form.appendChild(saveAndNavigateInput);
+
+      // Reset form change tracking
+      formHasChanges = false;
+      
+      // Submit form
+      form.submit();
+    }
+
+    // Navigate without saving
+    function navigateWithoutSaving() {
+      formHasChanges = false;
+      if (pendingNavigationUrl) {
+        window.location.href = pendingNavigationUrl;
+      } else {
+        window.location.href = '{{ route("student.dashboard") }}';
+      }
+    }
+
+    // Multi-stage form navigation
+    let currentStage = 1;
+    const totalStages = 5;
+
+    function showStage(stage) {
+      // Hide all stages
+      document.querySelectorAll('.form-stage').forEach(s => {
+        s.classList.add('hidden');
+      });
+      
+      // Show current stage
+      const currentStageElement = document.querySelector(`.form-stage[data-stage="${stage}"]`);
+      if (currentStageElement) {
+        currentStageElement.classList.remove('hidden');
+      }
+      
+      // Update progress bar
+      const progress = (stage / totalStages) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
+      document.getElementById('progressText').textContent = `Stage ${stage} of ${totalStages}`;
+      
+      // Update stage indicators
+      document.querySelectorAll('.stage-indicator').forEach((indicator, index) => {
+        if (index + 1 <= stage) {
+          indicator.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+          indicator.classList.add('bg-bsu-red');
+        } else {
+          indicator.classList.remove('bg-bsu-red');
+          indicator.classList.add('bg-gray-300', 'dark:bg-gray-600');
+        }
+      });
+      
+      // Update navigation buttons
+      const backBtn = document.getElementById('backBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const completeBtn = document.getElementById('completeBtn');
+      
+      if (stage === 1) {
+        backBtn.classList.add('hidden');
+      } else {
+        backBtn.classList.remove('hidden');
+      }
+      
+      if (stage === totalStages) {
+        nextBtn.classList.add('hidden');
+        completeBtn.classList.remove('hidden');
+      } else {
+        nextBtn.classList.remove('hidden');
+        completeBtn.classList.add('hidden');
+      }
+      
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStage() {
+      // Validate current stage before proceeding
+      if (validateCurrentStage()) {
+        if (currentStage < totalStages) {
+          currentStage++;
+          showStage(currentStage);
+        }
+      }
+    }
+
+    function previousStage() {
+      if (currentStage > 1) {
+        currentStage--;
+        showStage(currentStage);
+      }
+    }
+
+    function validateCurrentStage() {
+      const currentStageElement = document.querySelector(`.form-stage[data-stage="${currentStage}"]`);
+      if (!currentStageElement) return true;
+      
+      // Get all required fields in current stage
+      const requiredFields = currentStageElement.querySelectorAll('[required]');
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value || field.value.trim() === '') {
+          isValid = false;
+          field.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+          field.addEventListener('input', function() {
+            this.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+          }, { once: true });
+        }
+      });
+      
+      if (!isValid) {
+        alert('Please fill in all required fields before proceeding.');
+        // Scroll to first invalid field
+        const firstInvalid = currentStageElement.querySelector('[required]:invalid, [required].border-red-500');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus();
+        }
+      }
+      
+      return isValid;
+    }
+
+    // Remove print flag when Complete button is clicked
+    function removePrintFlag() {
+      const printInput = document.getElementById('printAfterSave');
+      if (printInput) {
+        printInput.remove();
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Track form changes
+      trackFormChanges();
+
+      // Intercept back to dashboard link
+      const backToDashboardLink = document.getElementById('backToDashboardLink');
+      if (backToDashboardLink) {
+        backToDashboardLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (hasFormChanges()) {
+            showUnsavedChangesModal(this.href);
+          } else {
+            window.location.href = this.href;
+          }
+        });
+      }
+
+      // Handle modal buttons
+      const cancelBtn = document.getElementById('cancelLeaveBtn');
+      const discardBtn = document.getElementById('discardChangesBtn');
+      const saveBtn = document.getElementById('saveChangesBtn');
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+          hideUnsavedChangesModal();
+        });
+      }
+
+      if (discardBtn) {
+        discardBtn.addEventListener('click', function() {
+          navigateWithoutSaving();
+        });
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+          saveAndNavigate();
+        });
+      }
+
+      // Reset form change tracking on successful form submission
+      const form = document.getElementById('mainForm');
+      if (form) {
+        form.addEventListener('submit', function() {
+          formHasChanges = false;
+        });
+      }
+
+      // Also handle browser back/forward and page unload
+      window.addEventListener('beforeunload', function(e) {
+        if (hasFormChanges()) {
+          e.preventDefault();
+          e.returnValue = '';
+          return '';
+        }
+      });
+
+      // Check if stage parameter is in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const stageParam = urlParams.get('stage');
+      
+      if (stageParam && parseInt(stageParam) >= 1 && parseInt(stageParam) <= totalStages) {
+        // Navigate to the specified stage
+        currentStage = parseInt(stageParam);
+        showStage(currentStage);
+      } else {
+        // Default to stage 1
+        showStage(1);
+      }
+    });
+
     const birthMonthInput = document.getElementById('birth_mm');
     const birthDayInput = document.getElementById('birth_dd');
     const birthYearInput = document.getElementById('birth_yyyy');

@@ -290,17 +290,71 @@
           <!-- Form Status Overview -->
           <div class="mb-8">
             @if($form)
-              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
-                <div class="flex items-center">
-                  <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                  </svg>
-                  <div>
-                    <h3 class="font-semibold text-green-800 dark:text-green-200">Application Status: Complete</h3>
-                    <p class="text-sm text-green-700 dark:text-green-300">Last updated: {{ $form->updated_at->format('M d, Y \a\t g:i A') }}</p>
+              @php
+                $overallProgress = $form->getOverallProgress();
+                $requiredProgress = $form->getRequiredFieldsProgress();
+                $isComplete = $form->isComplete();
+              @endphp
+              
+              @if($isComplete)
+                <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                      <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      <div>
+                        <h3 class="font-semibold text-green-800 dark:text-green-200">Application Status: Complete</h3>
+                        <p class="text-sm text-green-700 dark:text-green-300">All required fields are filled. Last updated: {{ $form->updated_at->format('M d, Y \a\t g:i A') }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Progress Bar -->
+                  <div class="mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Progress</span>
+                      <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $overallProgress }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+                      <div class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: {{ $overallProgress }}%"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                      <span>Required Fields: {{ $requiredProgress }}%</span>
+                      <span>{{ $form->getRequiredFieldsProgress() >= 100 ? '✓ All required fields completed' : 'Complete required fields to submit' }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              @else
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                      <svg class="w-6 h-6 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                      </svg>
+                      <div>
+                        <h3 class="font-semibold text-yellow-800 dark:text-yellow-200">Application Status: Incomplete</h3>
+                        <p class="text-sm text-yellow-700 dark:text-yellow-300">Please complete all required fields below. Last updated: {{ $form->updated_at->format('M d, Y \a\t g:i A') }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Progress Bar -->
+                  <div class="mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Progress</span>
+                      <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $overallProgress }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+                      <div class="bg-yellow-500 h-3 rounded-full transition-all duration-300" style="width: {{ $overallProgress }}%"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                      <span>Required Fields: {{ $requiredProgress }}%</span>
+                      <span>{{ $requiredProgress >= 100 ? '✓ All required fields completed' : 'Complete required fields to submit' }}</span>
+                    </div>
+                  </div>
+                </div>
+              @endif
             @else
               <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
                 <div class="flex items-center">
@@ -308,8 +362,23 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                   </svg>
                   <div>
-                    <h3 class="font-semibold text-yellow-800 dark:text-yellow-200">Application Status: Incomplete</h3>
+                    <h3 class="font-semibold text-yellow-800 dark:text-yellow-200">Application Status: Not Started</h3>
                     <p class="text-sm text-yellow-700 dark:text-yellow-300">Complete all sections below to view available scholarships.</p>
+                  </div>
+                </div>
+                
+                <!-- Progress Bar for No Form -->
+                <div class="mt-4">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Progress</span>
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+                    <div class="bg-yellow-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                  <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                    <span>Required Fields: 0%</span>
+                    <span>Start filling out the form</span>
                   </div>
                 </div>
               </div>
@@ -380,7 +449,7 @@
                     <span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Incomplete</span>
                   @endif
                 </div>
-                <a href="{{ route('student.forms.application_form') }}#personal" 
+                <a href="{{ route('student.forms.application_form') }}?stage=1" 
                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
                   Edit →
                 </a>
@@ -425,8 +494,8 @@
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600 dark:text-gray-300">GWA:</span>
                   <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->gwa)
-                      {{ number_format($form->gwa, 2) }}
+                    @if($form && $form->previous_gwa)
+                      {{ number_format($form->previous_gwa, 2) }}
                     @else
                       <span class="text-gray-400">Not provided</span>
                     @endif
@@ -436,7 +505,7 @@
               
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  @if($form && $form->program && $form->year_level && $form->gwa)
+                  @if($form && $form->program && $form->year_level && $form->previous_gwa)
                     <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -448,7 +517,7 @@
                     <span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Incomplete</span>
                   @endif
                 </div>
-                <a href="{{ route('student.forms.application_form') }}#academic" 
+                <a href="{{ route('student.forms.application_form') }}?stage=2" 
                    class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium">
                   Edit →
                 </a>
@@ -500,11 +569,31 @@
                     @endif
                   </span>
                 </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-300">Annual Income:</span>
+                  <span class="font-medium text-gray-800 dark:text-gray-200">
+                    @if($form && $form->estimated_gross_annual_income)
+                      @php
+                        $incomeLabels = [
+                          'not_over_250000' => 'Not over P 250,000.00',
+                          'over_250000_not_over_400000' => 'Over P 250,000 but not over P 400,000',
+                          'over_400000_not_over_800000' => 'Over P 400,000 but not over P 800,000',
+                          'over_800000_not_over_2000000' => 'Over P 800,000 but not over P 2,000,000',
+                          'over_2000000_not_over_8000000' => 'Over P 2,000,000 but not over P 8,000,000',
+                          'over_8000000' => 'Over P 8,000,000'
+                        ];
+                      @endphp
+                      {{ $incomeLabels[$form->estimated_gross_annual_income] ?? $form->estimated_gross_annual_income }}
+                    @else
+                      <span class="text-gray-400">Not provided</span>
+                    @endif
+                  </span>
+                </div>
               </div>
               
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  @if($form && $form->father_name && $form->mother_name)
+                  @if($form && $form->father_name && $form->mother_name && $form->estimated_gross_annual_income)
                     <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -516,63 +605,46 @@
                     <span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Incomplete</span>
                   @endif
                 </div>
-                <a href="{{ route('student.forms.application_form') }}#family" 
+                <a href="{{ route('student.forms.application_form') }}?stage=3" 
                    class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-medium">
                   Edit →
                 </a>
               </div>
             </div>
 
-            <!-- Income Information Section -->
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700 rounded-lg p-6 hover:shadow-lg transition-shadow">
+            <!-- Essay / Question Section -->
+            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-6 hover:shadow-lg transition-shadow">
               <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mr-4">
+                <div class="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mr-4">
                   <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-orange-800 dark:text-orange-200">Income Information</h3>
-                  <p class="text-sm text-orange-600 dark:text-orange-300">Financial background</p>
+                  <h3 class="text-lg font-semibold text-indigo-800 dark:text-indigo-200">Essay / Question</h3>
+                  <p class="text-sm text-indigo-600 dark:text-indigo-300">Reason for applying</p>
                 </div>
               </div>
               
               <div class="space-y-2 mb-4">
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-300">Monthly Allowance:</span>
-                  <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->monthly_allowance)
-                      ₱{{ number_format($form->monthly_allowance, 2) }}
+                <div class="text-sm">
+                  <span class="text-gray-600 dark:text-gray-300">Reason for Applying:</span>
+                  <p class="mt-2 text-gray-800 dark:text-gray-200 font-medium">
+                    @if($form && $form->reason_for_applying)
+                      {{ \Illuminate\Support\Str::limit($form->reason_for_applying, 150) }}
+                      @if(strlen($form->reason_for_applying) > 150)
+                        <span class="text-gray-500">...</span>
+                      @endif
                     @else
-                      <span class="text-gray-400">Not provided</span>
+                      <span class="text-gray-400 italic">Not provided</span>
                     @endif
-                  </span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-300">Family Income:</span>
-                  <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->monthly_family_income_bracket)
-                      {{ $form->monthly_family_income_bracket }}
-                    @else
-                      <span class="text-gray-400">Not provided</span>
-                    @endif
-                  </span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-300">Other Sources:</span>
-                  <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->other_income_sources)
-                      {{ \Illuminate\Support\Str::limit($form->other_income_sources, 20) }}
-                    @else
-                      <span class="text-gray-400">Not provided</span>
-                    @endif
-                  </span>
+                  </p>
                 </div>
               </div>
               
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  @if($form && $form->monthly_allowance && $form->monthly_family_income_bracket)
+                  @if($form && $form->reason_for_applying && strlen(trim($form->reason_for_applying)) > 0)
                     <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -584,76 +656,8 @@
                     <span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Incomplete</span>
                   @endif
                 </div>
-                <a href="{{ route('student.forms.application_form') }}#income" 
-                   class="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 text-sm font-medium">
-                  Edit →
-                </a>
-              </div>
-            </div>
-
-            <!-- House Profile Section -->
-            <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border border-teal-200 dark:border-teal-700 rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center mr-4">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-semibold text-teal-800 dark:text-teal-200">House Profile</h3>
-                  <p class="text-sm text-teal-600 dark:text-teal-300">Living conditions & utilities</p>
-                </div>
-              </div>
-              
-              <div class="space-y-2 mb-4">
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-300">House Type:</span>
-                  <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->house_type)
-                      {{ $form->house_type }}
-                    @else
-                      <span class="text-gray-400">Not provided</span>
-                    @endif
-                  </span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-300">Ownership:</span>
-                  <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->house_ownership)
-                      {{ $form->house_ownership }}
-                    @else
-                      <span class="text-gray-400">Not provided</span>
-                    @endif
-                  </span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-300">Utilities:</span>
-                  <span class="font-medium text-gray-800 dark:text-gray-200">
-                    @if($form && $form->electricity_source)
-                      {{ $form->electricity_source }}
-                    @else
-                      <span class="text-gray-400">Not provided</span>
-                    @endif
-                  </span>
-                </div>
-              </div>
-              
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  @if($form && $form->house_type && $form->house_ownership && $form->electricity_source)
-                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span class="text-sm text-green-600 dark:text-green-400 font-medium">Complete</span>
-                  @else
-                    <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
-                    <span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Incomplete</span>
-                  @endif
-                </div>
-                <a href="{{ route('student.forms.application_form') }}#house" 
-                   class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 text-sm font-medium">
+                <a href="{{ route('student.forms.application_form') }}?stage=4" 
+                   class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
                   Edit →
                 </a>
               </div>
@@ -720,7 +724,7 @@
                     <span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Incomplete</span>
                   @endif
                 </div>
-                <a href="{{ route('student.forms.application_form') }}#certification" 
+                <a href="{{ route('student.forms.application_form') }}?stage=5" 
                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
                   Edit →
                 </a>

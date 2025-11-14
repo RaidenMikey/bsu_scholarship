@@ -145,6 +145,11 @@ class FormController extends Controller
             $validated
         );
 
+        // If save_and_navigate is set, redirect to the specified URL after saving
+        if ($request->has('save_and_navigate') && $request->save_and_navigate) {
+            return redirect($request->save_and_navigate)->with('success', 'Application saved successfully.');
+        }
+
         // If print flag is set, redirect to print after saving
         if ($request->has('print_after_save') && $request->print_after_save) {
             // If scholarship_id exists in request, redirect to scholarship-specific print

@@ -10,6 +10,7 @@
         @endisset
     </div>
     <a href="{{ route('student.dashboard') }}" 
+       id="backToDashboardLink"
        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg border-2 border-bsu-red whitespace-nowrap
               bg-white text-bsu-red">
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
