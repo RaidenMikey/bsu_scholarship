@@ -68,9 +68,6 @@
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getScholarshipTypeBadgeColor() }} shadow-sm">
                                       {{ ucfirst($scholarship->scholarship_type) }}
                                     </span>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getPriorityBadgeColor() }} shadow-sm">
-                                      {{ ucfirst($scholarship->priority_level) }} Priority
-                                    </span>
                                 </div>
                             </div>
                         </div>

@@ -80,9 +80,6 @@
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getScholarshipTypeBadgeColor() }}">
                     {{ ucfirst($scholarship->scholarship_type) }}
                   </span>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $scholarship->getPriorityBadgeColor() }}">
-                    {{ ucfirst($scholarship->priority_level) }}
-                  </span>
                 </div>
               </div>
             </div>
