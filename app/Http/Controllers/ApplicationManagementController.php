@@ -1036,7 +1036,6 @@ class ApplicationManagementController extends Controller
         $totalScholarships = \App\Models\Scholarship::count();
         $activeScholarships = \App\Models\Scholarship::where('is_active', true)->count();
         $acceptingApplicationsScholarships = \App\Models\Scholarship::acceptingApplications()->count();
-        $highPriorityScholarships = \App\Models\Scholarship::highPriority()->count();
         $oneTimeScholarships = \App\Models\Scholarship::where('grant_type', 'one_time')->count();
         $recurringScholarships = \App\Models\Scholarship::where('grant_type', 'recurring')->count();
         $discontinuedScholarships = \App\Models\Scholarship::where('grant_type', 'discontinued')->count();
@@ -1392,7 +1391,6 @@ class ApplicationManagementController extends Controller
             'total_scholarships' => $totalScholarships,
             'active_scholarships' => $activeScholarships,
             'accepting_applications_scholarships' => $acceptingApplicationsScholarships,
-            'high_priority_scholarships' => $highPriorityScholarships,
             'one_time_scholarships' => $oneTimeScholarships,
             'recurring_scholarships' => $recurringScholarships,
             'discontinued_scholarships' => $discontinuedScholarships,
