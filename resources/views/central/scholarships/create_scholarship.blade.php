@@ -279,16 +279,6 @@
             </button>
         </div>
 
-        <!-- Priority Level -->
-        <label for="priority_level" class="block text-sm font-medium text-gray-700 mt-4">Priority Level</label>
-        <select id="priority_level" name="priority_level" required
-                class="w-full border rounded-lg p-2 focus:ring focus:ring-red-700">
-            <option value="">Select Priority Level</option>
-            <option value="high" {{ old('priority_level', $scholarship->priority_level ?? '') == 'high' ? 'selected' : '' }}>High Priority</option>
-            <option value="medium" {{ old('priority_level', $scholarship->priority_level ?? '') == 'medium' ? 'selected' : '' }}>Medium Priority</option>
-            <option value="low" {{ old('priority_level', $scholarship->priority_level ?? '') == 'low' ? 'selected' : '' }}>Low Priority</option>
-        </select>
-
         <!-- Application Start Date -->
         <label for="application_start_date" class="block text-sm font-medium text-gray-700 mt-2">Application Start Date (Optional)</label>
         <input type="date" id="application_start_date" name="application_start_date"
@@ -334,14 +324,6 @@
             </div>
         @endif
 
-        <!-- Renewal Allowed -->
-        <div class="flex items-center mt-2">
-            <input type="checkbox" id="renewal_allowed" name="renewal_allowed" value="1"
-                   {{ old('renewal_allowed', $scholarship->renewal_allowed ?? false) ? 'checked' : '' }}
-                   class="h-4 w-4 text-red-700 focus:ring-red-700 border-gray-300 rounded">
-            <label for="renewal_allowed" class="ml-2 block text-sm text-gray-700">Allow Renewal</label>
-        </div>
-
         <!-- Grant Type -->
         <label for="grant_type" class="block text-sm font-medium text-gray-700 mt-4">Grant Type</label>
         <select id="grant_type" name="grant_type" required
@@ -352,9 +334,9 @@
             <option value="discontinued" {{ old('grant_type', $scholarship->grant_type ?? '') == 'discontinued' ? 'selected' : '' }}>Discontinued</option>
         </select>
         <p class="text-xs text-gray-500 mt-1">
-            <strong>One-time:</strong> Single grant only, closes after first claim<br>
-            <strong>Recurring:</strong> Multiple grants allowed (semester-based or as announced)<br>
-            <strong>Discontinued:</strong> Scholarship has been cancelled or discontinued
+            <strong>One-time:</strong> Single grant only, closes after first claim. Renewal is not allowed.<br>
+            <strong>Recurring:</strong> Multiple grants allowed (semester-based or as announced). Renewal is automatically allowed.<br>
+            <strong>Discontinued:</strong> Scholarship has been cancelled or discontinued. Renewal is not allowed.
         </p>
 
         <!-- Actions -->

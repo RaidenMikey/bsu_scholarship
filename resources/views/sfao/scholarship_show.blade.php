@@ -11,7 +11,6 @@
       <th class="p-3 text-left">#</th>
       <th class="p-3 text-left">Name</th>
       <th class="p-3 text-left">Email</th>
-      <th class="p-3 text-left">Applicant Type</th>
       <th class="p-3 text-left">Grant Count</th>
       <th class="p-3 text-left">Status</th>
       <th class="p-3 text-left">Actions</th>
@@ -23,8 +22,6 @@
         <td class="p-3">{{ $i+1 }}</td>
         <td class="p-3">{{ $application->user->name }}</td>
         <td class="p-3">{{ $application->user->email }}</td>
-        <td class="p-3">
-        </td>
         <td class="p-3">
           <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $application->getGrantCountBadgeColor() }}">
             {{ $application->getGrantCountDisplay() }}

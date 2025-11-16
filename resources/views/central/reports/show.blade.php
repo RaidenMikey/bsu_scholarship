@@ -149,31 +149,6 @@
                     </div>
                 </div>
 
-                <!-- Application Types -->
-                <div class="bg-white shadow rounded-lg">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-bsu-red">Application Types</h3>
-                    </div>
-                    <div class="p-6">
-                        <dl class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <dt class="text-sm font-medium text-gray-500">New Applications</dt>
-                                <dd class="text-lg font-semibold text-blue-600">{{ $report->report_data['application_types']['new_applications'] ?? 0 }}</dd>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <dt class="text-sm font-medium text-gray-500">Continuing Applications</dt>
-                                <dd class="text-lg font-semibold text-green-600">{{ $report->report_data['application_types']['continuing_applications'] ?? 0 }}</dd>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="--progress-width: {{ $report->report_data['application_types']['new_percentage'] ?? 0 }}%; width: var(--progress-width);"></div>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500">
-                                <span>New: {{ $report->report_data['application_types']['new_percentage'] ?? 0 }}%</span>
-                                <span>Continuing: {{ $report->report_data['application_types']['continuing_percentage'] ?? 0 }}%</span>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
             </div>
 
             <!-- Applications by Scholarship -->

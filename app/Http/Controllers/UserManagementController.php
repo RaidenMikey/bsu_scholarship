@@ -253,6 +253,17 @@ class UserManagementController extends Controller
             
             $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
+            // Get rejected scholarship IDs for this user
+            $rejectedScholarshipIds = \App\Models\RejectedApplicant::where('user_id', $userId)
+                ->where('rejected_by', 'central')
+                ->pluck('scholarship_id')
+                ->toArray();
+
+            // Filter out rejected scholarships
+            $scholarships = $scholarships->reject(function ($scholarship) use ($rejectedScholarshipIds) {
+                return in_array($scholarship->id, $rejectedScholarshipIds);
+            });
+
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
             $appliedStatuses = $user->appliedScholarships->pluck('status', 'scholarship_id')->toArray();
             foreach ($scholarships as $scholarship) {
@@ -650,9 +661,6 @@ class UserManagementController extends Controller
                     return $scholarship->submission_deadline;
                 case 'grant_amount':
                     return $scholarship->grant_amount ?? 0;
-                case 'priority_level':
-                    $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
-                    return $priorityOrder[$scholarship->priority_level] ?? 4;
                 case 'scholarship_type':
                     return $scholarship->scholarship_type;
                 case 'grant_type':
@@ -1010,6 +1018,17 @@ class UserManagementController extends Controller
         if ($requiredScholarshipDocs > 0 && $submittedScholarshipDocs < $requiredScholarshipDocs) {
             return redirect()->route('student.apply', $scholarship_id)
                 ->with('error', 'Please submit all required scholarship documents first.');
+        }
+
+        // Check if student was previously rejected from this scholarship by Central Admin
+        $wasRejected = \App\Models\RejectedApplicant::where('user_id', $userId)
+            ->where('scholarship_id', $scholarship_id)
+            ->where('rejected_by', 'central')
+            ->exists();
+
+        if ($wasRejected) {
+            return redirect()->route('student.apply', $scholarship_id)
+                ->with('error', 'You cannot apply to this scholarship as your previous application was rejected by Central Administration.');
         }
 
         // Create or update application

@@ -27,7 +27,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 50,
                 'grant_amount'     => 10000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'high',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Must maintain excellent academic standing throughout the scholarship period.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -45,7 +45,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 30,
                 'grant_amount'     => 8000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'medium',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Must be an active member of a university sports team.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -62,7 +62,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 20,
                 'grant_amount'     => 7000,
                 'renewal_allowed'  => false,
-                'priority_level'   => 'high',
+                'grant_type' => 'one_time',
                 'eligibility_notes' => 'Must provide evidence of leadership roles in student organizations.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -80,7 +80,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 15,
                 'grant_amount'     => 6000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'medium',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Must be actively involved in cultural or performing arts activities.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -98,7 +98,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => null, // unlimited
                 'grant_amount'     => 5000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'high',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Income verification documents required.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -115,7 +115,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 25,
                 'grant_amount'     => 12000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'high',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Open to all STEM programs including Computer Science, Engineering, and Mathematics.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -134,7 +134,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 18,
                 'grant_amount'     => 5500,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'medium',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Must provide documentation of community service hours.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -152,7 +152,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 40,
                 'grant_amount'     => 4500,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'high',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'For students whose parents did not complete college education.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -170,7 +170,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 12,
                 'grant_amount'     => 15000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'high',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Must provide research proposal and faculty recommendation.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -189,7 +189,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'slots_available'  => 8,
                 'grant_amount'     => 20000,
                 'renewal_allowed'  => true,
-                'priority_level'   => 'medium',
+                'grant_type' => 'recurring',
                 'eligibility_notes' => 'Open to all international students with valid student visa.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [

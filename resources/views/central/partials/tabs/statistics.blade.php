@@ -113,30 +113,6 @@
                 </div>
             </div>
 
-            <!-- Application Type Chart -->
-            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <div class="text-center mb-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Application Type</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400" x-text="getCurrentCampusName()"></p>
-                </div>
-                <div class="h-96 flex items-center justify-center">
-                    <canvas id="applicationTypeChart" width="400" height="400"></canvas>
-                </div>
-                
-                <!-- Application Type Data Display -->
-                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="flex flex-wrap gap-4 text-sm justify-center">
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-600 dark:text-green-400">New:</span>
-                            <span class="font-medium" x-text="getChartDataForType('application_type').datasets[0].data[0] || 0"></span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-orange-600 dark:text-orange-400">Continuing:</span>
-                            <span class="font-medium" x-text="getChartDataForType('application_type').datasets[0].data[1] || 0"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Gender Chart -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -472,7 +448,6 @@
             Alpine.data('statisticsTab', () => ({
                 charts: {
                     applicationStatus: null,
-                    applicationType: null,
                     gender: null,
                     yearLevel: null,
                     monthlyTrend: null,
@@ -559,21 +534,6 @@
                                     pending: this.analyticsData.pending_applications || 0,
                                     approved: this.analyticsData.approved_applications || 0,
                                     rejected: this.analyticsData.rejected_applications || 0
-                                };
-                            }
-                            break;
-                        case 'application_type':
-                            if (campusData) {
-                                data = {
-                                    total: campusData.total_applications || 0,
-                                    new: campusData.new_applications || 0,
-                                    continuing: campusData.continuing_applications || 0
-                                };
-                            } else {
-                                data = {
-                                    total: this.analyticsData.total_applications || 0,
-                                    new: this.analyticsData.new_applications || 0,
-                                    continuing: this.analyticsData.continuing_applications || 0
                                 };
                             }
                             break;
@@ -695,7 +655,6 @@
                 createAllCharts() {
                     console.log('Creating all charts...');
                     this.createApplicationStatusChart();
-                    this.createApplicationTypeChart();
                     this.createGenderChart();
                     this.createYearLevelChart();
                     this.createMonthlyTrendChart();
@@ -716,44 +675,6 @@
                     const chartData = this.getChartDataForType('application_status');
                     
                     this.charts.applicationStatus = new Chart(ctx, {
-                        type: 'pie',
-                        data: chartData,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            animation: { duration: 300 },
-                            plugins: {
-                                legend: { position: 'bottom' },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            let label = context.label || '';
-                                            let value = context.parsed;
-                                            let total = context.dataset.data.reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0);
-                                            let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                            return label + ': ' + value + ' (' + percentage + '%)';
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                createApplicationTypeChart() {
-                    const ctx = document.getElementById('applicationTypeChart');
-                    if (!ctx) return;
-                    
-                    // Destroy existing chart
-                    if (this.charts.applicationType) {
-                        this.charts.applicationType.destroy();
-                        this.charts.applicationType = null;
-                    }
-                    
-                    // Get data for application type
-                    const chartData = this.getChartDataForType('application_type');
-                    
-                    this.charts.applicationType = new Chart(ctx, {
                         type: 'pie',
                         data: chartData,
                         options: {
@@ -886,21 +807,6 @@
                             }
                             break;
                             
-                        case 'application_type':
-                            labels = ['New', 'Continuing'];
-                            backgroundColor = ['#10B981', '#F59E0B'];
-                            if (campusData) {
-                                data = [
-                                    campusData.new_applications || 0,
-                                    campusData.continuing_applications || 0
-                                ];
-                            } else {
-                                data = [
-                                    this.analyticsData.new_applications || 0,
-                                    this.analyticsData.continuing_applications || 0
-                                ];
-                            }
-                            break;
                             
                         case 'gender':
                             labels = ['Male', 'Female'];
@@ -1467,14 +1373,6 @@
                                 this.analyticsData.pending_applications || 0,
                                 this.analyticsData.approved_applications || 0,
                                 this.analyticsData.rejected_applications || 0
-                            ];
-                            break;
-                        case 'application_type':
-                            labels = ['New', 'Continuing'];
-                            backgroundColor = ['#10B981', '#F59E0B'];
-                            data = [
-                                this.analyticsData.new_applications || 0,
-                                this.analyticsData.continuing_applications || 0
                             ];
                             break;
                         case 'gender':

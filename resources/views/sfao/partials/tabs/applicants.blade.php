@@ -1,4 +1,4 @@
-<div x-show="tab === 'applicants' || tab === 'applicants-not_applied' || tab === 'applicants-in_progress' || tab === 'applicants-pending' || tab === 'applicants-rejected'" x-transition x-cloak class="px-4 py-6">
+<div x-show="tab === 'applicants' || tab === 'applicants-not_applied' || tab === 'applicants-in_progress' || tab === 'applicants-pending' || tab === 'applicants-rejected' || tab === 'applicants-approved'" x-transition x-cloak class="px-4 py-6">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
             <span x-show="tab === 'applicants'">👥 All Applicants</span>
@@ -6,6 +6,7 @@
             <span x-show="tab === 'applicants-in_progress'">🔵 In Progress</span>
             <span x-show="tab === 'applicants-pending'">⏳ Pending</span>
             <span x-show="tab === 'applicants-rejected'">❌ Rejected</span>
+            <span x-show="tab === 'applicants-approved'">✅ Approved</span>
         </h2>
         <p class="text-gray-600 dark:text-gray-300">
           <span x-show="tab === 'applicants'">All students from {{ $sfaoCampus->name }}</span>
@@ -78,7 +79,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div class="flex items-center">
                 <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -135,6 +136,20 @@
                 </div>
             </div>
         </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->filter(function($student) { return isset($student->has_approved_documents) && $student->has_approved_documents; })->count() }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     @if($students->isEmpty())
@@ -154,7 +169,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Application Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Documents</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Applied Scholarships</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Applicant Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Grant Count</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                         </tr>
@@ -166,7 +180,8 @@
                                 (tab === 'applicants-not_applied' && {{ !$student->has_applications ? 'true' : 'false' }}) ||
                                 (tab === 'applicants-in_progress' && {{ in_array('in_progress', $student->application_status ?? []) ? 'true' : 'false' }}) ||
                                 (tab === 'applicants-pending' && {{ in_array('pending', $student->application_status ?? []) ? 'true' : 'false' }}) ||
-                                (tab === 'applicants-rejected' && {{ in_array('rejected', $student->application_status ?? []) ? 'true' : 'false' }})
+                                (tab === 'applicants-rejected' && {{ in_array('rejected', $student->application_status ?? []) ? 'true' : 'false' }}) ||
+                                (tab === 'applicants-approved' && {{ $student->has_approved_documents ? 'true' : 'false' }})
                             " class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                     {{ $index + 1 }}
@@ -254,19 +269,6 @@
                                             @foreach($student->applied_scholarships as $scholarship)
                                                 <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
                                                     {{ $scholarship }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if($student->has_applications && isset($student->applications_with_types))
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($student->applications_with_types as $app)
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                    Application
                                                 </span>
                                             @endforeach
                                         </div>

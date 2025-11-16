@@ -159,6 +159,11 @@
                 :class="tab === 'endorsed-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           ✅ Endorsed Applicants
         </button>
+        <button @click="tab = 'rejected-applicants'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'rejected-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          ❌ Rejected Applicants
+        </button>
       </div>
 
       <!-- Reports Header -->
@@ -285,6 +290,7 @@
     @include('central.partials.tabs.scholarships')
     @include('central.partials.tabs.scholars', ['scholars' => $scholars])
     @include('central.partials.tabs.endorsed-applicants', ['endorsedApplicants' => $endorsedApplicants])
+    @include('central.partials.tabs.rejected-applicants', ['rejectedApplicants' => $rejectedApplicants])
     @include('central.partials.tabs.reports')
     @include('central.partials.tabs.statistics')
     @include('central.partials.tabs.staff')

@@ -161,6 +161,11 @@
                 :class="tab === 'applicants-pending' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           ⏳ Pending
         </button>
+        <button @click="tab = 'applicants-approved'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'applicants-approved' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          ✅ Approved
+        </button>
         <button @click="tab = 'applicants-rejected'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                 :class="tab === 'applicants-rejected' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">

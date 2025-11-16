@@ -187,6 +187,11 @@ Route::middleware(['web', 'checkUserExists:central'])
 
         // Endorsed Applicants Validation
         Route::get('/endorsed-applications/{application}/validate', [CentralApplicationController::class, 'showEndorsedValidation'])->name('endorsed.validate');
+        Route::post('/endorsed-applications/{application}/accept', [CentralApplicationController::class, 'acceptEndorsed'])->name('endorsed.accept');
+        Route::post('/endorsed-applications/{application}/reject', [CentralApplicationController::class, 'rejectEndorsed'])->name('endorsed.reject');
+        
+        // Rejected Applicants
+        Route::get('/rejected-applicants', [CentralApplicationController::class, 'viewRejectedApplicants'])->name('rejected-applicants');
     });
 
 

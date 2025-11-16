@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Models\StudentSubmittedDocument;
+use App\Models\RejectedApplicant;
+use App\Models\Scholar;
 use App\Services\NotificationService;
 
 /**
@@ -122,6 +124,119 @@ class CentralApplicationController extends Controller
             ->get();
 
         return view('central.endorsed.validate', compact('application', 'user', 'scholarship', 'submittedDocuments'));
+    }
+
+    /**
+     * Accept an endorsed application (Central)
+     */
+    public function acceptEndorsed(Application $application)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        // Ensure the application is in approved status (endorsed by SFAO)
+        if ($application->status !== 'approved') {
+            return back()->with('error', 'Only SFAO-approved applications can be accepted.');
+        }
+
+        // Load necessary relationships
+        $application->load(['user', 'scholarship']);
+
+        // Check if scholar already exists for this user and scholarship
+        $existingScholar = Scholar::where('user_id', $application->user_id)
+            ->where('scholarship_id', $application->scholarship_id)
+            ->first();
+
+        if ($existingScholar) {
+            return back()->with('error', 'A scholar record already exists for this application.');
+        }
+
+        // Calculate scholarship dates
+        $startDate = now()->startOfMonth();
+        $endDate = $application->scholarship->renewal_allowed 
+            ? $startDate->copy()->addYear() 
+            : $startDate->copy()->addMonths(6);
+
+        // Create scholar record as 'new' scholar
+        Scholar::create([
+            'user_id' => $application->user_id,
+            'scholarship_id' => $application->scholarship_id,
+            'application_id' => $application->id,
+            'type' => 'new', // Always new when accepted from endorsed applicants
+            'grant_count' => 0, // No grants received yet
+            'total_grant_received' => 0.00,
+            'scholarship_start_date' => $startDate,
+            'scholarship_end_date' => $endDate,
+            'status' => 'active',
+            'notes' => 'Created from accepted endorsed application',
+        ]);
+
+        // Application remains in 'approved' status - it's now validated by Central
+        
+        // Create notification for student
+        NotificationService::notifyApplicationStatusChange($application, 'approved');
+
+        return redirect()->route('central.dashboard', ['tab' => 'endorsed-applicants'])
+            ->with('success', 'Application has been accepted successfully. Scholar record has been created.');
+    }
+
+    /**
+     * Reject an endorsed application (Central)
+     */
+    public function rejectEndorsed(Request $request, Application $application)
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'rejection_reason' => 'required|string|max:1000',
+        ]);
+
+        // Ensure the application is in approved status (endorsed by SFAO)
+        if ($application->status !== 'approved') {
+            return back()->with('error', 'Only SFAO-approved applications can be rejected.');
+        }
+
+        // Update application status to rejected
+        $application->status = 'rejected';
+        $application->save();
+
+        // Store in rejected_applicants table to prevent re-application
+        RejectedApplicant::create([
+            'user_id' => $application->user_id,
+            'scholarship_id' => $application->scholarship_id,
+            'application_id' => $application->id,
+            'rejected_by' => 'central',
+            'rejected_by_user_id' => session('user_id'),
+            'rejection_reason' => $request->rejection_reason,
+            'remarks' => $request->remarks ?? null,
+            'rejected_at' => now(),
+        ]);
+
+        // Create notification for student
+        NotificationService::notifyApplicationStatusChange($application, 'rejected');
+
+        return redirect()->route('central.dashboard', ['tab' => 'endorsed-applicants'])
+            ->with('success', 'Application has been rejected. The student will not be able to apply to this scholarship again.');
+    }
+
+    /**
+     * View rejected applicants list (Central)
+     */
+    public function viewRejectedApplicants()
+    {
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $rejectedApplicants = RejectedApplicant::with(['user', 'scholarship', 'rejectedByUser'])
+            ->where('rejected_by', 'central')
+            ->orderBy('rejected_at', 'desc')
+            ->get();
+
+        return view('central.partials.tabs.rejected-applicants', compact('rejectedApplicants'));
     }
 }
 

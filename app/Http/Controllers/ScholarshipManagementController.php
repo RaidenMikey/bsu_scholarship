@@ -82,9 +82,7 @@ class ScholarshipManagementController extends Controller
             'application_start_date' => 'nullable|date|before:submission_deadline',
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
-            'renewal_allowed'  => 'nullable|boolean',
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
-            'priority_level'   => 'required|in:high,medium,low',
             'eligibility_notes' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -99,6 +97,9 @@ class ScholarshipManagementController extends Controller
                 $backgroundImagePath = $filename;
             }
 
+            // Automatically set renewal_allowed based on grant_type
+            $renewalAllowed = $request->grant_type === 'recurring';
+
             $scholarship = Scholarship::create([
                 'scholarship_name' => $request->scholarship_name,
                 'scholarship_type' => $request->scholarship_type,
@@ -107,9 +108,8 @@ class ScholarshipManagementController extends Controller
                 'application_start_date' => $request->application_start_date,
                 'slots_available'  => $request->slots_available,
                 'grant_amount'     => $request->grant_amount,
-                'renewal_allowed'  => $request->boolean('renewal_allowed'),
+                'renewal_allowed'  => $renewalAllowed,
                 'grant_type'       => $request->grant_type,
-                'priority_level'   => $request->priority_level,
                 'eligibility_notes' => $request->eligibility_notes,
                 'background_image' => $backgroundImagePath,
                 'is_active'        => true, // Set as active by default
@@ -202,9 +202,7 @@ class ScholarshipManagementController extends Controller
             'application_start_date' => 'nullable|date|before:submission_deadline',
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
-            'renewal_allowed'  => 'nullable|boolean',
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
-            'priority_level'   => 'required|in:high,medium,low',
             'eligibility_notes' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -225,6 +223,9 @@ class ScholarshipManagementController extends Controller
             $backgroundImagePath = $filename;
         }
 
+        // Automatically set renewal_allowed based on grant_type
+        $renewalAllowed = $request->grant_type === 'recurring';
+
         $scholarship->update([
             'scholarship_name' => $request->scholarship_name,
             'scholarship_type' => $request->scholarship_type,
@@ -233,9 +234,8 @@ class ScholarshipManagementController extends Controller
             'application_start_date' => $request->application_start_date,
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
-            'renewal_allowed'  => $request->boolean('renewal_allowed'),
+            'renewal_allowed'  => $renewalAllowed,
             'grant_type'       => $request->grant_type,
-            'priority_level'   => $request->priority_level,
             'eligibility_notes' => $request->eligibility_notes,
             'background_image' => $backgroundImagePath,
         ]);
@@ -387,9 +387,6 @@ class ScholarshipManagementController extends Controller
                     return $scholarship->submission_deadline;
                 case 'grant_amount':
                     return $scholarship->grant_amount ?? 0;
-                case 'priority_level':
-                    $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
-                    return $priorityOrder[$scholarship->priority_level] ?? 4;
                 case 'scholarship_type':
                     return $scholarship->scholarship_type;
                 case 'grant_type':

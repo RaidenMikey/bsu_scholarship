@@ -170,12 +170,13 @@ class ApplicationManagementController extends Controller
         $activeTab = $request->get('tab', 'scholarships');
         
         // If tab is a status-specific applicants tab, override status filter
-        // Note: 'approved' and 'claimed' are excluded since approved applicants become scholars
+        // Note: 'approved' tab shows applicants with approved documents, not application status
         if (str_starts_with($activeTab, 'applicants-')) {
             $statusFromTab = str_replace('applicants-', '', $activeTab);
             if (in_array($statusFromTab, ['not_applied', 'in_progress', 'pending', 'rejected'])) {
                 $statusFilter = $statusFromTab;
             }
+            // 'approved' tab is handled separately via has_approved_documents property
         }
 
         // Build the query - SFAO sees all students in their domain
@@ -235,14 +236,25 @@ class ApplicationManagementController extends Controller
             ->get()
             ->groupBy('user_id');
 
+        // Load documents for each student to check for approved documents
+        $documentsData = StudentSubmittedDocument::whereIn('user_id', $studentIds)
+            ->get()
+            ->groupBy('user_id');
+
         // Add application status information to each student
-        $students->each(function($student) use ($applicationsData) {
+        $students->each(function($student) use ($applicationsData, $documentsData) {
             $studentApplications = $applicationsData->get($student->student_id, collect());
+            $studentDocuments = $documentsData->get($student->student_id, collect());
+            
             $student->applications = $studentApplications;
             $student->has_applications = $studentApplications->count() > 0;
             $student->has_documents = $student->documents_count > 0;
             $student->application_status = $studentApplications->pluck('status')->unique()->toArray();
             $student->applied_scholarships = $studentApplications->pluck('scholarship.scholarship_name')->toArray();
+            
+            // Check if student has approved documents
+            $student->has_approved_documents = $studentDocuments->where('evaluation_status', 'approved')->count() > 0;
+            
             $student->applications_with_types = $studentApplications->map(function($app) {
                 return [
                     'id' => $app->id,
@@ -613,7 +625,6 @@ class ApplicationManagementController extends Controller
         $statusFilter = $request->get('status_filter', 'all');
         $campusFilter = $request->get('campus_filter', 'all');
         $scholarshipFilter = $request->get('scholarship_filter', 'all');
-        $applicantTypeFilter = $request->get('applicant_type_filter', 'all');
 
         // Build applications query with filtering
         $applicationsQuery = Application::with(['user', 'scholarship', 'user.campus'])
@@ -764,12 +775,6 @@ class ApplicationManagementController extends Controller
             ['value' => 'all', 'label' => 'All Status']
         ];
         
-        $applicantTypeOptions = [
-            ['value' => 'new', 'label' => 'New Applicant'],
-            ['value' => 'continuing', 'label' => 'Continuing Applicant'],
-            ['value' => 'all', 'label' => 'All Types']
-        ];
-        
         // Apply sorting
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
@@ -796,15 +801,12 @@ class ApplicationManagementController extends Controller
             $scholarsQuery->where('scholarship_id', $scholarshipFilter);
         }
 
-        // Apply tab-based filtering for scholars (this takes precedence over applicant type filter)
+        // Apply tab-based filtering for scholars
         $tab = $request->get('tab', 'scholarships');
         if ($tab === 'scholars-new') {
             $scholarsQuery->where('type', 'new');
         } elseif ($tab === 'scholars-old') {
             $scholarsQuery->where('type', 'old');
-        } elseif ($applicantTypeFilter !== 'all') {
-            // Only apply applicant type filter if not on specific scholar tabs
-            $scholarsQuery->where('type', $applicantTypeFilter);
         }
 
         // Apply scholars sorting
@@ -927,7 +929,13 @@ class ApplicationManagementController extends Controller
             $endorsedApplicants = collect();
         }
 
-        return view('central.dashboard', compact('applications', 'scholars', 'qualifiedApplicants', 'endorsedApplicants', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'applicantTypeOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'applicantTypeFilter'));
+        // Get rejected applicants (rejected by Central Admin)
+        $rejectedApplicants = \App\Models\RejectedApplicant::with(['user', 'scholarship', 'rejectedByUser'])
+            ->where('rejected_by', 'central')
+            ->orderBy('rejected_at', 'desc')
+            ->get();
+
+        return view('central.dashboard', compact('applications', 'scholars', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter'));
     }
 
     /**
@@ -1457,9 +1465,6 @@ class ApplicationManagementController extends Controller
                     return $scholarship->submission_deadline;
                 case 'grant_amount':
                     return $scholarship->grant_amount ?? 0;
-                case 'priority_level':
-                    $priorityOrder = ['high' => 1, 'medium' => 2, 'low' => 3];
-                    return $priorityOrder[$scholarship->priority_level] ?? 4;
                 case 'scholarship_type':
                     return $scholarship->scholarship_type;
                 case 'grant_type':

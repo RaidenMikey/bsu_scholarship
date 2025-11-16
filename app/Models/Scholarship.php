@@ -20,7 +20,6 @@ class Scholarship extends Model
         'renewal_allowed',
         'grant_type',
         'is_active',
-        'priority_level',
         'eligibility_notes',
         'background_image',
         'created_by',
@@ -368,17 +367,6 @@ class Scholarship extends Model
         return $this->getApplicationCount() >= $this->slots_available;
     }
 
-    // Get priority badge color
-    public function getPriorityBadgeColor()
-    {
-        return match($this->priority_level) {
-            'high' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-            'medium' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-            'low' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-            default => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-        };
-    }
-
     // Get scholarship type badge color
     public function getScholarshipTypeBadgeColor()
     {
@@ -427,12 +415,6 @@ class Scholarship extends Model
                         $q->whereNull('slots_available')
                           ->orWhere('slots_available', '>', 0);
                     });
-    }
-
-    // Scope for high priority scholarships
-    public function scopeHighPriority($query)
-    {
-        return $query->where('priority_level', 'high');
     }
 
     // Grant Type Methods

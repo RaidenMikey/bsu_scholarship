@@ -179,8 +179,167 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
-      <a href="{{ route('central.dashboard', ['tab' => 'endorsed-applicants']) }}" class="px-6 py-2 text-sm font-semibold bg-white hover:bg-bsu-red hover:text-white text-bsu-red rounded-lg border-2 border-bsu-red transition-colors">Cancel</a>
+    <div class="flex justify-end gap-3 pt-4 border-t-2 border-gray-200" x-data="{ showAcceptModal: false, showRejectModal: false, rejectionReason: '', showRejectConfirm: false }">
+      <a href="{{ route('central.dashboard', ['tab' => 'endorsed-applicants']) }}" class="px-6 py-2 text-sm font-semibold bg-white hover:bg-gray-100 text-gray-700 rounded-lg border-2 border-gray-300 transition-colors">Cancel</a>
+      
+      <!-- Reject Button -->
+      <button @click="showRejectModal = true" class="px-6 py-2 text-sm font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+        Reject
+      </button>
+      
+      <!-- Accept Button -->
+      <button @click="showAcceptModal = true" class="px-6 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+        Accept
+      </button>
+
+      <!-- Accept Confirmation Modal -->
+      <div x-show="showAcceptModal" 
+           x-cloak
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+           @click.self="showAcceptModal = false">
+        <div x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+          <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 rounded-full">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Accept Application</h3>
+          <p class="text-gray-600 mb-6 text-center">Are you sure you want to accept this application? The application will be validated and the student will be notified.</p>
+          
+          <form method="POST" action="{{ route('central.endorsed.accept', $application->id) }}" id="acceptForm">
+            @csrf
+            <div class="flex justify-end gap-3">
+              <button 
+                type="button" 
+                @click="showAcceptModal = false"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                Confirm Acceptance
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Rejection Modal -->
+      <div x-show="showRejectModal && !showRejectConfirm" 
+           x-cloak
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+           @click.self="showRejectModal = false; rejectionReason = ''">
+        <div x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Reject Application</h3>
+          <p class="text-gray-600 mb-4">Please provide a reason for rejecting this application. The student will not be able to apply to this scholarship again.</p>
+          
+          <div class="mb-4">
+            <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">Rejection Reason <span class="text-red-500">*</span></label>
+            <textarea 
+              id="rejection_reason" 
+              name="rejection_reason" 
+              x-model="rejectionReason"
+              rows="4" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              placeholder="Enter the reason for rejection..."
+              required></textarea>
+            <p class="mt-1 text-xs text-gray-500">This reason will be shown to the student.</p>
+          </div>
+          
+          <div class="flex justify-end gap-3">
+            <button 
+              type="button" 
+              @click="showRejectModal = false; rejectionReason = ''"
+              class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+              Cancel
+            </button>
+            <button 
+              type="button"
+              @click="if(rejectionReason.trim()) { showRejectConfirm = true; }"
+              :disabled="!rejectionReason.trim()"
+              :class="rejectionReason.trim() ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed'"
+              class="px-4 py-2 text-white rounded-lg transition-colors">
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rejection Confirmation Modal -->
+      <div x-show="showRejectModal && showRejectConfirm" 
+           x-cloak
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+           @click.self="showRejectModal = false; showRejectConfirm = false; rejectionReason = ''">
+        <div x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+          <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Confirm Rejection</h3>
+          <p class="text-gray-600 mb-4 text-center">Are you sure you want to reject this application? The student will not be able to apply to this scholarship again.</p>
+          
+          <div class="bg-gray-50 rounded-lg p-3 mb-4">
+            <p class="text-sm font-medium text-gray-700 mb-1">Rejection Reason:</p>
+            <p class="text-sm text-gray-600" x-text="rejectionReason"></p>
+          </div>
+          
+          <form method="POST" action="{{ route('central.endorsed.reject', $application->id) }}" id="rejectForm">
+            @csrf
+            <input type="hidden" name="rejection_reason" :value="rejectionReason">
+            <div class="flex justify-end gap-3">
+              <button 
+                type="button" 
+                @click="showRejectConfirm = false"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                Back
+              </button>
+              <button 
+                type="submit"
+                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                Confirm Rejection
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -194,9 +194,6 @@ class Report extends Model
         $pendingApplications = $applications->where('status', 'pending')->count();
         $claimedApplications = $applications->where('status', 'claimed')->count();
 
-        // New vs Continuing applications
-        $newApplications = $applications->where('type', 'new')->count();
-        $continuingApplications = $applications->where('type', 'continuing')->count();
 
         // Applications by scholarship with detailed analysis
         $applicationsByScholarship = $applications->groupBy('scholarship_id')->map(function($group) {
@@ -266,12 +263,6 @@ class Report extends Model
                 'claimed_applications' => $claimedApplications,
                 'approval_rate' => $totalApplications > 0 ? round(($approvedApplications / $totalApplications) * 100, 2) : 0,
                 'rejection_rate' => $totalApplications > 0 ? round(($rejectedApplications / $totalApplications) * 100, 2) : 0
-            ],
-            'application_types' => [
-                'new_applications' => $newApplications,
-                'continuing_applications' => $continuingApplications,
-                'new_percentage' => $totalApplications > 0 ? round(($newApplications / $totalApplications) * 100, 2) : 0,
-                'continuing_percentage' => $totalApplications > 0 ? round(($continuingApplications / $totalApplications) * 100, 2) : 0
             ],
             'by_scholarship' => $applicationsByScholarship,
             'by_month' => $applicationsByMonth,
