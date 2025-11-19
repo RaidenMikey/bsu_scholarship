@@ -144,10 +144,22 @@
                 :class="(tab === 'scholarships' && subTab === 'government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           🏛️ Government
         </button>
+      </div>
+
+      <!-- Application Forms Header -->
+      <div class="space-y-1">
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Application Forms
+        </div>
         <button @click="tab = 'scholarships'; subTab = 'form'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
                 :class="(tab === 'scholarships' && subTab === 'form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          📝 Application Form
+          📝 SFAO Application Form
+        </button>
+        <button @click="tab = 'scholarships'; subTab = 'gvsreap_form'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="(tab === 'scholarships' && subTab === 'gvsreap_form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          📝 GVSREAP Application Form
         </button>
       </div>
 
@@ -284,7 +296,7 @@
       <div x-show="subTab === 'form'" x-transition>
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
           <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
-            📝 Application Form
+            📝 SFAO Application Form
           </h1>
           
           <!-- Form Status Overview -->
@@ -756,6 +768,23 @@
                 Print Application
               </a>
             @endif
+          </div>
+        </div>
+      </div>
+      
+      <!-- GVSREAP Application Form Sub-tab -->
+      <div x-show="subTab === 'gvsreap_form'" x-transition>
+        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
+          <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
+            📝 GVSREAP Application Form
+          </h1>
+          
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-8 text-center">
+            <svg class="w-16 h-16 text-yellow-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Coming Soon</h3>
+            <p class="text-yellow-700 dark:text-yellow-300">The GVSREAP Application Form is currently under development.</p>
           </div>
         </div>
       </div>
