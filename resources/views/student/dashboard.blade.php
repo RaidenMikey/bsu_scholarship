@@ -317,7 +317,9 @@
                       <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $overallProgress }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
-                      <div class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: {{ $overallProgress }}%"></div>
+                      <div class="bg-green-500 h-3 rounded-full transition-all duration-300" 
+                           x-data="{ progress: {{ (int) $overallProgress }} }" 
+                           x-bind:style="`width: ${progress}%`"></div>
                     </div>
                     <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
                       <span>Required Fields: {{ $requiredProgress }}%</span>
@@ -346,7 +348,9 @@
                       <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $overallProgress }}%</span>
                     </div>
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
-                      <div class="bg-yellow-500 h-3 rounded-full transition-all duration-300" style="width: {{ $overallProgress }}%"></div>
+                      <div class="bg-yellow-500 h-3 rounded-full transition-all duration-300" 
+                           x-data="{ progress: {{ (int) $overallProgress }} }" 
+                           x-bind:style="`width: ${progress}%`"></div>
                     </div>
                     <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
                       <span>Required Fields: {{ $requiredProgress }}%</span>

@@ -195,11 +195,17 @@
         </button>
       </div>
 
-      <button @click="tab = 'reports'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition"
-              :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        📊 Reports
-      </button>
+      <!-- Reports Header -->
+      <div class="space-y-1">
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Reports
+        </div>
+        <button @click="tab = 'reports'; sidebarOpen = false"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
+                :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          📊 Create Reports
+        </button>
+      </div>
     </nav>
 
     <!-- Settings Section - Fixed at bottom -->
