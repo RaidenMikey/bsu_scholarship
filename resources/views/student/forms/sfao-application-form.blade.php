@@ -98,15 +98,15 @@ if (!$user) {
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Last Name: <span class="text-red-500">*</span></label>
-            <input type="text" name="last_name" required value="{{ old('last_name', $existingApplication->last_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <input type="text" name="last_name" required value="{{ old('last_name', $user->last_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">First Name: <span class="text-red-500">*</span></label>
-            <input type="text" name="first_name" required value="{{ old('first_name', $existingApplication->first_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <input type="text" name="first_name" required value="{{ old('first_name', $user->first_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Middle Name:</label>
-            <input type="text" name="middle_name" value="{{ old('middle_name', $existingApplication->middle_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
@@ -120,8 +120,8 @@ if (!$user) {
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex:</label>
             <select name="sex" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
-              <option value="male" {{ old('sex', $existingApplication->sex ?? '') == 'male' ? 'selected' : '' }}>Male</option>
-              <option value="female" {{ old('sex', $existingApplication->sex ?? '') == 'female' ? 'selected' : '' }}>Female</option>
+              <option value="Male" {{ old('sex', $user->sex ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
+              <option value="Female" {{ old('sex', $user->sex ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
             </select>
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -142,7 +142,7 @@ if (!$user) {
           <div class="flex items-center gap-2 flex-1 min-w-[250px]">
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthdate:</label>
             @php
-              $birthdate = old('birthdate', optional($existingApplication)->birthdate?->format('Y-m-d') ?? '');
+              $birthdate = old('birthdate', optional($user)->birthdate?->format('Y-m-d') ?? '');
               $birthMonth = $birthdate ? date('m', strtotime($birthdate)) : '';
               $birthDay = $birthdate ? date('d', strtotime($birthdate)) : '';
               $birthYear = $birthdate ? date('Y', strtotime($birthdate)) : '';
@@ -175,11 +175,11 @@ if (!$user) {
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[250px]">
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address:</label>
-            <input type="email" name="email" value="{{ old('email', $existingApplication->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
             <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number:</label>
-            <input type="text" name="contact_number" value="{{ old('contact_number', $existingApplication->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <input type="text" name="contact_number" value="{{ old('contact_number', $user->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
@@ -239,7 +239,7 @@ if (!$user) {
           <div class="md:col-span-1">
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">SR Code</label>
             <input type="text" name="sr_code" 
-              value="{{ old('sr_code', $existingApplication->sr_code ?? '') }}"
+              value="{{ old('sr_code', $user->sr_code ?? '') }}"
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
 
@@ -247,15 +247,15 @@ if (!$user) {
             <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Educational Level</label>
             <div class="flex flex-wrap items-center justify-between w-full">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="education_level" value="Undergraduate" {{ old('education_level', $existingApplication->education_level ?? '') == 'Undergraduate' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <input type="radio" name="education_level" value="Undergraduate" {{ old('education_level', $user->education_level ?? '') == 'Undergraduate' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Undergraduate</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="education_level" value="Graduate School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Graduate School' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <input type="radio" name="education_level" value="Graduate School" {{ old('education_level', $user->education_level ?? '') == 'Graduate School' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Graduate School</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="education_level" value="Integrated School" {{ old('education_level', $existingApplication->education_level ?? '') == 'Integrated School' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <input type="radio" name="education_level" value="Integrated School" {{ old('education_level', $user->education_level ?? '') == 'Integrated School' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Integrated School</span>
               </label>
             </div>
@@ -269,7 +269,7 @@ if (!$user) {
                 <option value="">-- Select Program --</option>
                 @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
                     <option value="{{ $program }}" 
-                        {{ old('program', $existingApplication->program ?? '') == $program ? 'selected' : '' }}>
+                        {{ old('program', $user->program ?? '') == $program ? 'selected' : '' }}>
                         {{ $program }}
                     </option>
                 @endforeach
@@ -280,10 +280,10 @@ if (!$user) {
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department</label>
             <select name="college_department" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select College/Department --</option>
-                <option value="CICS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
-                <option value="CTE" {{ old('college_department', $existingApplication->college_department ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
-                <option value="CABEIHM" {{ old('college_department', $existingApplication->college_department ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
-                <option value="CAS" {{ old('college_department', $existingApplication->college_department ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
+                <option value="CICS" {{ old('college_department', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
+                <option value="CTE" {{ old('college_department', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
+                <option value="CABEIHM" {{ old('college_department', $user->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
+                <option value="CAS" {{ old('college_department', $user->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
             </select>
           </div>
         </div>
@@ -293,26 +293,21 @@ if (!$user) {
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Grade/Year Level</label>
             <select name="year_level" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select Grade/Year Level --</option>
-                <option value="1st Year" {{ old('year_level', $existingApplication->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
-                <option value="2nd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
-                <option value="3rd Year" {{ old('year_level', $existingApplication->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
-                <option value="4th Year" {{ old('year_level', $existingApplication->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
+                <option value="1st Year" {{ old('year_level', $user->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
+                <option value="2nd Year" {{ old('year_level', $user->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
+                <option value="3rd Year" {{ old('year_level', $user->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
+                <option value="4th Year" {{ old('year_level', $user->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
             </select>
           </div>
           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Campus</label>
-            <select name="campus" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <select name="campus_id" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select Campus --</option>
-              <option value="Alangilan Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Alangilan Campus' ? 'selected' : '' }}>Alangilan Campus</option>
-              <option value="Pablo Borbon Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Pablo Borbon Campus' ? 'selected' : '' }}>Pablo Borbon Campus</option>
-              <option value="Lipa Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Lipa Campus' ? 'selected' : '' }}>Lipa Campus</option>
-              <option value="Malvar Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Malvar Campus' ? 'selected' : '' }}>Malvar Campus</option>
-              <option value="Lemery Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Lemery Campus' ? 'selected' : '' }}>Lemery Campus</option>
-              <option value="Rosario Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Rosario Campus' ? 'selected' : '' }}>Rosario Campus</option>
-              <option value="San Juan Campus" {{ old('campus', $existingApplication->campus ?? '') == 'San Juan Campus' ? 'selected' : '' }}>San Juan Campus</option>
-              <option value="Lobo Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Lobo Campus' ? 'selected' : '' }}>Lobo Campus</option>
-              <option value="Balayan Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Balayan Campus' ? 'selected' : '' }}>Balayan Campus</option>
-              <option value="Nasugbu Campus" {{ old('campus', $existingApplication->campus ?? '') == 'Nasugbu Campus' ? 'selected' : '' }}>Nasugbu Campus</option>
+              @foreach($campuses as $campus)
+                <option value="{{ $campus->id }}" {{ old('campus_id', $user->campus_id) == $campus->id ? 'selected' : '' }}>
+                  {{ $campus->name }}
+                </option>
+              @endforeach
             </select>
           </div>
           <div>

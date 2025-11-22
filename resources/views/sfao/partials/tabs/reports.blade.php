@@ -1,4 +1,8 @@
-<div x-show="tab === 'reports'" x-transition x-cloak>
+<div x-show="tab === 'reports'" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform scale-95"
+     x-transition:enter-end="opacity-100 transform scale-100"
+     x-cloak>
   <div class="space-y-6">
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">

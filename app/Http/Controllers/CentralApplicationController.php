@@ -23,20 +23,7 @@ class CentralApplicationController extends Controller
     /**
      * View all applicants - Only SFAO-approved applications
      */
-    public function viewApplicants()
-    {
-        if (!session()->has('user_id') || session('role') !== 'central') {
-            return redirect('/login')->with('session_expired', true);
-        }
 
-        // Retrieve only SFAO-approved applications with related user and scholarship info
-        $applications = Application::with(['user', 'scholarship'])
-            ->where('status', 'approved') // Only show SFAO-approved applications
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('central.partials.tabs.applicants', compact('applications'));
-    }
 
     /**
      * Approve application (Central)

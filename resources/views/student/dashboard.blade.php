@@ -96,157 +96,13 @@
 
 <body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans">
   <!-- Mobile Overlay -->
-  <div class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-       x-show="sidebarOpen"
-       x-transition.opacity
-       @click="sidebarOpen = false"
-       x-cloak></div>
+  @include('student.components.ui.mobile-overlay')
 
   <!-- Sidebar -->
-  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform md:translate-x-0 transition-transform duration-300 z-50 flex flex-col"
-         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-         @keydown.escape.window="sidebarOpen = false"
-         x-cloak>
-    <!-- Profile Info - Fixed at top -->
-    <div class="flex flex-col items-center mt-6 flex-shrink-0">
-      <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
-        alt="Profile Picture"
-        class="h-16 w-16 rounded-full border-2 border-white object-cover">
-      <div class="text-center mt-2">
-        <h2 class="text-lg font-semibold">
-          {{ $user?->name ?: explode('@', $user?->email)[0] }}
-        </h2>
-        <p class="text-sm text-gray-200">
-          Student
-        </p>
-      </div>
-    </div>
-
-    <!-- Navigation - Scrollable -->
-    <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.3) transparent;">
-      <!-- Scholarships Header -->
-      <div class="space-y-1">
-        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
-          Scholarships
-        </div>
-        <button @click="tab = 'scholarships'; subTab = 'all'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="(tab === 'scholarships' && subTab === 'all') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          🎓 All Scholarships
-        </button>
-        <button @click="tab = 'scholarships'; subTab = 'private'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="(tab === 'scholarships' && subTab === 'private') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          🏛️ Private
-        </button>
-        <button @click="tab = 'scholarships'; subTab = 'government'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="(tab === 'scholarships' && subTab === 'government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          🏛️ Government
-        </button>
-      </div>
-
-      <!-- Application Forms Header -->
-      <div class="space-y-1">
-        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
-          Application Forms
-        </div>
-        <button @click="tab = 'scholarships'; subTab = 'form'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="(tab === 'scholarships' && subTab === 'form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          📝 SFAO Application Form
-        </button>
-        <button @click="tab = 'scholarships'; subTab = 'gvsreap_form'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="(tab === 'scholarships' && subTab === 'gvsreap_form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          📝 GVSREAP Application Form
-        </button>
-      </div>
-
-      <!-- Applications Header -->
-      <div class="space-y-1">
-        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
-          Applications
-        </div>
-        <button @click="tab = 'applied-scholarships'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="tab === 'applied-scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          🎓 Applied Scholarships
-        </button>
-        <button @click="tab = 'application-tracking'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="tab === 'application-tracking' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          📊 Application Tracking
-        </button>
-      </div>
-
-      <button @click="tab = 'notifications'; sidebarOpen = false"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition relative"
-              :class="tab === 'notifications' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        <span class="flex items-center justify-between">
-          <span>🔔 Notifications</span>
-          @if($unreadCount > 0)
-            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-              {{ $unreadCount }}
-            </span>
-          @endif
-        </span>
-      </button>
-    </nav>
-
-    <!-- Settings Section - Fixed at bottom -->
-    <div class="px-4 pb-4 flex-shrink-0 border-t border-bsu-redDark/30 dark:border-gray-700 pt-4">
-      <div class="space-y-1">
-        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
-          Settings
-        </div>
-        <button @click="tab = 'account'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm"
-                :class="tab === 'account' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          ⚙️ Account
-        </button>
-        <button @click="showLogoutModal = true"
-                class="block w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm text-white dark:text-white">
-          🚪 Logout
-        </button>
-      </div>
-    </div>
-
-  </aside>
+  @include('student.components.navigation.sidebar', ['user' => $user, 'unreadCount' => $unreadCount])
 
   <!-- Logout Confirmation Modal -->
-  <div x-show="showLogoutModal" 
-       x-cloak
-       x-transition:enter="transition ease-out duration-200"
-       x-transition:enter-start="opacity-0"
-       x-transition:enter-end="opacity-100"
-       x-transition:leave="transition ease-in duration-150"
-       x-transition:leave-start="opacity-100"
-       x-transition:leave-end="opacity-0"
-       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-       @click.self="showLogoutModal = false">
-    <div x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 transform scale-95"
-         x-transition:enter-end="opacity-100 transform scale-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100 transform scale-100"
-         x-transition:leave-end="opacity-0 transform scale-95"
-         class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Confirm Logout</h3>
-      <p class="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to logout?</p>
-      <div class="flex justify-end gap-3">
-        <button @click="showLogoutModal = false"
-                class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-          Cancel
-        </button>
-        <a href="{{ url('/logout') }}"
-           onclick="localStorage.removeItem('activeTab'); localStorage.removeItem('activeSubTab');"
-           class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-          Logout
-        </a>
-      </div>
-    </div>
-  </div>
+  @include('student.components.modals.logout')
 
   <!-- Mobile Top Bar -->
   <header class="md:hidden flex justify-between items-center bg-bsu-red text-white dark:bg-gray-800 px-4 py-3">
@@ -286,14 +142,26 @@
 
     <!-- Tabs -->
     <!-- Scholarships Tab -->
-    <div x-show="tab === 'scholarships'" x-transition>
+    <!-- Scholarships Tab -->
+    <div x-show="tab === 'scholarships'" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100">
       <!-- Scholarships Content -->
-      <div x-show="subTab !== 'form'" x-transition>
+      <!-- Scholarships Content -->
+      <div x-show="subTab !== 'form' && subTab !== 'gvsreap_form'" 
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 transform scale-95"
+           x-transition:enter-end="opacity-100 transform scale-100">
         @include('student.partials.tabs.scholarships')
       </div>
       
       <!-- Application Form Sub-tab -->
-      <div x-show="subTab === 'form'" x-transition>
+      <!-- Application Form Sub-tab -->
+      <div x-show="subTab === 'form'" 
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 transform scale-95"
+           x-transition:enter-end="opacity-100 transform scale-100">
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
           <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
             📝 SFAO Application Form
@@ -773,7 +641,11 @@
       </div>
       
       <!-- GVSREAP Application Form Sub-tab -->
-      <div x-show="subTab === 'gvsreap_form'" x-transition>
+      <!-- GVSREAP Application Form Sub-tab -->
+      <div x-show="subTab === 'gvsreap_form'" 
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 transform scale-95"
+           x-transition:enter-end="opacity-100 transform scale-100">
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
           <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
             📝 GVSREAP Application Form
@@ -791,17 +663,29 @@
     </div>
     
     <!-- Applied Scholarships Tab -->
-    <div x-show="tab === 'applied-scholarships'" x-transition>
+    <!-- Applied Scholarships Tab -->
+    <div x-show="tab === 'applied-scholarships'" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100">
       @include('student.partials.tabs.applications')
     </div>
     
     <!-- Application Tracking Tab -->
-    <div x-show="tab === 'application-tracking'" x-transition>
-      @include('student.application_tracking')
+    <!-- Application Tracking Tab -->
+    <div x-show="tab === 'application-tracking'" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100">
+      @include('student.partials.application_tracking')
     </div>
     
     <!-- Notifications Tab -->
-    <div x-show="tab === 'notifications'" x-transition>
+    <!-- Notifications Tab -->
+    <div x-show="tab === 'notifications'" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100">
       @include('student.partials.tabs.notifications')
     </div>
     

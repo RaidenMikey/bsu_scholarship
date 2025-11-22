@@ -1,6 +1,11 @@
 <!-- central/partials/tabs/scholars.blade.php -->
 
-<div x-data="{ showModal: false, selectedScholar: null }" x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" x-transition x-cloak>
+<div x-data="{ showModal: false, selectedScholar: null }" 
+     x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform scale-95"
+     x-transition:enter-end="opacity-100 transform scale-100"
+     x-cloak>
 
     <!-- Header -->
     <div class="mb-6">

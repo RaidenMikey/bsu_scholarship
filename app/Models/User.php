@@ -2,23 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail; // 👈 add this
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail // 👈 implement interface
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'birthdate',
+        'sex',
         'email',
+        'contact_number',
         'password',
         'role',
         'profile_picture',
-        'campus_id', // ✅ campus assignment
+        'campus_id',
+        'sr_code',
+        'education_level',
+        'college',
+        'program',
+        'year_level',
     ];
 
     protected $hidden = [
@@ -27,30 +38,22 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime', // ✅ needed for email verification
+        'email_verified_at' => 'datetime',
+        'birthdate' => 'date',
     ];
 
-    // ✅ Relationships
+    // Relationships
 
-    /**
-     * User belongs to a campus
-     */
     public function campus()
     {
         return $this->belongsTo(Campus::class);
     }
 
-    /**
-     * User has many applications
-     */
     public function applications()
     {
         return $this->hasMany(Application::class);
     }
 
-    /**
-     * User can apply to many scholarships
-     */
     public function appliedScholarships()
     {
         return $this->belongsToMany(Scholarship::class, 'applications')
@@ -58,40 +61,23 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 implement 
                     ->withTimestamps();
     }
 
-    /**
-     * User has one application form
-     */
     public function form()
     {
         return $this->hasOne(Form::class, 'user_id');
     }
 
-    /**
-     * User has one invitation (for SFAO staff)
-     */
     public function invitation()
     {
         return $this->hasOne(Invitation::class, 'email', 'email');
     }
 
-    /**
-     * User has many notifications
-     */
     public function notifications()
     {
         return $this->hasMany(Notification::class);
     }
 
-    /**
-     * User has many scholar records (for students who have been accepted for scholarships)
-     */
     public function scholars()
     {
         return $this->hasMany(Scholar::class);
     }
-
-    /**
-     * Note: isSfaoActive() method removed since deactivated SFAO staff are now completely deleted from the users table.
-     * Only active SFAO staff will exist in the users table.
-     */
 }

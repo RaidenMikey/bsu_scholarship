@@ -26,8 +26,8 @@
   @stack('styles')
 </head>
 
-<body class="bg-gradient-to-br from-red-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center min-h-screen">
-  <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-700">
+<body class="bg-gradient-to-br from-red-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center min-h-screen p-4">
+  <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl w-full @yield('container_width', 'max-w-md') border border-gray-200 dark:border-gray-700">
     <div class="flex flex-col items-center mb-6">
       <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Batangas State University Logo" class="h-12 sm:h-14 mb-3">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-white">@yield('heading')</h1>

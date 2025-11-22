@@ -1,5 +1,10 @@
 <!-- Staff Management Tab -->
-<div x-show="tab === 'staff'" x-cloak class="space-y-6">
+<div x-show="tab === 'staff'" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform scale-95"
+     x-transition:enter-end="opacity-100 transform scale-100"
+     x-cloak 
+     class="space-y-6">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">👨‍💼 Manage Admins</h2>
     

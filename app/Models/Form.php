@@ -14,16 +14,13 @@ class Form extends Model
     protected $fillable = [
         // ------------------- Personal Data -------------------
         'user_id',
-        'last_name',
-        'first_name',
-        'middle_name',
+        // Moved to User: last_name, first_name, middle_name
         'age',
-        'sex',
+        // Moved to User: sex
         'civil_status',
-        'birthdate',
+        // Moved to User: birthdate
         'birthplace',
-        'email',
-        'contact_number',
+        // Moved to User: email, contact_number
         'street_barangay',
         'town_city',
         'province',
@@ -33,12 +30,7 @@ class Form extends Model
         'tribe',
 
         // ------------------- Academic Data -------------------
-        'sr_code',
-        'education_level',
-        'program',
-        'college_department',
-        'year_level',
-        'campus',
+        // Moved to User: sr_code, education_level, program, college_department, year_level, campus
         'previous_gwa',
         'honors_received',
         'units_enrolled',
@@ -89,6 +81,21 @@ class Form extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    // Accessors for fields moved to User model
+    public function getLastNameAttribute() { return $this->user->last_name ?? null; }
+    public function getFirstNameAttribute() { return $this->user->first_name ?? null; }
+    public function getMiddleNameAttribute() { return $this->user->middle_name ?? null; }
+    public function getSexAttribute() { return $this->user->sex ?? null; }
+    public function getBirthdateAttribute($value) { return $value ?? $this->user->birthdate ?? null; } // Handle if it's still in form or user
+    public function getEmailAttribute() { return $this->user->email ?? null; }
+    public function getContactNumberAttribute() { return $this->user->contact_number ?? null; }
+    public function getSrCodeAttribute() { return $this->user->sr_code ?? null; }
+    public function getEducationLevelAttribute() { return $this->user->education_level ?? null; }
+    public function getProgramAttribute() { return $this->user->program ?? null; }
+    public function getCollegeDepartmentAttribute() { return $this->user->college ?? null; }
+    public function getYearLevelAttribute() { return $this->user->year_level ?? null; }
+    public function getCampusAttribute() { return $this->user->campus?->name ?? null; } // Return campus name for display
 
     /**
      * Get required fields for the application form
@@ -169,10 +176,7 @@ class Form extends Model
         $filledFields = 0;
         
         foreach ($allFields as $field) {
-            if (!isset($this->$field)) {
-                continue;
-            }
-            
+            // Access attribute directly (triggers accessors if defined)
             $value = $this->$field;
             
             // Check if field is filled
@@ -223,10 +227,7 @@ class Form extends Model
         $requiredFields = self::getRequiredFields();
         
         foreach ($requiredFields as $field) {
-            if (!isset($this->$field)) {
-                return false;
-            }
-            
+            // Access attribute directly (triggers accessors if defined)
             $value = $this->$field;
             
             // Check if required field is empty
@@ -275,10 +276,7 @@ class Form extends Model
         $filledRequired = 0;
         
         foreach ($requiredFields as $field) {
-            if (!isset($this->$field)) {
-                continue;
-            }
-            
+            // Access attribute directly (triggers accessors if defined)
             $value = $this->$field;
             
             if ($value === null) {

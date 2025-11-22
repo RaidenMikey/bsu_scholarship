@@ -1,4 +1,9 @@
-<div x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" x-transition x-cloak class="px-4 py-6">
+<div x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform scale-95"
+     x-transition:enter-end="opacity-100 transform scale-100"
+     x-cloak 
+     class="px-4 py-6">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
             <span x-show="tab === 'scholars'">🔵 All Scholars</span>

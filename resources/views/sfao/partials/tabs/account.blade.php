@@ -1,5 +1,10 @@
 <!-- Account Tab for SFAO -->
-<div x-show="tab === 'account'" x-transition x-cloak class="px-4 py-6">
+<div x-show="tab === 'account'" 
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform scale-95"
+     x-transition:enter-end="opacity-100 transform scale-100"
+     x-cloak 
+     class="px-4 py-6">
 
   <div class="bg-gray-100 dark:bg-gray-900 rounded-xl shadow-lg max-w-xl mx-auto p-6">
 

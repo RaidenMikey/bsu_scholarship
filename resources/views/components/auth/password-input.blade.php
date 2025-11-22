@@ -16,7 +16,19 @@ $id = $id ?? $name;
 $errorClass = $error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-red-500';
 @endphp
 
-<div class="mb-4" x-data="{ showPassword: false, password: '', strength: 0 }">
+<div class="mb-4" x-data="{ 
+    showPassword: false, 
+    strength: 0,
+    updateStrength(val) {
+        let strength = 0;
+        if (val.length >= 8) strength++;
+        if (/[a-z]/.test(val)) strength++;
+        if (/[A-Z]/.test(val)) strength++;
+        if (/[0-9]/.test(val)) strength++;
+        if (/[^A-Za-z0-9]/.test(val)) strength++;
+        this.strength = Math.min(strength, 4);
+    }
+}">
   <label for="{{ $id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
     {{ $label }}
     @if($required)
@@ -34,7 +46,7 @@ $errorClass = $error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 fo
       @if($placeholder) placeholder="{{ $placeholder }}" @endif
       @if($autocomplete) autocomplete="{{ $autocomplete }}" @endif
       @if($ariaDescribedby) aria-describedby="{{ $ariaDescribedby }}" @endif
-      @if($showStrength) x-model="password" @input="updateStrength()" @endif
+      @if($showStrength) @input="updateStrength($event.target.value)" @endif
       class="w-full px-3 py-2 pr-10 border {{ $errorClass }} rounded-lg focus:outline-none focus:ring-2 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600 transition-colors duration-200"
       {{ $attributes }}
     >
@@ -49,7 +61,7 @@ $errorClass = $error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 fo
   </div>
   
   @if($showStrength)
-    <div x-show="password.length > 0" x-transition class="mt-2">
+    <div x-show="$el.querySelector('input').value.length > 0" x-transition class="mt-2">
       <div class="flex items-center space-x-2">
         <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div class="h-2 rounded-full transition-all duration-300" 
@@ -81,20 +93,3 @@ $errorClass = $error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 fo
     </div>
   @endif
 </div>
-
-@if($showStrength)
-<script>
-function updateStrength() {
-  const password = this.password;
-  let strength = 0;
-  
-  if (password.length >= 8) strength++;
-  if (/[a-z]/.test(password)) strength++;
-  if (/[A-Z]/.test(password)) strength++;
-  if (/[0-9]/.test(password)) strength++;
-  if (/[^A-Za-z0-9]/.test(password)) strength++;
-  
-  this.strength = Math.min(strength, 4);
-}
-</script>
-@endif

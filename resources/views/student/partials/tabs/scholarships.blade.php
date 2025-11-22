@@ -51,6 +51,9 @@
                x-show="subTab === 'all' || 
                        (subTab === 'private' && '{{ $scholarship->scholarship_type }}' === 'private') ||
                        (subTab === 'government' && '{{ $scholarship->scholarship_type }}' === 'government')"
+               x-transition:enter="transition ease-out duration-300"
+               x-transition:enter-start="opacity-0 transform scale-95"
+               x-transition:enter-end="opacity-100 transform scale-100"
                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-redDark p-6 hover:shadow-xl transition scholarship-card relative overflow-hidden
                       {{ $scholarship->applied ? 'opacity-75' : '' }}"
                @if($scholarship->background_image)

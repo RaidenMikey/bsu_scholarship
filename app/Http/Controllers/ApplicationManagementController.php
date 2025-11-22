@@ -1046,51 +1046,50 @@ class ApplicationManagementController extends Controller
         $totalSfaoUsers = \App\Models\User::where('role', 'sfao')->count();
         $totalCentralUsers = \App\Models\User::where('role', 'central')->count();
 
-        // Get demographic statistics from forms table
-        $maleStudents = \App\Models\Form::whereHas('user', function($query) {
-            $query->where('role', 'student');
-        })->where('sex', 'male')->count();
-        $femaleStudents = \App\Models\Form::whereHas('user', function($query) {
-            $query->where('role', 'student');
-        })->where('sex', 'female')->count();
+        // Get demographic statistics from users table
+        $maleStudents = \App\Models\User::where('role', 'student')
+            ->where('sex', 'male')
+            ->count();
+        $femaleStudents = \App\Models\User::where('role', 'student')
+            ->where('sex', 'female')
+            ->count();
         $studentsWithApplications = \App\Models\User::where('role', 'student')
             ->whereHas('applications')
             ->count();
         $studentsWithoutApplications = $totalStudents - $studentsWithApplications;
 
-        // Get application status by gender (using forms table)
-        $maleApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        // Get application status by gender (using users table)
+        $maleApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'male');
         })->count();
-        $femaleApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $femaleApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'female');
         })->count();
 
-        $maleApprovedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $maleApprovedApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'male');
         })->where('status', 'approved')->count();
-        $femaleApprovedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $femaleApprovedApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'female');
         })->where('status', 'approved')->count();
 
-        $maleRejectedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $maleRejectedApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'male');
         })->where('status', 'rejected')->count();
-        $femaleRejectedApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $femaleRejectedApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'female');
         })->where('status', 'rejected')->count();
 
-        $malePendingApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $malePendingApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'male');
         })->where('status', 'pending')->count();
-        $femalePendingApplications = \App\Models\Application::whereHas('user.form', function($query) {
+        $femalePendingApplications = \App\Models\Application::whereHas('user', function($query) {
             $query->where('sex', 'female');
         })->where('status', 'pending')->count();
 
-        // Get year level distribution from forms table
-        $yearLevelStats = \App\Models\Form::whereHas('user', function($query) {
-            $query->where('role', 'student');
-        })->selectRaw('year_level, COUNT(*) as count')
+        // Get year level distribution from users table
+        $yearLevelStats = \App\Models\User::where('role', 'student')
+            ->selectRaw('year_level, COUNT(*) as count')
             ->groupBy('year_level')
             ->get();
 
@@ -1132,10 +1131,9 @@ class ApplicationManagementController extends Controller
         $yearLevelLabels = array_keys($sortedYearLevels);
         $yearLevelCounts = array_values($sortedYearLevels);
 
-        // Get program distribution from forms table
-        $programStats = \App\Models\Form::whereHas('user', function($query) {
-            $query->where('role', 'student');
-        })->selectRaw('program, COUNT(*) as count')
+        // Get program distribution from users table
+        $programStats = \App\Models\User::where('role', 'student')
+            ->selectRaw('program, COUNT(*) as count')
             ->groupBy('program')
             ->orderBy('count', 'desc')
             ->limit(10) // Top 10 programs
@@ -1158,7 +1156,7 @@ class ApplicationManagementController extends Controller
             }
             
             // Get applications for all variations of this year level
-            $yearLevelApplications = \App\Models\Application::whereHas('user.form', function($query) use ($yearLevelVariations) {
+            $yearLevelApplications = \App\Models\Application::whereHas('user', function($query) use ($yearLevelVariations) {
                 $query->whereIn('year_level', $yearLevelVariations);
             })->get();
 
@@ -1230,18 +1228,20 @@ class ApplicationManagementController extends Controller
                 ->count();
 
             // Get gender statistics for this campus
-            $campusMaleStudents = \App\Models\Form::whereHas('user', function($query) use ($campus) {
-                $query->where('role', 'student')->where('campus_id', $campus->id);
-            })->where('sex', 'male')->count();
+            $campusMaleStudents = \App\Models\User::where('role', 'student')
+                ->where('campus_id', $campus->id)
+                ->where('sex', 'male')
+                ->count();
             
-            $campusFemaleStudents = \App\Models\Form::whereHas('user', function($query) use ($campus) {
-                $query->where('role', 'student')->where('campus_id', $campus->id);
-            })->where('sex', 'female')->count();
+            $campusFemaleStudents = \App\Models\User::where('role', 'student')
+                ->where('campus_id', $campus->id)
+                ->where('sex', 'female')
+                ->count();
 
             // Get year level statistics for this campus
-            $campusYearLevelStats = \App\Models\Form::whereHas('user', function($query) use ($campus) {
-                $query->where('role', 'student')->where('campus_id', $campus->id);
-            })->selectRaw('year_level, COUNT(*) as count')
+            $campusYearLevelStats = \App\Models\User::where('role', 'student')
+                ->where('campus_id', $campus->id)
+                ->selectRaw('year_level, COUNT(*) as count')
                 ->groupBy('year_level')
                 ->get();
 

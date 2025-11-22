@@ -41,15 +41,7 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $scholarships = Scholarship::with(['conditions', 'requiredDocuments'])->get();
-        
-        // Apply sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        
-        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
-        
-        return view('central.scholarships.index', compact('scholarships'));
+        return redirect()->route('central.dashboard', ['tab' => 'scholarships']);
     }
 
     /**
@@ -61,7 +53,7 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        return view('central.scholarships.create_scholarship');
+        return view('central.scholarships.create');
     }
 
     /**
@@ -170,7 +162,7 @@ class ScholarshipManagementController extends Controller
                 'accessed_by' => session('user_id')
             ]);
             
-            return view('central.scholarships.create_scholarship', compact('scholarship'));
+            return view('central.scholarships.create', compact('scholarship'));
             
         } catch (\Exception $e) {
             Log::error('Error accessing scholarship edit form:', [
@@ -345,31 +337,7 @@ class ScholarshipManagementController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         
-        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
-
-        return view('sfao.scholarships', compact('scholarships', 'sfaoCampus'));
-    }
-
-    /**
-     * Show one scholarship with its applicants (SFAO)
-     */
-    public function sfaoShow($id)
-    {
-        if (!session()->has('user_id') || session('role') !== 'sfao') {
-            return redirect('/login')->with('session_expired', true);
-        }
-
-        $user = User::with('campus')->find(session('user_id'));
-        $sfaoCampus = $user->campus;
-        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
-
-        $scholarship = Scholarship::with(['applications' => function($query) use ($campusIds) {
-            $query->whereHas('user', function($userQuery) use ($campusIds) {
-                $userQuery->whereIn('campus_id', $campusIds);
-            });
-        }, 'applications.user'])->findOrFail($id);
-
-        return view('sfao.scholarship_show', compact('scholarship', 'sfaoCampus'));
+        return redirect()->route('sfao.dashboard', ['tab' => 'scholarships']);
     }
 
     /**

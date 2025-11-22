@@ -35,16 +35,13 @@ class FormsTableSeeder extends Seeder
             Form::create([
                 'user_id' => $user->id,
                 // Personal Data
-                'last_name' => $lastName,
-                'first_name' => $firstName,
-                'middle_name' => $middleName,
+                // Moved to User: last_name, first_name, middle_name
                 'age' => fake()->numberBetween(18, 30),
-                'sex' => fake()->randomElement(['male', 'female']),
+                // Moved to User: sex
                 'civil_status' => fake()->randomElement(['Single', 'Married', 'Widowed', 'Divorced', 'Separated']),
-                'birthdate' => fake()->date('Y-m-d', '2000-01-01'),
-                'birthplace' => fake()->city,
-                'email' => $user->email, // link with the user's email
-                'contact_number' => fake()->phoneNumber,
+                // Moved to User: birthdate
+                // Moved to User: birthplace
+                // Moved to User: email, contact_number
                 // Address breakdown
                 'street_barangay' => fake()->streetAddress,
                 'town_city'       => fake()->city,
@@ -55,19 +52,7 @@ class FormsTableSeeder extends Seeder
                 'tribe' => fake()->optional(0.2)->randomElement(['Tagalog', 'Bisaya', 'Ilocano', 'Bicolano', 'Waray']),
 
                 // Academic Data
-                'sr_code' => 'SR-' . fake()->unique()->numerify('#####'),
-                'education_level' => fake()->randomElement(['Undergraduate', 'Graduate School', 'Integrated School']),
-                'program' => fake()->randomElement([
-                    'BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 
-                    'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering',
-                    'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy',
-                    'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management',
-                    'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology',
-                    'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics'
-                ]),
-                'college_department' => fake()->randomElement(['CICS', 'CTE', 'CABEIHM', 'CAS']),
-                'year_level' => fake()->randomElement(['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year']),
-                'campus' => $user->campus ? $user->campus->name : 'Alangilan', // Use user's assigned campus
+                // Moved to User: sr_code, education_level, program, college_department, year_level, campus
                 'previous_gwa' => fake()->randomFloat(2, 1.00, 3.00),
                 'honors_received' => fake()->optional(0.3)->randomElement(['Dean\'s Lister', 'Honor Student', 'Summa Cum Laude', 'Magna Cum Laude', 'Cum Laude']),
                 'units_enrolled' => fake()->numberBetween(18, 30),

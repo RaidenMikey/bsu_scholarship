@@ -59,18 +59,16 @@ class FormController extends Controller
             }
         }
 
+        // Validate Form Data (excluding user fields)
         $validated = $request->validate([
             // ------------------- Personal Data -------------------
-            'last_name'           => 'nullable|string',
-            'first_name'          => 'nullable|string',
-            'middle_name'         => 'nullable|string',
+            // Removed: last_name, first_name, middle_name (in users)
             'age'                 => 'nullable|integer',
-            'sex'                 => 'nullable|in:male,female',
+            // Removed: sex (in users)
             'civil_status'        => 'nullable|string',
-            'birthdate'           => 'nullable|date',
+            // Removed: birthdate (in users)
             'birthplace'          => 'nullable|string',
-            'email'               => 'nullable|email',
-            'contact_number'      => 'nullable|string',
+            // Removed: email, contact_number (in users)
             'street_barangay'     => 'nullable|string',
             'town_city'           => 'nullable|string',
             'province'            => 'nullable|string',
@@ -80,12 +78,7 @@ class FormController extends Controller
             'tribe'               => 'nullable|string',
 
             // ------------------- Academic Data -------------------
-            'sr_code'                      => 'nullable|string',
-            'education_level'              => 'nullable|in:Undergraduate,Graduate School,Integrated School',
-            'program'                      => 'nullable|string',
-            'college_department'           => 'nullable|string',
-            'year_level'                   => 'nullable|string',
-            'campus'                       => 'nullable|string',
+            // Removed: sr_code, education_level, program, college_department, year_level, campus_id (in users)
             'previous_gwa'                 => 'nullable|numeric|between:1.00,5.00',
             'honors_received'              => 'nullable|string',
             'units_enrolled'               => 'nullable|integer',
@@ -116,6 +109,46 @@ class FormController extends Controller
             'student_signature' => 'nullable|string',
             'date_signed'       => 'nullable|date',
         ]);
+
+        // Validate User Data separately
+        $userValidated = $request->validate([
+            'last_name'          => 'nullable|string',
+            'first_name'         => 'nullable|string',
+            'middle_name'        => 'nullable|string',
+            'sex'                => 'nullable|in:Male,Female', // Case sensitive enum in users table
+            'birthdate'          => 'nullable|date',
+            'email'              => 'nullable|email',
+            'contact_number'     => 'nullable|string',
+            'sr_code'            => 'nullable|string',
+            'education_level'    => 'nullable|string',
+            'program'            => 'nullable|string',
+            'college_department' => 'nullable|string', // mapped to college in users table
+            'year_level'         => 'nullable|string',
+            'campus_id'          => 'nullable|exists:campuses,id',
+        ]);
+
+        // Update User Model
+        $user = \App\Models\User::find($userId);
+        if ($user) {
+            $user->update([
+                'last_name'       => $request->last_name ?? $user->last_name,
+                'first_name'      => $request->first_name ?? $user->first_name,
+                'middle_name'     => $request->middle_name ?? $user->middle_name,
+                'sex'             => $request->sex ?? $user->sex,
+                'birthdate'       => $birthdate ?? $user->birthdate, // Use calculated birthdate
+                'contact_number'  => $request->contact_number ?? $user->contact_number,
+                'sr_code'         => $request->sr_code ?? $user->sr_code,
+                'education_level' => $request->education_level ?? $user->education_level,
+                'program'         => $request->program ?? $user->program,
+                'college'         => $request->college_department ?? $user->college, // Map college_department to college
+                'year_level'      => $request->year_level ?? $user->year_level,
+                'campus_id'       => $request->campus_id ?? $user->campus_id,
+            ]);
+            
+            // Update name (concatenated)
+            $user->name = trim(($user->first_name ?? '') . ' ' . ($user->middle_name ?? '') . ' ' . ($user->last_name ?? ''));
+            $user->save();
+        }
 
         // ✅ Ensure empty string → NULL for GWA
         $validated['previous_gwa'] = $request->filled('previous_gwa') ? $request->previous_gwa : null;

@@ -518,6 +518,7 @@ class UserManagementController extends Controller
         // If scholarship_id is provided, set scholarship_applied for display
         if ($scholarship_id) {
             $scholarship = Scholarship::findOrFail($scholarship_id);
+            $campuses = Campus::all();
             
             // If form exists, ensure scholarship_applied is set correctly
             if ($existingApplication) {
@@ -528,10 +529,11 @@ class UserManagementController extends Controller
                 $existingApplication->scholarship_applied = $scholarship->scholarship_name;
             }
             
-            return view('student.forms.sfao-application-form', compact('existingApplication', 'scholarship'));
+            return view('student.forms.sfao-application-form', compact('existingApplication', 'scholarship', 'campuses'));
         }
         
-        return view('student.forms.sfao-application-form', compact('existingApplication'));
+        $campuses = Campus::all();
+        return view('student.forms.sfao-application-form', compact('existingApplication', 'campuses'));
     }
 
     /**

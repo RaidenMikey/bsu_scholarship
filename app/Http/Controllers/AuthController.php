@@ -162,7 +162,8 @@ class AuthController extends Controller
      */
     public function showRegister()
     {
-        return view('auth.register');
+        $campuses = \App\Models\Campus::all();
+        return view('auth.register', compact('campuses'));
     }
 
     /**
@@ -171,19 +172,42 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'      => 'required|string|max:255',
-            'email'     => ['required','email','unique:users,email','regex:/^[a-zA-Z0-9._%+-]+@g\.batstate-u\.edu\.ph$/'],
-            'password'  => 'required|string|confirmed|min:6',
-            'role'      => 'required|string',
-            'campus_id' => 'required|exists:campuses,id',
+            'first_name'    => 'required|string|max:255',
+            'middle_name'   => 'nullable|string|max:255',
+            'last_name'     => 'required|string|max:255',
+            'birthdate'     => 'required|date',
+            'sex'           => 'required|in:Male,Female',
+            'email'         => ['required','email','unique:users,email','regex:/^[a-zA-Z0-9._%+-]+@g\.batstate-u\.edu\.ph$/'],
+            'contact_number'=> 'required|string|max:20',
+            'sr_code'       => 'required|string|unique:users,sr_code',
+            'education_level'=> 'required|string',
+            'college'       => 'required|string',
+            'program'       => 'required|string',
+            'year_level'    => 'required|string',
+            'password'      => 'required|string|confirmed|min:6',
+            'role'          => 'required|string',
+            'campus_id'     => 'required|exists:campuses,id',
         ]);
 
+        $fullName = $request->first_name . ' ' . ($request->middle_name ? $request->middle_name . ' ' : '') . $request->last_name;
+
         $user = User::create([
-            'name'      => $request->name,
-            'email'     => $request->email,
-            'password'  => Hash::make($request->password),
-            'role'      => $request->role,
-            'campus_id' => $request->campus_id,
+            'name'          => $fullName,
+            'first_name'    => $request->first_name,
+            'middle_name'   => $request->middle_name,
+            'last_name'     => $request->last_name,
+            'birthdate'     => $request->birthdate,
+            'sex'           => $request->sex,
+            'email'         => $request->email,
+            'contact_number'=> $request->contact_number,
+            'sr_code'       => $request->sr_code,
+            'education_level'=> $request->education_level,
+            'college'       => $request->college,
+            'program'       => $request->program,
+            'year_level'    => $request->year_level,
+            'password'      => Hash::make($request->password),
+            'role'          => $request->role,
+            'campus_id'     => $request->campus_id,
         ]);
 
         $user->sendEmailVerificationNotification();

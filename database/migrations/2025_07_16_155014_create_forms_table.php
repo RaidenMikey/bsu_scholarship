@@ -20,17 +20,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
             // ------------------- PERSONAL DATA -------------------
-            $table->string('last_name');
-            $table->string('first_name');
-            $table->string('middle_name')->nullable();
-
+            // Removed: last_name, first_name, middle_name (in users)
+            
             $table->integer('age')->nullable();
-            $table->enum('sex', ['male', 'female'])->nullable();
+            // Removed: sex (in users)
             $table->string('civil_status')->nullable();
-            $table->date('birthdate')->nullable();
+            // Removed: birthdate (in users)
             $table->string('birthplace')->nullable();
-            $table->string('email')->nullable();
-            $table->string('contact_number')->nullable();
+            // Removed: email, contact_number (in users)
 
             // Address broken down
             $table->string('street_barangay')->nullable();
@@ -43,12 +40,7 @@ return new class extends Migration
             $table->string('tribe')->nullable(); // Tribal membership
 
             // ------------------- ACADEMIC DATA -------------------
-            $table->string('sr_code')->nullable();
-            $table->enum('education_level', ['Undergraduate', 'Graduate School', 'Integrated School'])->nullable();
-            $table->string('program')->nullable();
-            $table->string('college_department')->nullable();
-            $table->string('year_level')->nullable();
-            $table->string('campus')->nullable();
+            // Removed: sr_code, education_level, program, college_department, year_level, campus (in users)
             $table->decimal('previous_gwa', 4, 2)->nullable();
             $table->string('honors_received')->nullable();
             $table->integer('units_enrolled')->nullable();

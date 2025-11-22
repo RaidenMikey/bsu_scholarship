@@ -43,8 +43,23 @@ class UsersTableSeeder extends Seeder
                     $studentId = $faker->unique()->numberBetween(100000, 999999);
                     $studentEmail = sprintf("99-%06d@g.batstate-u.edu.ph", $studentId);
                     
+                    $firstName = $faker->firstName();
+                    $lastName = $faker->lastName();
+                    $middleName = $faker->lastName();
+                    
                     User::create([
-                        'name' => $faker->name(),
+                        'name' => "$firstName $middleName $lastName",
+                        'first_name' => $firstName,
+                        'middle_name' => $middleName,
+                        'last_name' => $lastName,
+                        'sex' => $faker->randomElement(['Male', 'Female']),
+                        'birthdate' => $faker->date(),
+                        'contact_number' => $faker->phoneNumber(),
+                        'sr_code' => 'SR-' . $studentId,
+                        'education_level' => 'Undergraduate',
+                        'program' => 'BS Information Technology',
+                        'college' => 'CICS',
+                        'year_level' => '3rd Year',
                         'email' => $studentEmail,
                         'email_verified_at' => now(),
                         'password' => Hash::make('password123'),
@@ -64,6 +79,11 @@ class UsersTableSeeder extends Seeder
                     ['email' => "sfao-" . ($index + 1) . "@g.batstate-u.edu.ph"],
                     [
                         'name' => "SFAO Admin - {$campusName}",
+                        'first_name' => 'SFAO',
+                        'last_name' => 'Admin',
+                        'sex' => 'Male',
+                        'contact_number' => '09123456789',
+                        'sr_code' => 'SFAO-' . ($index + 1),
                         'password' => Hash::make('password123'),
                         'role' => 'sfao',
                         'campus_id' => $campus->id,
@@ -78,6 +98,11 @@ class UsersTableSeeder extends Seeder
             ['email' => 'central-admin@g.batstate-u.edu.ph'],
             [
                 'name' => 'Central Admin',
+                'first_name' => 'Central',
+                'last_name' => 'Admin',
+                'sex' => 'Male',
+                'contact_number' => '09123456789',
+                'sr_code' => 'CENTRAL-ADMIN',
                 'password' => Hash::make('password123'),
                 'role' => 'central',
                 'campus_id' => 1, // Pablo Borbon campus
