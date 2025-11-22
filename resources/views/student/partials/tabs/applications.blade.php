@@ -1,5 +1,5 @@
 <div x-cloak data-applications="{{ json_encode($applicationTracking) }}">
-  <div class="max-w-6xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border-t-4 border-bsu-red transition duration-300">
+  <div class="w-full mx-auto p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border-t-4 border-bsu-red transition duration-300">
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
       <h2 class="text-3xl font-bold text-bsu-red mb-4 lg:mb-0 border-b-2 border-bsu-redDark pb-2">🎓 My Scholarship Applications</h2>
       

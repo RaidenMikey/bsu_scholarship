@@ -82,6 +82,7 @@ class StudentApplicationController extends Controller
         ]);
 
         $userId = session('user_id');
+        $user = User::with('appliedScholarships')->find($userId);
         $scholarshipId = $request->scholarship_id;
 
         // Delete application entry

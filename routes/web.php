@@ -54,7 +54,7 @@ Route::get('/document/view/{id}', [UserManagementController::class, 'viewDocumen
 // STUDENT ROUTES
 // --------------------------------------------------
 
-Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')->name('student.')->group(function () {
     
     // Dashboard
     Route::get('/', [UserManagementController::class, 'studentDashboard'])->name('dashboard');
@@ -95,7 +95,7 @@ Route::middleware(['web', 'checkUserExists'])->prefix('student')->name('student.
 // SFAO ROUTES
 // --------------------------------------------------
 
-Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.')->group(function () {
+Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')->name('sfao.')->group(function () {
 
     // Dashboard
     Route::get('/', [ApplicationManagementController::class, 'sfaoDashboard'])->name('dashboard');
@@ -138,7 +138,7 @@ Route::middleware(['web', 'checkUserExists:sfao'])->prefix('sfao')->name('sfao.'
 // CENTRAL ROUTES
 // --------------------------------------------------
 
-Route::middleware(['web', 'checkUserExists:central'])
+Route::middleware(['web', 'checkUserExists:central', 'role:central'])
     ->prefix('central')
     ->name('central.')
     ->group(function () {

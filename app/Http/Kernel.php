@@ -66,5 +66,6 @@ class Kernel extends HttpKernel
 
         //new added middlewares
         'checkUserExists' => \App\Http\Middleware\CheckUserExists::class,
+        'role' => \App\Http\Middleware\CheckRole::class,
     ];
 }
