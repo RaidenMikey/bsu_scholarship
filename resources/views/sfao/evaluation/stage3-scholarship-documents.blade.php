@@ -36,12 +36,20 @@
         <div class="mb-8">
             <div class="flex items-center justify-center space-x-2">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                     <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Select Scholarship</span>
                 </div>
                 <div class="w-12 h-1 bg-green-500"></div>
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                     <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">SFAO Documents</span>
                 </div>
                 <div class="w-12 h-1 bg-bsu-red"></div>
@@ -106,9 +114,9 @@
                                         <select name="evaluations[{{ $document->id }}][status]" 
                                                 class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-bsu-red focus:border-bsu-red" required>
                                             <option value="">Select Status</option>
-                                            <option value="approved" {{ $document->evaluation_status === 'approved' ? 'selected' : '' }}>✅ Approved</option>
-                                            <option value="pending" {{ $document->evaluation_status === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                                            <option value="rejected" {{ $document->evaluation_status === 'rejected' ? 'selected' : '' }}>❌ Rejected</option>
+                                            <option value="approved" {{ $document->evaluation_status === 'approved' ? 'selected' : '' }}>Approved</option>
+                                            <option value="pending" {{ $document->evaluation_status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="rejected" {{ $document->evaluation_status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                         </select>
                                         <input type="hidden" name="evaluations[{{ $document->id }}][document_id]" value="{{ $document->id }}">
                                     </div>
@@ -126,12 +134,22 @@
                     <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                         <a href="{{ route('sfao.evaluation.sfao-documents', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id]) }}" 
                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                            ← Back to SFAO Documents
+                            <span class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Back to SFAO Documents
+                            </span>
                         </a>
                         
                         <button type="submit" 
                                 class="px-6 py-2 bg-bsu-red text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2">
-                            Continue to Final Review →
+                            <span class="flex items-center gap-1">
+                                Continue to Final Review
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </span>
                         </button>
                     </div>
                 </form>

@@ -8,7 +8,12 @@
 
     <!-- Header -->
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">❌ Rejected Applicants</h2>
+        <h2 class="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Rejected Applicants
+        </h2>
         <p class="text-gray-600 dark:text-gray-400 mt-1">Applicants rejected by Central Administration</p>
     </div>
 

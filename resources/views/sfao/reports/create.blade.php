@@ -70,10 +70,10 @@
                         <select name="report_type" id="report_type" required 
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
                             <option value="">Select Report Type</option>
-                            <option value="monthly" {{ old('report_type') == 'monthly' ? 'selected' : '' }}>📅 Monthly Report</option>
-                            <option value="quarterly" {{ old('report_type') == 'quarterly' ? 'selected' : '' }}>📊 Quarterly Report</option>
-                            <option value="annual" {{ old('report_type') == 'annual' ? 'selected' : '' }}>📈 Annual Report</option>
-                            <option value="custom" {{ old('report_type') == 'custom' ? 'selected' : '' }}>⚙️ Custom Report</option>
+                            <option value="monthly" {{ old('report_type') == 'monthly' ? 'selected' : '' }}>Monthly Report</option>
+                            <option value="quarterly" {{ old('report_type') == 'quarterly' ? 'selected' : '' }}>Quarterly Report</option>
+                            <option value="annual" {{ old('report_type') == 'annual' ? 'selected' : '' }}>Annual Report</option>
+                            <option value="custom" {{ old('report_type') == 'custom' ? 'selected' : '' }}>Custom Report</option>
                         </select>
                         @error('report_type')
                             <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -105,7 +105,7 @@
                             <option value="">Select Campus</option>
                             @foreach($campusOptions as $campusOption)
                                 <option value="{{ $campusOption->id }}" {{ old('campus_id') == $campusOption->id ? 'selected' : '' }}>
-                                    🏫 {{ $campusOption->name }}
+                                    {{ $campusOption->name }}
                                 </option>
                             @endforeach
                         </select>

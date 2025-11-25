@@ -2,7 +2,12 @@
   <!-- Header -->
   <div class="mb-6">
     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-      🔔 Notifications
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        Notifications
+      </div>
     </h2>
     <p class="text-gray-600 dark:text-gray-400">
       Stay updated with your scholarship applications and system updates
@@ -65,17 +70,34 @@
       <button @click="filterType = 'scholarship_created'" 
               :class="filterType === 'scholarship_created' ? 'bg-green-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
               class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        🎓 Scholarships
+        <span class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+            </svg>
+            Scholarships
+        </span>
       </button>
       <button @click="filterType = 'sfao_comment'" 
               :class="filterType === 'sfao_comment' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
               class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        💬 Comments
+        <span class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            Comments
+        </span>
       </button>
       <button @click="filterType = 'application_status'" 
               :class="filterType === 'application_status' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
               class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        📋 Status
+        <span class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Status
+        </span>
       </button>
     </div>
 
@@ -150,7 +172,12 @@
                   <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                     @if(isset($notification->data['scholarship_name']))
                       <span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 mr-2">
-                        📚 {{ $notification->data['scholarship_name'] }}
+                        <span class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            {{ $notification->data['scholarship_name'] }}
+                        </span>
                       </span>
                     @endif
                     
@@ -213,7 +240,12 @@
                   <!-- Specific Document Lists -->
                   @if(isset($notification->data['pending_documents']) && count($notification->data['pending_documents']) > 0)
                     <div class="mt-2">
-                      <span class="text-xs font-medium text-yellow-600 dark:text-yellow-400">⏳ Pending Documents:</span>
+                      <span class="flex items-center gap-1 text-xs font-medium text-yellow-600 dark:text-yellow-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Pending Documents:
+                      </span>
                       <div class="mt-1 flex flex-wrap gap-1">
                         @foreach($notification->data['pending_documents'] as $doc)
                           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
@@ -226,7 +258,12 @@
 
                   @if(isset($notification->data['rejected_documents']) && count($notification->data['rejected_documents']) > 0)
                     <div class="mt-2">
-                      <span class="text-xs font-medium text-red-600 dark:text-red-400">❌ Rejected Documents:</span>
+                      <span class="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Rejected Documents:
+                      </span>
                       <div class="mt-1 flex flex-wrap gap-1">
                         @foreach($notification->data['rejected_documents'] as $doc)
                           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
@@ -346,7 +383,12 @@
                  </svg>
                </div>
                <div class="ml-3 flex-1">
-                 <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">⏳ Pending Documents:</h4>
+                 <h4 class="flex items-center gap-2 text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                     Pending Documents:
+                 </h4>
                  <p class="text-xs text-yellow-700 dark:text-yellow-300 mb-3">The following documents are still pending evaluation:</p>
                  <div class="space-y-2">
                    <template x-for="doc in selectedNotification?.data?.pending_documents" :key="doc">
@@ -372,7 +414,12 @@
                  </svg>
                </div>
                <div class="ml-3 flex-1">
-                 <h4 class="text-sm font-medium text-red-800 dark:text-red-200 mb-2">❌ Rejected Documents:</h4>
+                 <h4 class="flex items-center gap-2 text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                     </svg>
+                     Rejected Documents:
+                 </h4>
                  <p class="text-xs text-red-700 dark:text-red-300 mb-3">The following documents have been rejected and need to be resubmitted:</p>
                  <div class="space-y-2">
                    <template x-for="doc in selectedNotification?.data?.rejected_documents" :key="doc">
@@ -395,7 +442,12 @@
 
            <!-- Scholarship Information (if applicable) -->
            <div x-show="selectedNotification?.data?.scholarship_name" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-             <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">📚 Scholarship:</h4>
+             <h4 class="flex items-center gap-2 text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                 </svg>
+                 Scholarship:
+             </h4>
              <p class="text-sm text-blue-700 dark:text-blue-300" x-text="selectedNotification?.data?.scholarship_name"></p>
            </div>
          </div>

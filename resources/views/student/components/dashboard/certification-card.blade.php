@@ -62,7 +62,12 @@
     </div>
     <a href="{{ route('student.forms.application_form') }}?stage=5" 
        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium">
-      Edit →
+      <span class="flex items-center gap-1">
+          Edit
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+      </span>
     </a>
   </div>
 </div>

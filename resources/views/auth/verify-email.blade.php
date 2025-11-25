@@ -63,7 +63,12 @@
 
     <div class="mt-6 text-center space-y-2">
       <a href="{{ route('login') }}" class="text-red-600 hover:underline text-sm block">
-        ← Back to Login
+        <span class="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Login
+        </span>
       </a>
       <p class="text-xs text-gray-500">
         Didn't receive the email? Check your spam folder or contact support.

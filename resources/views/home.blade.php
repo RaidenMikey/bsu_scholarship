@@ -38,7 +38,7 @@
    <!-- Navbar -->
 <nav class="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md shadow-md z-50" x-data="{ open: false }">
     <div class="px-4 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto flex justify-between items-center h-16">
+        <div class="flex justify-between items-center h-16">
             <div class="flex items-center space-x-3">
                 <a href="#home" class="flex items-center space-x-2">
                     <!-- Increased logo size -->

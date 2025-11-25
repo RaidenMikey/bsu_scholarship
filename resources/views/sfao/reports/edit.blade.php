@@ -46,7 +46,12 @@
                 <div class="flex items-center space-x-4">
                     <span class="text-sm">Welcome, {{ $user->name }}</span>
                     <a href="/sfao" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                        ← Back to Dashboard
+                        <span class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Back to Dashboard
+                        </span>
                     </a>
                 </div>
             </div>
@@ -89,10 +94,10 @@
                         <select name="report_type" id="report_type" required 
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
                             <option value="">Select Report Type</option>
-                            <option value="monthly" {{ old('report_type', $report->report_type) == 'monthly' ? 'selected' : '' }}>📅 Monthly Report</option>
-                            <option value="quarterly" {{ old('report_type', $report->report_type) == 'quarterly' ? 'selected' : '' }}>📊 Quarterly Report</option>
-                            <option value="annual" {{ old('report_type', $report->report_type) == 'annual' ? 'selected' : '' }}>📈 Annual Report</option>
-                            <option value="custom" {{ old('report_type', $report->report_type) == 'custom' ? 'selected' : '' }}>⚙️ Custom Report</option>
+                            <option value="monthly" {{ old('report_type', $report->report_type) == 'monthly' ? 'selected' : '' }}>Monthly Report</option>
+                            <option value="quarterly" {{ old('report_type', $report->report_type) == 'quarterly' ? 'selected' : '' }}>Quarterly Report</option>
+                            <option value="annual" {{ old('report_type', $report->report_type) == 'annual' ? 'selected' : '' }}>Annual Report</option>
+                            <option value="custom" {{ old('report_type', $report->report_type) == 'custom' ? 'selected' : '' }}>Custom Report</option>
                         </select>
                         @error('report_type')
                             <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -125,9 +130,9 @@
                             @foreach($campusOptions as $campusOption)
                                 <option value="{{ $campusOption->id }}" {{ old('campus_id', $report->original_campus_selection ?? $report->campus_id) == $campusOption->id ? 'selected' : '' }}>
                                     @if($campusOption->type === 'constituent_with_extensions')
-                                        🏫 {{ $campusOption->name }} (Constituent + Extensions)
+                                        {{ $campusOption->name }} (Constituent + Extensions)
                                     @else
-                                        🏫 {{ $campusOption->name }} ({{ ucfirst($campusOption->type) }})
+                                        {{ $campusOption->name }} ({{ ucfirst($campusOption->type) }})
                                     @endif
                                 </option>
                             @endforeach

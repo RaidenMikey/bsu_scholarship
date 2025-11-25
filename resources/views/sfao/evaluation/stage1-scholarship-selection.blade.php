@@ -126,7 +126,12 @@
                                         <!-- View Details Button -->
                                         <a href="{{ route('sfao.evaluation.final', ['user_id' => $student->id, 'scholarship_id' => $scholarship->id, 'from_status' => 'true']) }}" 
                                            class="mt-2 inline-block text-xs text-bsu-red hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-                                            View Details →
+                                            <span class="flex items-center gap-1">
+                                                View Details
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </span>
                                         </a>
                                     </div>
                                 @else
@@ -144,7 +149,11 @@
         @else
             <!-- No Applications -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-                <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">📋</div>
+                <div class="text-gray-400 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
                 <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Applications Found</h3>
                 <p class="text-gray-500 dark:text-gray-500">This student has not applied to any scholarships yet.</p>
             </div>

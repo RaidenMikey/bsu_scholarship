@@ -1,12 +1,21 @@
 <div x-cloak class="px-4 py-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">📊 Application Tracking</h2>
+        <h2 class="flex items-center gap-2 text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Application Tracking
+        </h2>
         <p class="text-gray-600 dark:text-gray-300">Monitor the progress of your scholarship applications</p>
     </div>
 
     @if($applicationTracking->isEmpty())
         <div class="text-center py-12">
-            <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">📋</div>
+            <div class="text-gray-400 dark:text-gray-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </div>
             <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Applications Found</h3>
             <p class="text-gray-500 dark:text-gray-500">You haven't applied to any scholarships yet.</p>
             <a href="{{ route('student.scholarships') }}" 
@@ -84,7 +93,13 @@
                             <div class="flex items-center space-x-4">
                                 <div class="flex-shrink-0">
                                     <div class="h-12 w-12 rounded-full bg-bsu-red flex items-center justify-center">
-                                        <span class="text-lg font-bold text-white">🎓</span>
+                                        <span class="text-lg font-bold text-white">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                                              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                            </svg>
+                                        </span>
                                     </div>
                                 </div>
                                 <div>
@@ -260,7 +275,14 @@
                                                 <svg class="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                                 </svg>
-                                                <span class="font-medium">🎓 Selected as Scholar</span>
+                                                <span class="font-medium flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                      <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                                                      <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                                    </svg>
+                                                    Selected as Scholar
+                                                </span>
                                             </div>
                                             <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">
                                                 Selected on {{ $application->scholar_selected_at?->format('M d, Y \a\t h:i A') }}
@@ -270,7 +292,12 @@
                                                 <svg class="w-4 h-4 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                                                 </svg>
-                                                <span class="font-medium">❌ Not Selected</span>
+                                                <span class="font-medium flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Not Selected
+                                                </span>
                                             </div>
                                             <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">
                                                 Final decision made on {{ $application->updated_at?->format('M d, Y \a\t h:i A') }}
@@ -280,7 +307,12 @@
                                                 <svg class="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                                 </svg>
-                                                <span class="font-medium">✅ SFAO Approved - Awaiting Central Review</span>
+                                                <span class="font-medium flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    SFAO Approved - Awaiting Central Review
+                                                </span>
                                             </div>
                                             <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">
                                                 SFAO approved on {{ $application->updated_at?->format('M d, Y \a\t h:i A') }}. Central is reviewing for final selection.
@@ -290,7 +322,12 @@
                                                 <svg class="w-4 h-4 text-yellow-600 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
-                                                <span class="font-medium">⏳ Under SFAO Review</span>
+                                                <span class="font-medium flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Under SFAO Review
+                                                </span>
                                             </div>
                                             <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">
                                                 SFAO is currently evaluating your application and documents

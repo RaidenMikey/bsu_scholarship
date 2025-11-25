@@ -36,7 +36,11 @@
         <div class="mb-8">
             <div class="flex items-center justify-center space-x-2">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                     <span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">Select Scholarship</span>
                 </div>
                 <div class="w-12 h-1 bg-bsu-red"></div>
@@ -106,9 +110,9 @@
                                         <select name="evaluations[{{ $document->id }}][status]" 
                                                 class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-bsu-red focus:border-bsu-red" required>
                                             <option value="">Select Status</option>
-                                            <option value="approved" {{ $document->evaluation_status === 'approved' ? 'selected' : '' }}>✅ Approved</option>
-                                            <option value="pending" {{ $document->evaluation_status === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                                            <option value="rejected" {{ $document->evaluation_status === 'rejected' ? 'selected' : '' }}>❌ Rejected</option>
+                                            <option value="approved" {{ $document->evaluation_status === 'approved' ? 'selected' : '' }}>Approved</option>
+                                            <option value="pending" {{ $document->evaluation_status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                            <option value="rejected" {{ $document->evaluation_status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                         </select>
                                         <input type="hidden" name="evaluations[{{ $document->id }}][document_id]" value="{{ $document->id }}">
                                     </div>
@@ -126,12 +130,22 @@
                     <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                         <a href="{{ route('sfao.evaluation.show', $student->id) }}" 
                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                            ← Back to Scholarships
+                            <span class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Back to Scholarships
+                            </span>
                         </a>
                         
                         <button type="submit" 
                                 class="px-6 py-2 bg-bsu-red text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2">
-                            Continue to Scholarship Documents →
+                            <span class="flex items-center gap-1">
+                                Continue to Scholarship Documents
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -139,12 +153,21 @@
         @else
             <!-- No SFAO Documents -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-                <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">📄</div>
+                <div class="text-gray-400 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
                 <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No SFAO Documents Found</h3>
                 <p class="text-gray-500 dark:text-gray-500">This student has not submitted any SFAO required documents for this scholarship.</p>
                 <a href="{{ route('sfao.evaluation.show', $student->id) }}" 
                    class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    ← Back to Scholarships
+                    <span class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Scholarships
+                    </span>
                 </a>
             </div>
         @endif

@@ -24,8 +24,8 @@
         <tr>
             <td width="50%">
                 Scholarship Applied For:
-                <span class="checkbox">{{ $form->scholarship_type == 'private' ? '☑' : '☐' }}</span> Private
-                <span class="checkbox">{{ $form->scholarship_type == 'government' ? '☑' : '☐' }}</span> Government
+                <span class="checkbox">[{{ $form->scholarship_type == 'private' ? 'x' : ' ' }}]</span> Private
+                <span class="checkbox">[{{ $form->scholarship_type == 'government' ? 'x' : ' ' }}]</span> Government
             </td>
             <td>Name of Scholarship: <strong>{{ $form->scholarship_name ?? '' }}</strong></td>
         </tr>
@@ -65,8 +65,8 @@
         <tr>
             <td colspan="3">
                 High School Type:
-                <span class="checkbox">{{ $form->highschool_type == 'Public' ? '☑' : '☐' }}</span> Public
-                <span class="checkbox">{{ $form->highschool_type == 'Private' ? '☑' : '☐' }}</span> Private
+                <span class="checkbox">[{{ $form->highschool_type == 'Public' ? 'x' : ' ' }}]</span> Public
+                <span class="checkbox">[{{ $form->highschool_type == 'Private' ? 'x' : ' ' }}]</span> Private
             </td>
         </tr>
         <tr>

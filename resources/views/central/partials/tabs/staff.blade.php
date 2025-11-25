@@ -6,7 +6,12 @@
      x-cloak 
      class="space-y-6">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">👨‍💼 Manage Admins</h2>
+    <h2 class="flex items-center gap-2 text-2xl font-bold text-gray-800 dark:text-white mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        Manage Admins
+    </h2>
     
     <!-- Create New SFAO Admin -->
     <div class="mb-8">
@@ -73,7 +78,11 @@
           <button type="submit" 
                   class="bg-bsu-red text-white px-6 py-2 rounded-lg hover:bg-bsu-redDark 
                          transition duration-200 flex items-center space-x-2">
-            <span>👤</span>
+            <span class="bg-gray-200 dark:bg-gray-700 rounded-full p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </span>
             <span>Create Account & Send Verification</span>
           </button>
         </div>
@@ -139,12 +148,17 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <form method="POST" action="{{ route('central.staff.deactivate', $staff->id) }}" 
                         class="inline" 
-                        onsubmit="return confirm('⚠️ WARNING: This will permanently remove {{ $staff->name }} from the system. Their account will be completely deleted and cannot be recovered. Are you sure you want to proceed?')">
+                        onsubmit="return confirm('WARNING: This will permanently remove {{ $staff->name }} from the system. Their account will be completely deleted and cannot be recovered. Are you sure you want to proceed?')">
                     @csrf
                     <button type="submit" 
                             class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 
                                    hover:underline font-semibold">
-                      🗑️ Remove Staff
+                      <span class="flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Remove Staff
+                      </span>
                     </button>
                   </form>
                 </td>

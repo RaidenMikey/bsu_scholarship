@@ -6,9 +6,9 @@
      class="px-4 py-6">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
-            <span x-show="tab === 'scholars'">🔵 All Scholars</span>
-            <span x-show="tab === 'scholars-new'">🟢 New Scholars</span>
-            <span x-show="tab === 'scholars-old'">🟡 Old Scholars</span>
+            <span x-show="tab === 'scholars'" class="flex items-center"><span class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>All Scholars</span>
+            <span x-show="tab === 'scholars-new'" class="flex items-center"><span class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>New Scholars</span>
+            <span x-show="tab === 'scholars-old'" class="flex items-center"><span class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>Old Scholars</span>
         </h2>
         <p class="text-gray-600 dark:text-gray-300">
           <span x-show="tab === 'scholars'">All students who have been accepted as scholars from {{ $sfaoCampus->name }}</span>
@@ -143,7 +143,13 @@
 
     @if($scholars->isEmpty())
         <div class="text-center py-12">
-            <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">🎓</div>
+            <div class="text-gray-400 dark:text-gray-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                </svg>
+            </div>
             <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Scholars Found</h3>
             <p class="text-gray-500 dark:text-gray-500">No students have been accepted as scholars yet.</p>
         </div>

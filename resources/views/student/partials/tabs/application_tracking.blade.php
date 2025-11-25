@@ -1,12 +1,21 @@
 <div x-show="tab === 'tracking'" x-transition x-cloak class="px-4 py-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">📊 Application Tracking</h2>
+        <h2 class="flex items-center gap-2 text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Application Tracking
+        </h2>
         <p class="text-gray-600 dark:text-gray-300">Monitor the progress of your scholarship applications</p>
     </div>
 
     @if($applications->isEmpty())
         <div class="text-center py-12">
-            <div class="text-gray-400 dark:text-gray-500 text-6xl mb-4">📋</div>
+            <div class="text-gray-400 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </div>
             <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Applications Found</h3>
             <p class="text-gray-500 dark:text-gray-500 mb-4">You haven't applied to any scholarships yet.</p>
             <a href="#" @click="tab = 'scholarships'" 
@@ -202,15 +211,30 @@
                                     <div class="ml-4 flex-1">
                                         <h5 class="text-sm font-medium text-gray-900 dark:text-white">SFAO 4-Stage Evaluation</h5>
                                         @if($application->status === 'approved')
-                                            <p class="text-sm text-green-600 dark:text-green-400">✅ Application approved by SFAO</p>
+                                            <p class="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Application approved by SFAO
+                                            </p>
                                             <p class="text-xs text-gray-500 dark:text-gray-400">All 4 evaluation stages completed successfully</p>
                                         @elseif($application->status === 'rejected')
-                                            <p class="text-sm text-red-600 dark:text-red-400">❌ Application rejected by SFAO</p>
+                                            <p class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Application rejected by SFAO
+                                            </p>
                                             @if($application->remarks)
                                                 <p class="text-xs text-red-500 dark:text-red-400 mt-1">Reason: {{ $application->remarks }}</p>
                                             @endif
                                         @elseif($application->has_documents)
-                                            <p class="text-sm text-yellow-600 dark:text-yellow-400">⏳ Under SFAO evaluation</p>
+                                            <p class="flex items-center gap-1 text-sm text-yellow-600 dark:text-yellow-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Under SFAO evaluation
+                                            </p>
                                             <div class="mt-2">
                                                 <div class="grid grid-cols-4 gap-1 text-xs">
                                                     <div class="text-center p-1 rounded {{ $application->evaluation_stage >= 1 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
@@ -259,7 +283,19 @@
                                     <div class="ml-4 flex-1">
                                         <h5 class="text-sm font-medium text-gray-900 dark:text-white">Central Review & Scholar Selection</h5>
                                         @if($application->scholar_status === 'selected')
-                                            <p class="text-sm text-green-600 dark:text-green-400">🎓 Congratulations! You have been selected as a scholar</p>
+                                            <p class="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                                                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                                </svg>
+                                               <span class="flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Congratulations!
+                                    </span> You have been selected as a scholar
+                                            </p>
                                             <div class="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
                                                 <p class="text-xs text-green-700 dark:text-green-300">
                                                     <strong>Scholar Status:</strong> {{ ucfirst($application->scholar_type ?? 'New') }} Scholar
@@ -271,7 +307,12 @@
                                                 @endif
                                             </div>
                                         @elseif($application->status === 'approved')
-                                            <p class="text-sm text-yellow-600 dark:text-yellow-400">⏳ Under central review for scholar selection</p>
+                                            <p class="flex items-center gap-1 text-sm text-yellow-600 dark:text-yellow-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Under central review for scholar selection
+                                            </p>
                                             <p class="text-xs text-gray-500 dark:text-gray-400">Central admin is reviewing your application for final scholar selection</p>
                                         @else
                                             <p class="text-sm text-gray-500 dark:text-gray-400">Pending SFAO approval</p>

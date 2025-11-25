@@ -12,9 +12,24 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    <span x-show="tab === 'scholars'">🔵 All Scholars</span>
-                    <span x-show="tab === 'scholars-new'">🟢 New Scholars</span>
-                    <span x-show="tab === 'scholars-old'">🟡 Old Scholars</span>
+                    <span x-show="tab === 'scholars'" class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+                        </svg>
+                        All Scholars
+                    </span>
+                    <span x-show="tab === 'scholars-new'" class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+                        </svg>
+                        New Scholars
+                    </span>
+                    <span x-show="tab === 'scholars-old'" class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+                        </svg>
+                        Old Scholars
+                    </span>
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
                     <span x-show="tab === 'scholars'">Manage all accepted scholars across campuses</span>
