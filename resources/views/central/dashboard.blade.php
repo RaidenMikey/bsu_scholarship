@@ -62,6 +62,7 @@
   </script>
   <style>
     /* Custom scrollbar styling - minimized and subtle */
+    [x-cloak] { display: none !important; }
     nav::-webkit-scrollbar {
       width: 6px;
     }

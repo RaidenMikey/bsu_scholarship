@@ -281,6 +281,11 @@
     @endforelse
   </div>
 
+  <!-- Pagination Links -->
+  <div class="mt-8">
+      {{ $scholarships->links('vendor.pagination.custom') }}
+  </div>
+
   <!-- Empty State for Filtered Types -->
   <div x-show="tab === 'scholarships-private' && !hasVisibleScholarships('private')" 
        class="col-span-full text-center py-12">

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\Campus;
 use App\Models\SfaoRequirement;
 use App\Models\Application;
@@ -270,6 +271,17 @@ class UserManagementController extends Controller
             }
         }
 
+        // Pagination Logic
+        $page = $request->get('page', 1);
+        $perPage = 5;
+        $scholarships = new LengthAwarePaginator(
+            $scholarships->forPage($page, $perPage),
+            $scholarships->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $applications = $user ? $user->appliedScholarships : collect();
         
         // Get detailed application tracking data with enhanced information
@@ -399,6 +411,17 @@ class UserManagementController extends Controller
         if ($scholarshipType !== 'all') {
             $scholarships = $scholarships->where('scholarship_type', $scholarshipType);
         }
+
+        // Pagination Logic
+        $page = $request->get('page', 1);
+        $perPage = 5;
+        $scholarships = new LengthAwarePaginator(
+            $scholarships->forPage($page, $perPage),
+            $scholarships->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $applications = $user ? $user->appliedScholarships : collect();
         

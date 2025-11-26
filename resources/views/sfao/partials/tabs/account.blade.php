@@ -36,7 +36,7 @@
 
       <!-- Profile Picture Upload -->
       <form method="POST" action="{{ url('/upload-profile-picture/sfao') }}" enctype="multipart/form-data"
-        class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow space-y-4">
+        class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow space-y-4" x-data="{ preview: null }">
         @csrf
 
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">

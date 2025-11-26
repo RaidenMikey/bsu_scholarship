@@ -23,7 +23,8 @@
   x-data="{
     sidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
-    subTab: localStorage.getItem('activeSubTab') || 'all',
+    tab: localStorage.getItem('activeTab') || 'scholarships',
+    subTab: new URLSearchParams(window.location.search).get('type') || 'all',
     darkMode: localStorage.getItem('darkMode') === 'true',
     showLogoutModal: false
   }"
@@ -35,7 +36,7 @@
     
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
-    $watch('subTab', val => localStorage.setItem('activeSubTab', val));
+    // subTab is now controlled by URL query param, so we don't need to watch/store it for scholarships
   ">
 
 <head>
@@ -72,6 +73,7 @@
   </script>
   <style>
     /* Custom scrollbar styling - minimized and subtle */
+    [x-cloak] { display: none !important; }
     nav::-webkit-scrollbar {
       width: 6px;
     }
@@ -199,50 +201,6 @@
                class="inline-flex items-center px-6 py-3 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow hover:shadow-lg transition">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-              Open Full Application Form
-            </a>
-            
-            @if($form)
-              <a href="{{ route('student.print-application') }}" 
-                 class="inline-flex items-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg shadow hover:shadow-lg transition">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-                Print Application
-              </a>
-            @endif
-          </div>
-        </div>
-      </div>
-      
-      <!-- GVSREAP Application Form Sub-tab -->
-      <!-- GVSREAP Application Form Sub-tab -->
-      <div x-show="subTab === 'gvsreap_form'" 
-           x-transition:enter="transition ease-out duration-300"
-           x-transition:enter-start="opacity-0 transform scale-95"
-           x-transition:enter-end="opacity-100 transform scale-100">
-        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-          <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
-            <span class="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                GVSREAP Application Form
-            </span>
-          </h1>
-          
-          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-8 text-center">
-            <svg class="w-16 h-16 text-yellow-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-            <h3 class="text-xl font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Coming Soon</h3>
-            <p class="text-yellow-700 dark:text-yellow-300">The GVSREAP Application Form is currently under development.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    
     <!-- Applied Scholarships Tab -->
     <!-- Applied Scholarships Tab -->
     <div x-show="tab === 'applied-scholarships'" 

@@ -63,6 +63,7 @@
   </script>
   <style>
     /* Custom scrollbar styling - minimized and subtle */
+    [x-cloak] { display: none !important; }
     nav::-webkit-scrollbar {
       width: 6px;
     }
@@ -119,7 +120,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholarships
         </div>
-        <button @click="tab = 'scholarships'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'; window.location.href = '?tab=scholarships'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,17 +130,17 @@
           </svg>
           All Scholarships
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'scholarships-private'; sidebarOpen = false"
+        <button @click="tab = 'scholarships-private'; window.location.href = '?tab=scholarships-private'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'scholarships' && subTab === 'scholarships-private') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholarships-private' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
           </svg>
           Private Scholarships
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'scholarships-government'; sidebarOpen = false"
+        <button @click="tab = 'scholarships-government'; window.location.href = '?tab=scholarships-government'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'scholarships' && subTab === 'scholarships-government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
           </svg>
@@ -160,9 +161,9 @@
           </svg>
           All Applicants
         </button>
-        <button @click="tab = 'applicants'; subTab = 'applicants-not_applied'; sidebarOpen = false"
+        <button @click="tab = 'applicants-not_applied'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'applicants' && subTab === 'applicants-not_applied') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'applicants-not_applied' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
           </svg>
@@ -176,25 +177,25 @@
           </svg>
           In Progress
         </button>
-        <button @click="tab = 'applicants'; subTab = 'applicants-pending'; sidebarOpen = false"
+        <button @click="tab = 'applicants-pending'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'applicants' && subTab === 'applicants-pending') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'applicants-pending' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Pending
         </button>
-        <button @click="tab = 'applicants'; subTab = 'applicants-approved'; sidebarOpen = false"
+        <button @click="tab = 'applicants-approved'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'applicants' && subTab === 'applicants-approved') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'applicants-approved' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Approved
         </button>
-        <button @click="tab = 'applicants'; subTab = 'applicants-rejected'; sidebarOpen = false"
+        <button @click="tab = 'applicants-rejected'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'applicants' && subTab === 'applicants-rejected') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'applicants-rejected' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -207,25 +208,25 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholars
         </div>
-        <button @click="tab = 'scholars'; subTab = 'scholars'; sidebarOpen = false"
+        <button @click="tab = 'scholars'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'scholars' && subTab === 'scholars') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
           </svg>
           All Scholars
         </button>
-        <button @click="tab = 'scholars'; subTab = 'scholars-new'; sidebarOpen = false"
+        <button @click="tab = 'scholars-new'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'scholars' && subTab === 'scholars-new') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholars-new' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
           </svg>
           New Scholars
         </button>
-        <button @click="tab = 'scholars'; subTab = 'scholars-old'; sidebarOpen = false"
+        <button @click="tab = 'scholars-old'; sidebarOpen = false"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="(tab === 'scholars' && subTab === 'scholars-old') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+                :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
           </svg>

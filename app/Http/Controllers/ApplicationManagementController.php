@@ -13,6 +13,7 @@ use App\Models\StudentSubmittedDocument;
 use App\Models\Campus;
 use App\Models\Notification;
 use App\Services\NotificationService;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * =====================================================
@@ -313,6 +314,17 @@ class ApplicationManagementController extends Controller
         
         $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
 
+        // Pagination Logic for Scholarships
+        $page = $request->get('page', 1);
+        $perPage = 5;
+        $scholarships = new LengthAwarePaginator(
+            $scholarships->forPage($page, $perPage),
+            $scholarships->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         // Get campus options for filtering
         $campusOptions = collect([['id' => 'all', 'name' => 'All Campuses']])
             ->merge($sfaoCampus->getAllCampusesUnder()->map(function($campus) {
@@ -402,7 +414,7 @@ class ApplicationManagementController extends Controller
             'active_tab' => $activeTab
         ]);
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder'));
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder'));
     }
 
     /**
@@ -619,6 +631,8 @@ class ApplicationManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
+        $user = \App\Models\User::find(session('user_id'));
+
         // Get filtering parameters
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
@@ -674,21 +688,55 @@ class ApplicationManagementController extends Controller
 
         $applications = $applicationsQuery->get();
 
-        // Get scholarship type filter from tab parameter
-        $scholarshipTypeFilter = $request->get('tab', 'scholarships');
-        
         // Build scholarships query
         $scholarshipsQuery = Scholarship::with(['conditions', 'requiredDocuments']);
         
-        // Apply scholarship type filter
-        if ($scholarshipTypeFilter === 'scholarships-private') {
-            $scholarshipsQuery->where('scholarship_type', 'private');
-        } elseif ($scholarshipTypeFilter === 'scholarships-government') {
-            $scholarshipsQuery->where('scholarship_type', 'government');
-        }
-        // If 'scholarships' (all), don't apply any type filter
+        // Apply sorting to base query
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
         
-        $scholarships = $scholarshipsQuery->get();
+        // Clone query for different tabs
+        $queryAll = clone $scholarshipsQuery;
+        $queryPrivate = clone $scholarshipsQuery;
+        $queryGov = clone $scholarshipsQuery;
+
+        // Apply sorting
+        $queryAll = $this->sortScholarships($queryAll->get(), $sortBy, $sortOrder);
+        $queryPrivate = $this->sortScholarships($queryPrivate->where('scholarship_type', 'private')->get(), $sortBy, $sortOrder);
+        $queryGov = $this->sortScholarships($queryGov->where('scholarship_type', 'government')->get(), $sortBy, $sortOrder);
+
+        // Pagination Logic for Scholarships
+        $perPage = 5;
+
+        // All Scholarships Paginator
+        $pageAll = $request->get('page_all', 1);
+        $scholarshipsAll = new LengthAwarePaginator(
+            $queryAll->forPage($pageAll, $perPage),
+            $queryAll->count(),
+            $perPage,
+            $pageAll,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_all']
+        );
+
+        // Private Scholarships Paginator
+        $pagePrivate = $request->get('page_private', 1);
+        $scholarshipsPrivate = new LengthAwarePaginator(
+            $queryPrivate->forPage($pagePrivate, $perPage),
+            $queryPrivate->count(),
+            $perPage,
+            $pagePrivate,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_private']
+        );
+
+        // Government Scholarships Paginator
+        $pageGov = $request->get('page_gov', 1);
+        $scholarshipsGov = new LengthAwarePaginator(
+            $queryGov->forPage($pageGov, $perPage),
+            $queryGov->count(),
+            $perPage,
+            $pageGov,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_gov']
+        );
         
         // Get all reports with relationships for full functionality
         $query = \App\Models\Report::with(['sfaoUser', 'campus', 'reviewer']);
@@ -759,7 +807,7 @@ class ApplicationManagementController extends Controller
             ];
         })->toArray();
         
-        $scholarshipOptions = $scholarships->map(function($scholarship) {
+        $scholarshipOptions = \App\Models\Scholarship::all()->map(function($scholarship) {
             return [
                 'id' => $scholarship->id,
                 'name' => $scholarship->scholarship_name
@@ -775,11 +823,7 @@ class ApplicationManagementController extends Controller
             ['value' => 'all', 'label' => 'All Status']
         ];
         
-        // Apply sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        
-        $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
+
 
         // Get scholars data for the scholars tab
         $scholarsQuery = \App\Models\Scholar::with(['user', 'scholarship', 'user.campus']);
@@ -935,12 +979,9 @@ class ApplicationManagementController extends Controller
             ->orderBy('rejected_at', 'desc')
             ->get();
 
-        return view('central.dashboard', compact('applications', 'scholars', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'scholarships', 'reports', 'reportsByStatus', 'totalReports', 'campuses', 'reportStats', 'analytics', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter'));
+        return view('central.dashboard', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reports', 'reportStats', 'analytics', 'reportsByStatus', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports'));
     }
 
-    /**
-     * Get filtered analytics data for statistics dashboard
-     */
     public function getFilteredAnalytics(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'central') {

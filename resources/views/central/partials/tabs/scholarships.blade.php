@@ -65,248 +65,60 @@
 
   <!-- Scholarships List -->
   <div>
-        @forelse($scholarships as $scholarship)
-        <div x-data="{ open: false }" 
-             x-show="tab === 'scholarships' || 
-                     (tab === 'scholarships-private' && '{{ $scholarship->scholarship_type }}' === 'private') ||
-                     (tab === 'scholarships-government' && '{{ $scholarship->scholarship_type }}' === 'government')"
-             class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8"
-             @if($scholarship->background_image)
-             style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
-             @endif>
-
-                <!-- Scholarship Content -->
-                <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-                    <!-- Main Content -->
-                    <div class="flex-1">
-                        <!-- Header -->
-                        <div class="flex justify-between items-start mb-3">
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-bsu-red dark:text-white group-hover:text-bsu-redDark dark:group-hover:text-bsu-red transition-colors duration-200">
-                                    {{ $scholarship->scholarship_name }}
-                                </h3>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getScholarshipTypeBadgeColor() }} shadow-sm">
-                                      {{ ucfirst($scholarship->scholarship_type) }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Description Preview -->
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                            {{ \Illuminate\Support\Str::limit($scholarship->description, 150) }}
-                        </p>
-                    </div>
-
-                    <!-- Quick Info & Actions -->
-                    <div class="flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[200px]">
-                        <!-- Quick Stats -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 text-sm">
-                            <div>
-                                <span class="text-gray-500 dark:text-gray-400">Deadline:</span>
-                                <div class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
-                                    {{ $scholarship->submission_deadline?->format('M d, Y') }}
-                                </div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 dark:text-gray-400">Amount:</span>
-                                <div class="font-semibold text-green-600">
-                                    @if($scholarship->grant_amount)
-                                        ₱{{ number_format((float) $scholarship->grant_amount, 0) }}
-                                    @else
-                                        TBD
-                                    @endif
-                                </div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 dark:text-gray-400">Status:</span>
-                                <div class="font-semibold {{ $scholarship->is_active ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                                    {{ $scholarship->is_active ? 'Active' : 'Inactive' }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Slots Information -->
-                        @if($scholarship->slots_available)
-                        @php
-                          $applicationsCount = $scholarship->applications()->count();
-                          $slotsAvailable = $scholarship->slots_available;
-                          $fillPercentage = min(100, ($applicationsCount / $slotsAvailable) * 100);
-                        @endphp
-                        <div class="mt-2">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Available Slots:</span>
-                                <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ $applicationsCount }} / {{ $slotsAvailable }}
-                                </span>
-                            </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div class="bg-bsu-red h-2 rounded-full transition-all duration-300" 
-                                     data-width="{{ $fillPercentage }}"
-                                     x-bind:style="'width: ' + $el.dataset.width + '%'"></div>
-                            </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {{ number_format($fillPercentage, 1) }}% filled
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Dropdown Toggle Button -->
-                        <button @click="open = !open" 
-                                class="flex items-center justify-center gap-2 px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white rounded-lg transition-colors">
-                            <span class="text-sm font-medium">View Details</span>
-                            <svg class="w-4 h-4 transition-transform" 
-                                 :class="{ 'rotate-180': open }" 
-                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                </div>
-
-                <!-- Dropdown Content -->
-                <div x-show="open" 
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 transform -translate-y-2"
-                     x-transition:enter-end="opacity-100 transform translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 transform translate-y-0"
-                     x-transition:leave-end="opacity-0 transform -translate-y-2"
-                     class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
-                        
-                        <!-- Additional Eligibility Information -->
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Additional Information</h4>
-                            <div class="space-y-2">
-                                @if($scholarship->grant_type)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Grant Type:</span>
-                                    <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $scholarship->grant_type)) }}</span>
-                                </div>
-                                @endif
-                                @if($scholarship->slots_available)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Total Slots:</span>
-                                    <span class="font-medium">{{ $scholarship->slots_available }}</span>
-                                </div>
-                                @endif
-                                @if($scholarship->application_start_date)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Application Opens:</span>
-                                    <span class="font-medium">{{ $scholarship->application_start_date?->format('M d, Y') }}</span>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Detailed Information -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2">
-                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Key Information</h4>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Type:</span>
-                                        <span class="font-medium">{{ ucfirst($scholarship->scholarship_type) }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Priority:</span>
-                                        <span class="font-medium">{{ ucfirst($scholarship->priority_level) }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Renewable:</span>
-                                        <span class="font-medium">{{ $scholarship->renewal_allowed ? 'Yes' : 'No' }}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Timeline & Amount</h4>
-                                <div class="space-y-1">
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Deadline:</span>
-                                        <span class="font-medium">{{ $scholarship->submission_deadline?->format('M d, Y') }}</span>
-                                    </div>
-                                    @if($scholarship->application_start_date)
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Application Opens:</span>
-                                        <span class="font-medium">{{ $scholarship->application_start_date?->format('M d, Y') }}</span>
-                                    </div>
-                                    @endif
-                                    @if($scholarship->grant_amount)
-                                    <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Grant Amount:</span>
-                                        <span class="font-medium text-green-600 dark:text-green-400">₱{{ number_format((float) $scholarship->grant_amount, 2) }}</span>
-                                    </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Eligibility Notes -->
-                        @if($scholarship->eligibility_notes)
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Eligibility Notes</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $scholarship->eligibility_notes }}</p>
-                        </div>
-                        @endif
-
-                        <!-- Action Buttons -->
-                        <div class="flex gap-3 pt-2 w-full">
-                            <div class="flex-1">
-                                <a href="{{ route('central.scholarships.edit', $scholarship->id) }}" 
-                                   class="block w-full px-4 py-3 text-sm bg-bsu-red hover:bg-bsu-redDark text-white rounded-lg transition-colors font-medium text-center">
-                                    Edit
-                                </a>
-                            </div>
-                            <div class="flex-1">
-                                <form action="{{ route('central.scholarships.destroy', $scholarship->id) }}" 
-                                      method="POST" 
-                                      class="w-full"
-                                      onsubmit="return confirmDelete('{{ $scholarship->scholarship_name }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="w-full px-4 py-3 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium">
-                                        Remove
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- All Scholarships -->
+        <div x-show="tab === 'scholarships'">
+            @forelse($scholarshipsAll as $scholarship)
+                @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
+            @empty
+                <p class="text-center text-gray-500 dark:text-gray-400 col-span-full py-8">
+                    No scholarships available.
+                </p>
+            @endforelse
+            <div class="mt-8">
+                {{ $scholarshipsAll->appends(['tab' => 'scholarships'])->links('vendor.pagination.custom') }}
             </div>
-        @empty
-            <p class="text-center text-gray-500 dark:text-gray-400 col-span-full">
-                No scholarships available.
-            </p>
-        @endforelse
-    </div>
-
-    <!-- Empty State for Filtered Types -->
-    <div x-show="tab === 'scholarships-private' && !hasVisibleScholarships('private')" 
-         class="col-span-full text-center py-12">
-        <div class="text-gray-400 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-green-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
-            </svg>
         </div>
-        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Private Scholarships</h3>
-        <p class="text-gray-500 dark:text-gray-500">There are currently no private scholarship programs available.</p>
-    </div>
 
-    <div x-show="tab === 'scholarships-government' && !hasVisibleScholarships('government')" 
-         class="col-span-full text-center py-12">
-        <div class="text-gray-400 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
-            </svg>
+        <!-- Private Scholarships -->
+        <div x-show="tab === 'scholarships-private'">
+            @forelse($scholarshipsPrivate as $scholarship)
+                @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
+            @empty
+                <div class="col-span-full text-center py-12">
+                    <div class="text-gray-400 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Private Scholarships</h3>
+                    <p class="text-gray-500 dark:text-gray-500">There are currently no private scholarship programs available.</p>
+                </div>
+            @endforelse
+            <div class="mt-8">
+                {{ $scholarshipsPrivate->appends(['tab' => 'scholarships-private'])->links('vendor.pagination.custom') }}
+            </div>
         </div>
-        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Government Scholarships</h3>
-        <p class="text-gray-500 dark:text-gray-500">There are currently no government scholarship programs available.</p>
-    </div>
 
+        <!-- Government Scholarships -->
+        <div x-show="tab === 'scholarships-government'">
+            @forelse($scholarshipsGov as $scholarship)
+                @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
+            @empty
+                <div class="col-span-full text-center py-12">
+                    <div class="text-gray-400 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Government Scholarships</h3>
+                    <p class="text-gray-500 dark:text-gray-500">There are currently no government scholarship programs available.</p>
+                </div>
+            @endforelse
+            <div class="mt-8">
+                {{ $scholarshipsGov->appends(['tab' => 'scholarships-government'])->links('vendor.pagination.custom') }}
+            </div>
+        </div>
+  </div>
 
     <!-- JavaScript for form handling -->
     <script>

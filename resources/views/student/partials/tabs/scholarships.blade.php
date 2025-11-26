@@ -324,6 +324,11 @@
 
           @endforeach
       </div>
+
+      <!-- Pagination Links -->
+      <div class="mt-8">
+          {{ $scholarships->links('vendor.pagination.custom') }}
+      </div>
     @else
       <div class="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-lg shadow-sm">
         <p class="text-blue-800 font-medium">
