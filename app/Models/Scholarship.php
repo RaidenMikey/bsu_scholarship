@@ -23,6 +23,7 @@ class Scholarship extends Model
         'eligibility_notes',
         'background_image',
         'created_by',
+        'allow_existing_scholarship',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class Scholarship extends Model
         'grant_amount' => 'decimal:2',
         'renewal_allowed' => 'boolean',
         'is_active' => 'boolean',
+        'allow_existing_scholarship' => 'boolean',
     ];
 
     // A scholarship can have many applications

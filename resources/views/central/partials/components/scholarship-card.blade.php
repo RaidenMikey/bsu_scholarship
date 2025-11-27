@@ -1,11 +1,19 @@
+@props([
+    'scholarship',
+    'role' => 'central', // 'central', 'student', 'sfao'
+    'hasActiveApplication' => false,
+    'fillPercentage' => 0
+])
+
 <div x-data="{ open: false }" 
-     class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8"
+     class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8 cursor-pointer"
+     @click="open = true"
      @if($scholarship->background_image)
      style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
      @endif>
 
         <!-- Scholarship Content -->
-        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4 {{ $scholarship->applied ? 'opacity-75' : '' }}">
             <!-- Main Content -->
             <div class="flex-1">
                 <!-- Header -->
@@ -33,7 +41,7 @@
                 <!-- Quick Stats -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 text-sm">
                     <div>
-                        <span class="text-gray-500 dark:text-gray-400">Deadline:</span>
+                        <span class="text-gray-500 dark:text-gray-400">Submission Deadline:</span>
                         <div class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
                             {{ $scholarship->submission_deadline?->format('M d, Y') }}
                         </div>
@@ -59,9 +67,17 @@
                 <!-- Slots Information -->
                 @if($scholarship->slots_available)
                 @php
-                  $applicationsCount = $scholarship->applications()->count();
-                  $slotsAvailable = $scholarship->slots_available;
-                  $fillPercentage = min(100, ($applicationsCount / $slotsAvailable) * 100);
+                  // Use passed fillPercentage if available, otherwise calculate
+                  if (!isset($fillPercentage) || $fillPercentage === 0) {
+                      $applicationsCount = $scholarship->applications()->count();
+                      $slotsAvailable = $scholarship->slots_available;
+                      $fillPercentage = min(100, ($applicationsCount / $slotsAvailable) * 100);
+                  } else {
+                      // If fillPercentage is passed (e.g. from SFAO controller), use it.
+                      // We might need applications count too if we want to show "X / Y"
+                      $applicationsCount = $scholarship->applications_count ?? $scholarship->applications()->count();
+                      $slotsAvailable = $scholarship->slots_available;
+                  }
                 @endphp
                 <div class="mt-2">
                     <div class="flex justify-between items-center mb-2">
@@ -81,114 +97,306 @@
                 </div>
                 @endif
 
-                <!-- Dropdown Toggle Button -->
-                <button @click="open = !open" 
-                        class="flex items-center justify-center gap-2 px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white rounded-lg transition-colors">
-                    <span class="text-sm font-medium">View Details</span>
-                    <svg class="w-4 h-4 transition-transform" 
-                         :class="{ 'rotate-180': open }" 
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                <!-- Application Status (Student Only) -->
+                @if($role === 'student' && $scholarship->applied)
+                  <div class="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg mt-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                     </svg>
-                </button>
+                    <span class="text-sm font-medium">Applied</span>
+                  </div>
+                @endif
             </div>
-
         </div>
 
-        <!-- Dropdown Content -->
+        <!-- Fabulous Modal Content -->
         <div x-show="open" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform -translate-y-2"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 transform translate-y-0"
-             x-transition:leave-end="opacity-0 transform -translate-y-2"
-             class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
-                
-                <!-- Extended Details Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- Column 1: Key Info & Eligibility -->
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Key Information</h4>
-                            <div class="space-y-1">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Grant Type:</span>
-                                    <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $scholarship->grant_type ?? 'N/A')) }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Priority Level:</span>
-                                    <span class="font-medium">{{ ucfirst($scholarship->priority_level ?? 'N/A') }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Renewable:</span>
-                                    <span class="font-medium">{{ $scholarship->renewal_allowed ? 'Yes' : 'No' }}</span>
-                                </div>
-                                @if($scholarship->application_start_date)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">App Opens:</span>
-                                    <span class="font-medium">{{ $scholarship->application_start_date->format('M d, Y') }}</span>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
+             x-cloak
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click.stop="open = false"></div>
 
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Eligibility Criteria</h4>
-                            <div class="space-y-1">
-                                @if($scholarship->min_gwa)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Minimum GWA:</span>
-                                    <span class="font-medium">{{ $scholarship->min_gwa }}</span>
-                                </div>
-                                @endif
-                                @if($scholarship->max_annual_income)
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">Max Income:</span>
-                                    <span class="font-medium">₱{{ number_format($scholarship->max_annual_income, 2) }}</span>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+            <!-- Modal Card -->
+            <div class="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-8 scale-95">
 
-                    <!-- Column 2: Requirements -->
-                    <div>
-                        @if($scholarship->requiredDocuments->count() > 0)
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Required Documents</h4>
-                        <ul class="list-disc list-inside text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                            @foreach($scholarship->requiredDocuments as $document)
-                                <li>{{ $document->document_name }}</li>
-                            @endforeach
-                        </ul>
-                        @else
-                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Requirements</h4>
-                        <p class="text-sm text-gray-500 italic">No specific documents listed.</p>
-                        @endif
-                    </div>
+                <!-- Hero Header -->
+                <div class="relative h-48 sm:h-64 bg-gray-200 dark:bg-gray-700 shrink-0">
+                    @if($scholarship->background_image)
+                        <div class="absolute inset-0 bg-cover bg-center" 
+                             style="background-image: url('{{ $scholarship->getBackgroundImageUrl() }}');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                    @else
+                        <div class="absolute inset-0 bg-gradient-to-br from-bsu-red to-red-900"></div>
+                        <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+                    @endif
 
-                </div>
-
-                <!-- Actions -->
-                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <a href="{{ route('central.scholarships.edit', $scholarship->id) }}" 
-                       class="inline-flex justify-center items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    <!-- Close Button -->
+                    <button @click.stop="open = false" 
+                            class="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-all duration-200 z-10">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
-                        Edit
-                    </a>
-                    <form action="{{ route('central.scholarships.destroy', $scholarship->id) }}" method="POST" class="inline-block" onsubmit="return confirmDelete('{{ $scholarship->scholarship_name }}')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="inline-flex justify-center items-center px-4 py-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Remove
-                        </button>
-                    </form>
+                    </button>
+
+                    <!-- Title & Badge -->
+                    <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                            <div>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-white/20 backdrop-blur-md border border-white/30 mb-3">
+                                    {{ ucfirst($scholarship->scholarship_type) }} Scholarship
+                                </span>
+                                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight shadow-black drop-shadow-lg">
+                                    {{ $scholarship->scholarship_name }}
+                                </h2>
+                            </div>
+                            <!-- Status Badge -->
+                            <div class="flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10">
+                                <div class="w-2 h-2 rounded-full {{ $scholarship->is_active ? 'bg-green-400 animate-pulse' : 'bg-red-400' }}"></div>
+                                <span class="text-sm font-medium text-white">
+                                    {{ $scholarship->is_active ? 'Active & Accepting' : 'Currently Inactive' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-6 sm:p-8 space-y-8">
+                        
+                        <!-- Description Section -->
+                        <div class="prose dark:prose-invert max-w-none">
+                            <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {{ $scholarship->description }}
+                            </p>
+                        </div>
+
+                        <!-- Info Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                            
+                            <!-- Left Column: Key Details -->
+                            <div class="space-y-6">
+                                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
+                                    <h4 class="flex items-center text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                                        <svg class="w-5 h-5 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Key Information
+                                    </h4>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Grant Type</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ ucfirst(str_replace('_', ' ', $scholarship->grant_type ?? 'N/A')) }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Renewable</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                @if($scholarship->renewal_allowed)
+                                                    <span class="text-green-600 flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                        Yes
+                                                    </span>
+                                                @else
+                                                    <span class="text-gray-500">No</span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Stackable</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                @if($scholarship->allow_existing_scholarship)
+                                                    <span class="text-green-600 flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                        Yes
+                                                    </span>
+                                                @else
+                                                    <span class="text-gray-500">No</span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Application Opens</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                {{ $scholarship->application_start_date ? $scholarship->application_start_date->format('M d, Y') : 'Immediately' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600 last:border-0">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Submission Deadline</span>
+                                            <span class="text-sm font-bold text-bsu-red">
+                                                {{ $scholarship->submission_deadline ? $scholarship->submission_deadline->format('M d, Y') : 'No Deadline' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
+                                    <h4 class="flex items-center text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                                        <svg class="w-5 h-5 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Eligibility Criteria
+                                    </h4>
+                                    <div class="space-y-3">
+                                        @if($scholarship->min_gwa)
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Minimum GWA</span>
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">
+                                                {{ $scholarship->min_gwa }}
+                                            </span>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($scholarship->max_annual_income)
+                                        <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-600">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">Max Annual Income</span>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">₱{{ number_format($scholarship->max_annual_income, 2) }}</span>
+                                        </div>
+                                        @endif
+
+                                        @if($scholarship->eligibility_notes)
+                                        <div class="mt-3 pt-3">
+                                            <span class="text-xs font-bold text-gray-400 uppercase mb-1 block">Additional Notes</span>
+                                            <p class="text-sm text-gray-700 dark:text-gray-300 italic bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-600">
+                                                "{{ $scholarship->eligibility_notes }}"
+                                            </p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Requirements & Stats -->
+                            <div class="space-y-6">
+                                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700 h-full">
+                                    <h4 class="flex items-center text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+                                        <svg class="w-5 h-5 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Required Documents
+                                    </h4>
+                                    
+                                    @if($scholarship->requiredDocuments->count() > 0)
+                                        <ul class="space-y-3">
+                                            @foreach($scholarship->requiredDocuments as $document)
+                                                <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300 group">
+                                                    <div class="mt-0.5 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0 group-hover:bg-bsu-red group-hover:text-white transition-colors">
+                                                        <svg class="w-3 h-3 text-bsu-red dark:text-red-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span>{{ $document->document_name }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <div class="flex flex-col items-center justify-center py-8 text-gray-400">
+                                            <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <p class="text-sm italic">No specific documents listed.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center shrink-0">
+                    
+                    @if($role === 'central')
+                        <form action="{{ route('central.scholarships.destroy', $scholarship->id) }}" 
+                              method="POST" 
+                              onsubmit="return confirmDelete('{{ $scholarship->scholarship_name }}');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-gray-400 hover:text-red-600 text-sm font-medium transition-colors flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Delete Scholarship
+                            </button>
+                        </form>
+
+                        <div class="flex gap-3">
+                            <button @click.stop="open = false" class="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors">
+                                Close
+                            </button>
+                            <a href="{{ route('central.scholarships.edit', $scholarship->id) }}" 
+                               class="inline-flex items-center px-6 py-2.5 bg-bsu-red hover:bg-bsu-redDark text-white text-sm font-semibold rounded-lg shadow-lg shadow-bsu-red/30 hover:shadow-bsu-red/50 transform hover:-translate-y-0.5 transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Edit Scholarship
+                            </a>
+                        </div>
+
+                    @elseif($role === 'student')
+                        <div class="flex-1"></div> <!-- Spacer -->
+                        <div class="flex gap-3 w-full sm:w-auto">
+                            <button @click.stop="open = false" class="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors">
+                                Close
+                            </button>
+
+                            @if($scholarship->applied)
+                                <button type="button" 
+                                        onclick="openUnapplyModal('{{ $scholarship->id }}')"
+                                        class="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Unapply
+                                </button>
+                            @else
+                                @if($hasActiveApplication && !$scholarship->allow_existing_scholarship)
+                                    <button type="button"
+                                            @click="$dispatch('show-warning')"
+                                            class="px-6 py-2.5 bg-bsu-red hover:bg-bsu-redDark text-white text-sm font-semibold rounded-lg shadow-lg shadow-bsu-red/30 hover:shadow-bsu-red/50 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                        </svg>
+                                        Apply Now
+                                    </button>
+                                @else
+                                    <form method="GET" action="{{ route('student.apply', ['scholarship_id' => $scholarship->id]) }}">
+                                        <button type="submit" 
+                                                class="px-6 py-2.5 bg-bsu-red hover:bg-bsu-redDark text-white text-sm font-semibold rounded-lg shadow-lg shadow-bsu-red/30 hover:shadow-bsu-red/50 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                            </svg>
+                                            Apply Now
+                                        </button>
+                                    </form>
+                                @endif
+                            @endif
+                        </div>
+
+                    @elseif($role === 'sfao')
+                        <div class="flex-1"></div> <!-- Spacer -->
+                        <div class="flex gap-3">
+                            <button @click.stop="open = false" class="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    @endif
+
+                </div>
+            </div>
         </div>
 </div>

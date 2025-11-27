@@ -414,7 +414,7 @@ class ApplicationManagementController extends Controller
             'active_tab' => $activeTab
         ]);
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder'));
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarships', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder'));
     }
 
     /**

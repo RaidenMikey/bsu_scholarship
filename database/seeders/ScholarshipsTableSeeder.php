@@ -28,6 +28,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'grant_amount'     => 10000,
                 'renewal_allowed'  => true,
                 'grant_type' => 'recurring',
+                'allow_existing_scholarship' => true,
                 'eligibility_notes' => 'Must maintain excellent academic standing throughout the scholarship period.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [
@@ -99,6 +100,7 @@ class ScholarshipsTableSeeder extends Seeder
                 'grant_amount'     => 5000,
                 'renewal_allowed'  => true,
                 'grant_type' => 'recurring',
+                'allow_existing_scholarship' => true,
                 'eligibility_notes' => 'Income verification documents required.',
                 'created_by'       => $centralAdmin->id,
                 'conditions' => [

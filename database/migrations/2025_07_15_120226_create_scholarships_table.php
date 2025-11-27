@@ -22,6 +22,7 @@ return new class extends Migration {
                 $table->boolean('renewal_allowed')->default(false); // whether renewal is allowed
                 $table->enum('grant_type', ['one_time', 'recurring', 'discontinued'])->default('recurring'); // Grant distribution type
                 $table->boolean('is_active')->default(true);
+                $table->boolean('allow_existing_scholarship')->default(false); // Whether this scholarship can be applied for if student has another scholarship
                 $table->text('eligibility_notes')->nullable(); // Additional eligibility information
                 $table->string('background_image')->nullable(); // Background image for scholarship display
                 $table->foreignId('created_by')->constrained('users')->onDelete('cascade');

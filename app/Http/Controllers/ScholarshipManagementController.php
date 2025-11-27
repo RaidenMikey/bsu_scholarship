@@ -105,6 +105,7 @@ class ScholarshipManagementController extends Controller
                 'eligibility_notes' => $request->eligibility_notes,
                 'background_image' => $backgroundImagePath,
                 'is_active'        => true, // Set as active by default
+                'allow_existing_scholarship' => $request->has('allow_existing_scholarship'),
                 'created_by'       => session('user_id'),
             ]);
             
@@ -230,6 +231,7 @@ class ScholarshipManagementController extends Controller
             'grant_type'       => $request->grant_type,
             'eligibility_notes' => $request->eligibility_notes,
             'background_image' => $backgroundImagePath,
+            'allow_existing_scholarship' => $request->has('allow_existing_scholarship'),
         ]);
 
         // Refresh conditions
