@@ -1,22 +1,17 @@
   <!-- Sidebar -->
-  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform md:translate-x-0 transition-transform duration-300 z-50 flex flex-col"
+  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform transition-transform duration-300 z-50 flex flex-col"
          :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-         @keydown.escape.window="sidebarOpen = false"
          x-cloak>
-    <!-- Profile Info - Fixed at top -->
-    <div class="flex flex-col items-center mt-6 flex-shrink-0">
-      <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
-        alt="Profile Picture"
-        class="h-16 w-16 rounded-full border-2 border-white object-cover">
-      <div class="text-center mt-2">
-        <h2 class="text-lg font-semibold">
-          {{ $user?->name ?: explode('@', $user?->email)[0] }}
-        </h2>
-        <p class="text-sm text-gray-200">
-          Student
-        </p>
-      </div>
+    
+    <!-- Close Button -->
+    <div class="absolute top-0 right-0 pt-4 pr-4">
+      <button @click="sidebarOpen = false" class="text-white hover:text-gray-200 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
+
 
     <!-- Navigation - Scrollable -->
     <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.3) transparent;">
@@ -25,7 +20,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholarships
         </div>
-        <button @click="tab = 'scholarships'; subTab = 'all'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'; subTab = 'all'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'all') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,7 +30,7 @@
           </svg>
           All Scholarships
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'private'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'; subTab = 'private'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'private') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -43,7 +38,7 @@
           </svg>
           Private Scholarships
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'government'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'; subTab = 'government'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -58,7 +53,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Application Forms
         </div>
-        <button @click="tab = 'scholarships'; subTab = 'form'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'; subTab = 'form'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,7 +61,7 @@
           </svg>
           SFAO Application Form
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'gvsreap_form'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'; subTab = 'gvsreap_form'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'gvsreap_form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,7 +76,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Applications
         </div>
-        <button @click="tab = 'applied-scholarships'; sidebarOpen = false"
+        <button @click="tab = 'applied-scholarships'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'applied-scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,7 +86,7 @@
           </svg>
           Applied Scholarships
         </button>
-        <button @click="tab = 'application-tracking'; sidebarOpen = false"
+        <button @click="tab = 'application-tracking'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'application-tracking' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +96,7 @@
         </button>
       </div>
 
-      <button @click="tab = 'notifications'; sidebarOpen = false"
+      <button @click="tab = 'notifications'"
               class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition relative"
               :class="tab === 'notifications' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
         <span class="flex items-center justify-between">
@@ -120,29 +115,6 @@
       </button>
     </nav>
 
-    <!-- Settings Section - Fixed at bottom -->
-    <div class="px-4 pb-4 flex-shrink-0 border-t border-bsu-redDark/30 dark:border-gray-700 pt-4">
-      <div class="space-y-1">
-        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
-          Settings
-        </div>
-        <button @click="tab = 'account'; sidebarOpen = false"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="tab === 'account' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Account
-        </button>
-        <button @click="showLogoutModal = true"
-                class="block w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm text-white dark:text-white flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Logout
-        </button>
-      </div>
-    </div>
+    <!-- Settings Section Removed -->
 
   </aside>

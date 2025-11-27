@@ -43,8 +43,8 @@
 
     <!-- Sorting Controls -->
     <x-sorting-controls 
-      :currentSort="request('sort_by', 'created_at')" 
-      :currentOrder="request('sort_order', 'desc')"
+      :currentSort="request('sort_by', 'name')" 
+      :currentOrder="request('sort_order', 'asc')"
       :baseUrl="route('central.dashboard')"
       role="central"
     />

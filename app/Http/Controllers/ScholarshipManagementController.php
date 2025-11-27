@@ -336,8 +336,8 @@ class ScholarshipManagementController extends Controller
         }])->get();
 
         // Apply sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
         
         return redirect()->route('sfao.dashboard', ['tab' => 'scholarships']);
     }
@@ -368,7 +368,7 @@ class ScholarshipManagementController extends Controller
                 case 'applications_count':
                     return $scholarship->applications_count ?? 0;
                 default:
-                    return $scholarship->created_at;
+                    return $scholarship->scholarship_name;
             }
         }, SORT_REGULAR, $sortOrder === 'desc');
     }

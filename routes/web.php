@@ -96,6 +96,9 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     Route::get('/print-application', [FormPrintController::class, 'printApplication'])->name('print-application');
     Route::get('/print-application/{scholarship_id}', [FormPrintController::class, 'printApplication'])->name('print-application.scholarship');
     Route::get('/download-file', [FormPrintController::class, 'downloadFile'])->name('download-file');
+
+    // Change Password
+    Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');
 });
 
 // --------------------------------------------------

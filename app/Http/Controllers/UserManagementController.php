@@ -247,7 +247,7 @@ class UserManagementController extends Controller
             });
 
             // Apply sorting
-            $sortBy = $request->get('sort_by', 'submission_deadline');
+            $sortBy = $request->get('sort_by', 'name');
             $sortOrder = $request->get('sort_order', 'asc');
             
             $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
@@ -383,7 +383,7 @@ class UserManagementController extends Controller
             });
 
             // Apply sorting
-            $sortBy = $request->get('sort_by', 'submission_deadline');
+            $sortBy = $request->get('sort_by', 'name');
             $sortOrder = $request->get('sort_order', 'asc');
             
             $scholarships = $this->sortScholarships($scholarships, $sortBy, $sortOrder);
@@ -732,7 +732,7 @@ class UserManagementController extends Controller
                 case 'gwa_requirement':
                     return $scholarship->getGwaRequirement() ?? 999;
                 default:
-                    return $scholarship->submission_deadline;
+                    return $scholarship->scholarship_name;
             }
         }, SORT_REGULAR, $sortOrder === 'desc');
     }

@@ -209,6 +209,8 @@ function applicationData() {
       // Get data from the data attribute
       const dataElement = document.querySelector('[data-applications]');
       this.applications = dataElement ? JSON.parse(dataElement.dataset.applications) : [];
+      // Filter out applications where the user is already a scholar
+      this.applications = this.applications.filter(app => app.scholar_status !== 'selected');
       this.filteredApplications = [...this.applications];
       this.sortApplications();
     },

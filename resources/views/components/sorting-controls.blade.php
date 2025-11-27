@@ -1,5 +1,5 @@
 @props([
-    'currentSort' => 'submission_deadline',
+    'currentSort' => 'name',
     'currentOrder' => 'asc',
     'baseUrl' => '',
     'role' => 'student'

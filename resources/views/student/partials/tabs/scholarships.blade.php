@@ -52,7 +52,7 @@
     @if ($scholarships->count())
       <!-- Sorting Controls -->
       <x-sorting-controls 
-        :currentSort="request('sort_by', 'submission_deadline')" 
+        :currentSort="request('sort_by', 'name')" 
         :currentOrder="request('sort_order', 'asc')"
         :baseUrl="route('student.scholarships')"
         role="student"

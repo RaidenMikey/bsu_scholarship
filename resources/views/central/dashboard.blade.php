@@ -21,6 +21,7 @@
   :class="{ 'dark': darkMode }"
   x-data="{
     sidebarOpen: false,
+    rightSidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
     darkMode: localStorage.getItem('darkMode') === 'true',
     showLogoutModal: false
@@ -87,29 +88,23 @@
 
 <body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans">
 
-  <!-- Mobile Overlay -->
-  <div class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-       x-show="sidebarOpen"
-       x-transition.opacity
-       @click="sidebarOpen = false"
-       x-cloak></div>
+
 
   <!-- Sidebar -->
-  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform md:translate-x-0 transition-transform duration-300 z-50 flex flex-col"
+  <aside class="fixed inset-y-0 left-0 w-64 bg-bsu-red text-white dark:bg-gray-800 transform transition-transform duration-300 z-50 flex flex-col"
          :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-         @keydown.escape.window="sidebarOpen = false"
          x-cloak>
-
-    <!-- Profile Info - Fixed at top -->
-    <div class="flex flex-col items-center mt-6 flex-shrink-0">
-      <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
-        alt="Profile Picture"
-        class="h-16 w-16 rounded-full border-2 border-white object-cover">
-      <div class="text-center mt-2">
-        <h2 class="text-lg font-semibold">{{ $user?->name ?? 'central User' }}</h2>
-        <p class="text-sm text-gray-200">Central Admin Staff</p>
-      </div>
+    
+    <!-- Close Button -->
+    <div class="absolute top-0 right-0 pt-4 pr-4">
+      <button @click="sidebarOpen = false" class="text-white hover:text-gray-200 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
+
+    <!-- Profile Info - Removed from here -->
 
     <!-- Navigation - Scrollable -->
     <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.3) transparent;">
@@ -118,7 +113,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholarships
         </div>
-        <button @click="tab = 'scholarships'; sidebarOpen = false"
+        <button @click="tab = 'scholarships'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,7 +123,7 @@
           </svg>
           All Scholarships
         </button>
-        <button @click="tab = 'scholarships-private'; sidebarOpen = false"
+        <button @click="tab = 'scholarships-private'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships-private' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
@@ -136,7 +131,7 @@
           </svg>
           Private Scholarships
         </button>
-        <button @click="tab = 'scholarships-government'; sidebarOpen = false"
+        <button @click="tab = 'scholarships-government'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
@@ -151,7 +146,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholars
         </div>
-        <button @click="tab = 'scholars'; sidebarOpen = false"
+        <button @click="tab = 'scholars'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
@@ -159,7 +154,7 @@
           </svg>
           All Scholars
         </button>
-        <button @click="tab = 'scholars-new'; sidebarOpen = false"
+        <button @click="tab = 'scholars-new'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholars-new' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
@@ -167,7 +162,7 @@
           </svg>
           New Scholars
         </button>
-        <button @click="tab = 'scholars-old'; sidebarOpen = false"
+        <button @click="tab = 'scholars-old'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
@@ -175,7 +170,7 @@
           </svg>
           Old Scholars
         </button>
-        <button @click="tab = 'endorsed-applicants'; sidebarOpen = false"
+        <button @click="tab = 'endorsed-applicants'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'endorsed-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,7 +178,7 @@
           </svg>
           Endorsed Applicants
         </button>
-        <button @click="tab = 'rejected-applicants'; sidebarOpen = false"
+        <button @click="tab = 'rejected-applicants'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'rejected-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -198,7 +193,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Reports
         </div>
-        <button @click="tab = 'reports'; sidebarOpen = false"
+        <button @click="tab = 'reports'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,7 +201,7 @@
           </svg>
           SFAO Reports
         </button>
-        <button @click="tab = 'statistics'; sidebarOpen = false"
+        <button @click="tab = 'statistics'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'statistics' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -221,7 +216,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Manage Users
         </div>
-        <button @click="tab = 'staff'; sidebarOpen = false"
+        <button @click="tab = 'staff'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'staff' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -238,7 +233,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Settings
         </div>
-        <button @click="tab = 'settings'; sidebarOpen = false"
+        <button @click="tab = 'settings'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'settings' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -303,8 +298,85 @@
     <span class="font-semibold text-lg">Central Dashboard</span>
   </header>
 
+  <!-- Main Header -->
+  <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300"
+          :class="{ 'ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
+    <!-- Branding -->
+    <div class="flex items-center space-x-3">
+        <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-12 w-auto">
+        <div class="text-white">
+            <div class="text-base font-bold leading-tight">Batangas State University</div>
+            <div class="text-xs italic text-bsu-red">The National Engineering University</div>
+        </div>
+    </div>
+
+    <!-- User Profile Icon -->
+    <div class="relative">
+        <button @click="rightSidebarOpen = true" class="flex items-center focus:outline-none">
+            <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
+                 alt="Profile"
+                 class="h-10 w-10 rounded-full border-2 border-white object-cover hover:border-bsu-red transition-colors">
+        </button>
+    </div>
+  </header>
+
+  <!-- Right Sidebar -->
+  <aside class="fixed inset-y-0 right-0 w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 z-50 flex flex-col"
+         :class="rightSidebarOpen ? 'translate-x-0' : 'translate-x-full'"
+         @keydown.escape.window="rightSidebarOpen = false"
+         x-cloak>
+      <div class="h-full flex flex-col py-6 overflow-y-scroll">
+        <div class="px-4 sm:px-6">
+          <div class="flex items-start justify-between">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Profile</h2>
+            <div class="ml-3 h-7 flex items-center">
+              <button @click="rightSidebarOpen = false" class="bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red">
+                <span class="sr-only">Close panel</span>
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 relative flex-1 px-4 sm:px-6">
+          <!-- Profile Content -->
+          <div class="flex flex-col items-center">
+              <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
+                   alt="Profile Picture"
+                   class="h-32 w-32 rounded-full border-4 border-gray-200 dark:border-gray-700 object-cover mb-4">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $user?->name ?? 'Central User' }}</h3>
+              <p class="text-sm text-bsu-red font-medium">Central Admin Staff</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $user?->email ?? 'email@example.com' }}</p>
+          </div>
+
+          <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
+              <button @click="tab = 'settings'; rightSidebarOpen = false" class="w-full flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Settings
+              </button>
+              <button @click="showLogoutModal = true; rightSidebarOpen = false" class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+              </button>
+          </div>
+        </div>
+      </div>
+  </aside>
+
   <!-- Main Content -->
-  <main class="md:ml-64 p-4 md:p-8 min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+  <main class="p-4 md:p-8 min-h-screen bg-white dark:bg-gray-900 transition-all duration-300"
+        :class="{ 'ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
 
     <!-- Toasts -->
     @if (session('success'))
