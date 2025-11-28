@@ -14,7 +14,7 @@
   <title>Validate Endorsed Applicant</title>
   <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <script src="https://unpkg.com/alpinejs" defer></script>
 </head>
 <body class="bg-gray-50 min-h-screen">

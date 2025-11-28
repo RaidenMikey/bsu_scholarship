@@ -32,19 +32,19 @@
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Name:</span>
               <span class="font-medium text-gray-800 dark:text-gray-200">
-                {{ $form->first_name ?? '' }} {{ $form->last_name ?? 'Not provided' }}
+                {{ $form?->first_name ?? '' }} {{ $form?->last_name ?? 'Not provided' }}
               </span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Birthdate:</span>
               <span class="font-medium text-gray-800 dark:text-gray-200">
-                {{ $form->birthdate ? $form->birthdate->format('m/d/Y') : 'Not provided' }}
+                {{ $form?->birthdate ? $form->birthdate->format('m/d/Y') : 'Not provided' }}
               </span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Mobile:</span>
               <span class="font-medium text-gray-800 dark:text-gray-200">
-                {{ $form->contact_number ?? 'Not provided' }}
+                {{ $form?->contact_number ?? 'Not provided' }}
               </span>
             </div>
           </div>
@@ -85,11 +85,11 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">SR Code:</span>
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form->sr_code ?? 'Not provided' }}</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form?->sr_code ?? 'Not provided' }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Program:</span>
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form->program ?? 'Not provided' }}</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form?->program ?? 'Not provided' }}</span>
             </div>
           </div>
           
@@ -124,16 +124,16 @@
           <div class="space-y-2 mb-4">
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Father:</span>
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form->father_name ?? 'Not provided' }}</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form?->father_name ?? 'Not provided' }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Mother:</span>
-              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form->mother_name ?? 'Not provided' }}</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">{{ $form?->mother_name ?? 'Not provided' }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Income:</span>
               <span class="font-medium text-gray-800 dark:text-gray-200">
-                {{ $form->estimated_gross_annual_income ? 'Provided' : 'Not provided' }}
+                {{ $form?->estimated_gross_annual_income ? 'Provided' : 'Not provided' }}
               </span>
             </div>
           </div>
@@ -170,14 +170,14 @@
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Other Assistance?</span>
               <span class="font-medium text-gray-800 dark:text-gray-200">
-                {{ $form->has_existing_scholarship ? 'Yes' : 'No' }}
+                {{ $form?->has_existing_scholarship ? 'Yes' : 'No' }}
               </span>
             </div>
-            @if($form->has_existing_scholarship)
+            @if($form?->has_existing_scholarship)
             <div class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-300">Details:</span>
               <span class="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[150px]">
-                {{ $form->existing_scholarship_details ?? 'Not specified' }}
+                {{ $form?->existing_scholarship_details ?? 'Not specified' }}
               </span>
             </div>
             @endif

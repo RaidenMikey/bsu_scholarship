@@ -5,8 +5,17 @@ module.exports = {
     "./resources/**/*.js",
     "./resources/**/*.vue",
   ],
+  darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        bsu: {
+          red: '#b91c1c',
+          redDark: '#991b1b',
+          light: '#fef2f2'
+        }
+      }
+    },
   },
   plugins: [],
 };

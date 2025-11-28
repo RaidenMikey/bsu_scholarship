@@ -42,25 +42,10 @@
   <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <script src="https://unpkg.com/alpinejs" defer></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            bsu: {
-              red: '#b91c1c',
-              redDark: '#991b1b',
-              light: '#fef2f2'
-            }
-          }
-        }
-      }
-    };
-  </script>
+
   <style>
     /* Custom scrollbar styling - minimized and subtle */
     [x-cloak] { display: none !important; }

@@ -6,7 +6,7 @@
     <title>Scholarship Portal</title>
     <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/alpinejs" defer></script>
 
     <style>

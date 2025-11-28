@@ -41,26 +41,10 @@
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
   <!-- Tailwind & Alpine.js -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <script src="https://unpkg.com/alpinejs" defer></script>
 
-  <!-- Tailwind Custom Config -->
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            bsu: {
-              red: '#b91c1c',
-              redDark: '#991b1b',
-              light: '#fef2f2'
-            }
-          }
-        }
-      }
-    };
-  </script>
+
 
   @stack('styles')
 </head>

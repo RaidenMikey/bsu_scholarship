@@ -26,23 +26,8 @@ if (!$user) {
   <title>TDP Application Form</title>
   <link rel="icon" href="{{ asset('favicon.ico') }}">
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            bsu: {
-              red: '#b91c1c',
-              redDark: '#991b1b',
-              light: '#fef2f2'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white font-sans py-10 px-4">

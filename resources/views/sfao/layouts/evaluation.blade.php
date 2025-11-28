@@ -25,25 +25,10 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/alpinejs" defer></script>
     
-    <!-- Tailwind Custom Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'bsu-red': '#8B0000',
-                        'bsu-gold': '#FFD700',
-                        'bsu-blue': '#1E3A8A',
-                        'bsu-green': '#059669'
-                    }
-                }
-            }
-        }
-    </script>
+
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900">

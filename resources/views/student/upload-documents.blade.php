@@ -6,25 +6,9 @@
     <title>Upload Required Documents | BSU Scholarship</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Tailwind Custom Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        bsu: {
-                            red: '#b91c1c',
-                            redDark: '#991b1b',
-                            light: '#fef2f2'
-                        }
-                    }
-                }
-            }
-        };
-    </script>
+
 </head>
 <body class="bg-bsu-light font-sans">
 

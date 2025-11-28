@@ -24,22 +24,24 @@
     sidebarOpen: false,
     rightSidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
-    subTab: new URLSearchParams(window.location.search).get('type') || 'all',
+    subTab: '{{ $scholarshipType ?? 'all' }}' !== 'all' ? '{{ $scholarshipType ?? 'all' }}' : (new URLSearchParams(window.location.search).get('type') || 'all'),
     darkMode: localStorage.getItem('darkMode') === 'true',
     showLogoutModal: false
   }"
   x-init="
-    // Set initial tab based on scholarship type parameter
-    @if(isset($scholarshipType) && $scholarshipType !== 'all')
-      subTab = '{{ $scholarshipType }}';
-    @endif
-    
     $watch('darkMode', val => localStorage.setItem('darkMode', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
-    // subTab is now controlled by URL query param, so we don't need to watch/store it for scholarships
   ">
 
 <head>
+  <script>
+    // Immediately apply dark mode preference to prevent FOUC
+    if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-store" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -51,26 +53,10 @@
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
   <!-- Tailwind & Alpine.js -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <script src="https://unpkg.com/alpinejs" defer></script>
 
-  <!-- Tailwind Custom Config -->
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            bsu: {
-              red: '#b91c1c',
-              redDark: '#991b1b',
-              light: '#fef2f2'
-            }
-          }
-        }
-      }
-    };
-  </script>
+
   <style>
     /* Custom scrollbar styling - minimized and subtle */
     [x-cloak] { display: none !important; }

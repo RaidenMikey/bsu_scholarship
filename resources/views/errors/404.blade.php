@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>404 Not Found</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen px-6 py-12">
   <div class="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full">

@@ -1,31 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Applications - BSU</title>
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs" defer></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bsu: {
-                            red: '#b91c1c',
-                            redDark: '#991b1b',
-                            light: '#fef2f2'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-
-<div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Header -->
     <div class="mb-8">
         @include('student.partials.page-header', [
           'title' => 'My Applications',
