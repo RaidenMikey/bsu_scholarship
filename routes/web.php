@@ -71,6 +71,7 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     
     // Application Form
     Route::get('/form', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form');
+    Route::get('/tdp-form', [UserManagementController::class, 'showTdpApplicationForm'])->name('forms.tdp_application_form');
     Route::get('/form/{scholarship_id}', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form.scholarship');
     Route::post('/submit-application', [FormController::class, 'submit'])->name('submit');
     

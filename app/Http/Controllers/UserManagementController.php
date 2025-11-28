@@ -560,6 +560,26 @@ class UserManagementController extends Controller
     }
 
     /**
+     * Show TDP application form
+     */
+    public function showTdpApplicationForm()
+    {
+        if (!session()->has('user_id') || session('role') !== 'student') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $userId = session('user_id');
+        
+        // Get the user's form (one form per user)
+        $existingApplication = Form::where('user_id', $userId)
+            ->latest('updated_at')
+            ->first();
+        
+        $campuses = Campus::all();
+        return view('student.forms.tdp-application-form', compact('existingApplication', 'campuses'));
+    }
+
+    /**
      * Print application using PHPWord template
      */
     public function printApplication()

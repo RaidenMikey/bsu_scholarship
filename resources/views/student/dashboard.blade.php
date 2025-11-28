@@ -238,7 +238,6 @@
       </div>
       
       <!-- Application Form Sub-tab -->
-      <!-- Application Form Sub-tab -->
       <div x-show="subTab === 'form'" 
            x-transition:enter="transition ease-out duration-300"
            x-transition:enter-start="opacity-0 transform scale-95"
@@ -280,39 +279,30 @@
                class="inline-flex items-center px-6 py-3 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow hover:shadow-lg transition">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
               <span>Proceed to Application Form</span>
+            </a>
+            
+            <a href="{{ route('student.print-application', ['type' => 'sfao']) }}" 
+               class="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-lg shadow hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+              </svg>
+              <span>Print Application</span>
             </a>
           </div>
         </div>
       </div>
 
-      <!-- GVSREAP Application Form Sub-tab -->
+      <!-- TDP Application Form Sub-tab -->
       <div x-show="subTab === 'gvsreap_form'" 
            x-transition:enter="transition ease-out duration-300"
            x-transition:enter-start="opacity-0 transform scale-95"
            x-transition:enter-end="opacity-100 transform scale-100">
-        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-          <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
-            <span class="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                GVSREAP Application Form
-            </span>
-          </h1>
-          
-          <div class="text-center py-12">
-            <div class="text-gray-400 mb-4">
-              <svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Coming Soon</h3>
-            <p class="text-gray-500 dark:text-gray-500">The GVSREAP application form is currently under development.</p>
-          </div>
-        </div>
+        @include('student.partials.tabs.tdp-application-form')
       </div>
     </div>
+
     <!-- Applied Scholarships Tab -->
     <div x-show="tab === 'applied-scholarships'" 
          x-transition:enter="transition ease-out duration-300"

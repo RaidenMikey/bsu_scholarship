@@ -40,22 +40,34 @@ class FormPrintController extends Controller
         // Refresh the form model to ensure we have the latest data
         $form->refresh();
 
+        // Determine form type from request
+        $formType = request('type', 'sfao'); // Default to 'sfao'
+
         // Path to your Word template
         // Primary location: storage/app/templates/ (secure, not web-accessible)
-        $templatePath = storage_path('app/templates/BatStateU-FO-SFA-01_Application Form_Template_Final.docx');
+        if ($formType === 'tdp') {
+            $templatePath = storage_path('app/templates/Annex 1 TDP Application Form_Template.docx');
+        } else {
+            $templatePath = storage_path('app/templates/BatStateU-FO-SFA-01_Application Form_Template_Final.docx');
+        }
         
         if (!file_exists($templatePath)) {
-            // Fallback to alternative filename
-            $templatePath = storage_path('app/templates/application_form_template.docx');
+            // Fallback to alternative filename (only for SFAO usually)
+            if ($formType === 'sfao') {
+                $templatePath = storage_path('app/templates/application_form_template.docx');
+            }
         }
         
         if (!file_exists($templatePath)) {
             // Last fallback: resources/forms/ (for backward compatibility)
-            $templatePath = resource_path('forms/BatStateU-FO-SFA-01_Application Form_Template_Final.docx');
+            if ($formType === 'sfao') {
+                $templatePath = resource_path('forms/BatStateU-FO-SFA-01_Application Form_Template_Final.docx');
+            }
         }
         
         if (!file_exists($templatePath)) {
-            return redirect()->back()->with('error', 'Template file not found. Please ensure the template exists at: storage/app/templates/BatStateU-FO-SFA-01_Application Form_Template_Final.docx');
+            $templateName = $formType === 'tdp' ? 'Annex 1 TDP Application Form_Template.docx' : 'BatStateU-FO-SFA-01_Application Form_Template_Final.docx';
+            return redirect()->back()->with('error', "Template file not found. Please ensure the template exists at: storage/app/templates/{$templateName}");
         }
 
         // Load the template
@@ -303,15 +315,17 @@ class FormPrintController extends Controller
         }
 
         // Generate filename based on scholarship_applied
+        $prefix = $formType === 'tdp' ? 'TDP_Application_Form_' : 'SFAO_Application_Form_';
+        
         if (!empty($form->scholarship_applied)) {
             // Clean scholarship name for filename (remove special characters, replace spaces with underscores)
             $scholarshipName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $form->scholarship_applied);
             $scholarshipName = preg_replace('/_+/', '_', $scholarshipName); // Replace multiple underscores with single
             $scholarshipName = trim($scholarshipName, '_'); // Remove leading/trailing underscores
-            $filename = 'SFAO_Application_Form_' . $scholarshipName . '.docx';
+            $filename = $prefix . $scholarshipName . '.docx';
         } else {
             // Fallback to original format if no scholarship_applied
-            $filename = 'SFAO_Application_Form_' . $user->id . '_' . date('Y-m-d') . '.docx';
+            $filename = $prefix . $user->id . '_' . date('Y-m-d') . '.docx';
         }
         
         // Save the processed document
