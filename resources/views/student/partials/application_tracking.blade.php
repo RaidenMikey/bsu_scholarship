@@ -18,10 +18,10 @@
             </div>
             <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Applications Found</h3>
             <p class="text-gray-500 dark:text-gray-500">You haven't applied to any scholarships yet.</p>
-            <a href="{{ route('student.scholarships') }}" 
+            <button @click="tab = 'scholarships'" 
                class="inline-block mt-4 px-6 py-2 bg-bsu-red text-white rounded-lg hover:bg-red-700 transition">
                 Browse Scholarships
-            </a>
+            </button>
         </div>
     @else
         <!-- Application Progress Overview -->
