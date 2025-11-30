@@ -6,7 +6,7 @@
   <title>@yield('title', 'Authentication') | Spartan Scholarship</title>
   <link rel="icon" href="{{ asset('favicon.ico') }}">
   @vite(['resources/css/app.css', 'resources/js/app.js'])
-  <script src="https://unpkg.com/alpinejs" defer></script>
+
 
   @stack('styles')
 </head>
@@ -44,6 +44,18 @@
     {{-- Form Errors --}}
     @if($errors->any())
       <x-auth.alert type="error" :message="$errors->first()" />
+      
+      @if(str_contains($errors->first(), 'email is not verified'))
+        <div class="mt-2 text-center">
+            <form method="POST" action="{{ route('verification.resend') }}">
+                @csrf
+                <input type="hidden" name="email" value="{{ old('email') }}">
+                <button type="submit" class="text-sm text-red-600 hover:underline font-medium">
+                    Resend Verification Email
+                </button>
+            </form>
+        </div>
+      @endif
     @endif
 
     @yield('content')

@@ -23,11 +23,11 @@
     sidebarOpen: false,
     rightSidebarOpen: false,
     tab: localStorage.getItem('sfaoTab') || '{{ $activeTab ?? "scholarships" }}',
-    darkMode: localStorage.getItem('darkMode') === 'true',
+    darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
     showLogoutModal: false
   }"
   x-init="
-    $watch('darkMode', val => localStorage.setItem('darkMode', val));
+    $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('sfaoTab', val));
   ">
 

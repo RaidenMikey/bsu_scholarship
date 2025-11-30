@@ -264,5 +264,35 @@ class AuthController extends Controller
         }
         return back()->withErrors(['User not found or already verified.']);
     }
+
+    /**
+     * Resend verification email by email address (for unauthenticated users)
+     */
+    public function resendVerificationByEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && !$user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+            return back()->with('status', 'Verification link sent! Please check your email.');
+        }
+
+        // If user not found or already verified, we still show success to prevent email enumeration
+        // or we can be specific if security is less of a concern for this internal-ish app.
+        // Given the context, being helpful is likely preferred over strict enumeration protection.
+        if (!$user) {
+             return back()->withErrors(['We could not find a user with that email address.']);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return back()->with('status', 'Your email is already verified. Please login.');
+        }
+
+        return back()->with('status', 'Verification link sent!');
+    }
 }
 

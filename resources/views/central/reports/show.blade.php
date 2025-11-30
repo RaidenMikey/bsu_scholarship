@@ -1,6 +1,17 @@
+@php
+    $user = \App\Models\User::find(session('user_id'));
+@endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full bg-gray-50"
+    :class="{ 'dark': darkMode }"
+    x-data="{ darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true' }"
+    x-init="$watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val))">
 <head>
+    <script>
+        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Details - Central Administration</title>

@@ -45,6 +45,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/email/verify', [AuthController::class, 'showVerificationNotice'])->name('verification.notice');
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
 Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->name('verification.send');
+Route::post('/email/resend', [AuthController::class, 'resendVerificationByEmail'])->name('verification.resend');
 
 // --------------------------------------------------
 // SHARED ROUTES
@@ -70,7 +71,7 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     Route::get('/scholarships', [UserManagementController::class, 'scholarships'])->name('scholarships');
     
     // Application Form
-    Route::get('/form', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form');
+    Route::get('/sfao-form', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form');
     Route::get('/tdp-form', [UserManagementController::class, 'showTdpApplicationForm'])->name('forms.tdp_application_form');
     Route::get('/form/{scholarship_id}', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form.scholarship');
     Route::post('/submit-application', [FormController::class, 'submit'])->name('submit');

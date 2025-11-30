@@ -1,9 +1,25 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full bg-gray-50"
+    :class="{ 'dark': darkMode }"
+    x-data="{ darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true' }"
+    x-init="$watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val))">
+<head>
+    <script>
+        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFAO Password Setup</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="h-full">
+    <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="flex justify-center">
+                <img class="h-12 w-auto" src="{{ asset('images/bsu-logo.png') }}" alt="BSU Logo">
             </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Set Up Your Password
-            </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
                 Complete your SFAO admin account setup
             </p>

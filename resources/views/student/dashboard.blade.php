@@ -25,18 +25,18 @@
     rightSidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
     subTab: '{{ $scholarshipType ?? 'all' }}' !== 'all' ? '{{ $scholarshipType ?? 'all' }}' : (new URLSearchParams(window.location.search).get('type') || 'all'),
-    darkMode: localStorage.getItem('darkMode') === 'true',
+    darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
     showLogoutModal: false
   }"
   x-init="
-    $watch('darkMode', val => localStorage.setItem('darkMode', val));
+    $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
   ">
 
 <head>
   <script>
     // Immediately apply dark mode preference to prevent FOUC
-    if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true' || (!('darkMode_{{ $user->id }}' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
