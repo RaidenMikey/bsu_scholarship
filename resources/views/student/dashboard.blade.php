@@ -26,12 +26,22 @@
     tab: localStorage.getItem('activeTab') || 'scholarships',
     subTab: '{{ $scholarshipType ?? 'all' }}' !== 'all' ? '{{ $scholarshipType ?? 'all' }}' : (new URLSearchParams(window.location.search).get('type') || 'all'),
     darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
-    showLogoutModal: false
+    showLogoutModal: false,
+    unreadCount: {{ $unreadCount ?? 0 }}
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
     $watch('subTab', val => $dispatch('subtab-changed', val));
+    window.addEventListener('notification-read', () => {
+        if (this.unreadCount > 0) this.unreadCount--;
+    });
+    window.addEventListener('notifications-read-all', () => {
+        this.unreadCount = 0;
+    });
+    window.addEventListener('switch-tab', (event) => {
+        this.tab = event.detail;
+    });
   ">
 
 <head>
@@ -217,11 +227,19 @@
          x-transition:enter-end="opacity-100 transform scale-100">
       <!-- Scholarships Content -->
       <!-- Scholarships Content -->
-      <div x-show="subTab !== 'form' && subTab !== 'gvsreap_form'" 
+      <div x-show="subTab !== 'form' && subTab !== 'gvsreap_form' && subTab !== 'my_scholarships'" 
            x-transition:enter="transition ease-out duration-300"
            x-transition:enter-start="opacity-0 transform scale-95"
            x-transition:enter-end="opacity-100 transform scale-100">
         @include('student.partials.tabs.scholarships')
+      </div>
+
+      <!-- My Scholarships Content -->
+      <div x-show="subTab === 'my_scholarships'" 
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 transform scale-95"
+           x-transition:enter-end="opacity-100 transform scale-100">
+        @include('student.partials.tabs.my-scholarships')
       </div>
       
       <!-- Application Form Sub-tab -->

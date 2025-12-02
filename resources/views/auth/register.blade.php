@@ -131,8 +131,42 @@
       </div>
     </div>
 
-    <!-- Step 4: Credentials -->
+    <!-- Step 4: Scholarship Verification -->
     <div x-show="currentStep === 4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-x-4" x-transition:enter-end="opacity-100 transform translate-x-0">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">Scholarship Verification</h3>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Do you currently have an existing scholarship?</label>
+        <div class="flex gap-4">
+          <label class="inline-flex items-center">
+            <input type="radio" name="has_scholarship" value="yes" x-model="formData.has_scholarship" class="form-radio text-red-600 focus:ring-red-500">
+            <span class="ml-2 text-gray-700 dark:text-gray-300">Yes</span>
+          </label>
+          <label class="inline-flex items-center">
+            <input type="radio" name="has_scholarship" value="no" x-model="formData.has_scholarship" class="form-radio text-red-600 focus:ring-red-500">
+            <span class="ml-2 text-gray-700 dark:text-gray-300">No</span>
+          </label>
+        </div>
+      </div>
+
+      <div x-show="formData.has_scholarship === 'yes'" class="mt-4">
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Select Scholarships:</h4>
+        <div class="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-2 bg-white dark:bg-gray-800">
+          @foreach($scholarships as $scholarship)
+            <label class="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer transition-colors">
+              <input type="checkbox" value="{{ $scholarship->id }}" x-model="formData.selected_scholarships" class="form-checkbox text-red-600 focus:ring-red-500 rounded border-gray-300 dark:border-gray-500 dark:bg-gray-700">
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-200">{{ $scholarship->scholarship_name }}</span>
+            </label>
+          @endforeach
+        </div>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Please select all scholarships you are currently enrolled in.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 5: Credentials -->
+    <div x-show="currentStep === 5" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-x-4" x-transition:enter-end="opacity-100 transform translate-x-0">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">Credentials</h3>
       
       <x-auth.password-input label="Password" name="password" placeholder="Create a strong password" autocomplete="new-password" showStrength="true" required x-model="formData.password" />
@@ -186,7 +220,7 @@
   function signupForm() {
     return {
       currentStep: 1,
-      steps: ['Personal Info', 'Contact Info', 'Academic Info', 'Credentials'],
+      steps: ['Personal Info', 'Contact Info', 'Academic Info', 'Scholarship Verification', 'Credentials'],
       formData: {
         first_name: '',
         middle_name: '',
@@ -201,6 +235,8 @@
         program: '',
         year_level: '',
         campus_id: '',
+        has_scholarship: '',
+        selected_scholarships: [],
         password: '',
         password_confirmation: '',
         terms: false
@@ -241,6 +277,15 @@
             return false;
           }
         } else if (step === 4) {
+          if (!this.formData.has_scholarship) {
+            alert('Please answer the scholarship verification question.');
+            return false;
+          }
+          if (this.formData.has_scholarship === 'yes' && this.formData.selected_scholarships.length === 0) {
+            alert('Please select at least one scholarship.');
+            return false;
+          }
+        } else if (step === 5) {
           if (!this.formData.password || !this.formData.password_confirmation) {
             alert('Please enter a password.');
             return false;
@@ -257,10 +302,66 @@
         return true;
       },
       
+      init() {
+        // Check if page was reloaded
+        const navEntry = performance.getEntriesByType("navigation")[0];
+        const isReload = navEntry ? navEntry.type === 'reload' : (performance.navigation.type === 1);
+
+        if (isReload) {
+          const savedData = sessionStorage.getItem('signupFormData');
+          if (savedData) {
+            this.formData = JSON.parse(savedData);
+            // Ensure selected_scholarships is an array
+            if (!Array.isArray(this.formData.selected_scholarships)) {
+                this.formData.selected_scholarships = [];
+            }
+            // Restore current step if saved (optional, but good for UX)
+            const savedStep = sessionStorage.getItem('signupCurrentStep');
+            if (savedStep) {
+              this.currentStep = parseInt(savedStep);
+            }
+          }
+        } else {
+          // If not a reload (e.g. first visit or navigated back), clear storage
+          sessionStorage.removeItem('signupFormData');
+          sessionStorage.removeItem('signupCurrentStep');
+        }
+
+        // Watch for changes and save to sessionStorage
+        this.$watch('formData', (value) => {
+          sessionStorage.setItem('signupFormData', JSON.stringify(value));
+        });
+        
+        this.$watch('currentStep', (value) => {
+          sessionStorage.setItem('signupCurrentStep', value);
+        });
+      },
+
       submitForm() {
-        if (this.validateStep(4)) {
+        if (this.validateStep(5)) {
           this.isSubmitting = true;
-          document.getElementById('registerForm').submit();
+          
+          // Create hidden inputs for selected scholarships before submitting
+          const form = document.getElementById('registerForm');
+          
+          // Remove any existing hidden inputs for selected_scholarships to avoid duplicates
+          const existingInputs = form.querySelectorAll('input[name="selected_scholarships[]"]');
+          existingInputs.forEach(input => input.remove());
+
+          if (this.formData.has_scholarship === 'yes') {
+              this.formData.selected_scholarships.forEach(id => {
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = 'selected_scholarships[]';
+                  input.value = id;
+                  form.appendChild(input);
+              });
+          }
+
+          // Clear storage on submit
+          sessionStorage.removeItem('signupFormData');
+          sessionStorage.removeItem('signupCurrentStep');
+          form.submit();
         }
       }
     }

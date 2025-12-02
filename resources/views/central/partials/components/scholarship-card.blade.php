@@ -98,13 +98,22 @@
                 @endif
 
                 <!-- Application Status (Student Only) -->
-                @if($role === 'student' && $scholarship->applied)
-                  <div class="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg mt-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-sm font-medium">Applied</span>
-                  </div>
+                @if($role === 'student')
+                    @if($scholarship->is_scholar ?? false)
+                      <div class="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg mt-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Scholar</span>
+                      </div>
+                    @elseif($scholarship->applied)
+                      <div class="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg mt-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Applied</span>
+                      </div>
+                    @endif
                 @endif
             </div>
         </div>
@@ -352,7 +361,14 @@
                                 Close
                             </button>
 
-                            @if($scholarship->applied)
+                            @if($scholarship->is_scholar ?? false)
+                                <div class="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-lg shadow-lg flex items-center gap-2 cursor-default">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Scholar
+                                </div>
+                            @elseif($scholarship->applied)
                                 <button type="button" 
                                         onclick="openUnapplyModal('{{ $scholarship->id }}')"
                                         class="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">

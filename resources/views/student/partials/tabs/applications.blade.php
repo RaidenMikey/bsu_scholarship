@@ -1,275 +1,219 @@
-<div x-cloak data-applications="{{ json_encode($applicationTracking) }}">
-  <div class="w-full mx-auto p-6 bg-white dark:bg-gray-800 shadow-xl rounded-2xl border-t-4 border-bsu-red transition duration-300">
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
-      <h2 class="flex items-center gap-2 text-3xl font-bold text-bsu-red mb-4 lg:mb-0 border-b-2 border-bsu-redDark pb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path d="M12 14l9-5-9-5-9 5 9 5z" />
-            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-          </svg>
-          My Scholarship Applications
-      </h2>
-      
-      <!-- Sorting Controls -->
-      <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</label>
-          <select x-model="sortBy" @change="sortApplications()" 
-                  class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-            <option value="created_at">Date Applied</option>
-            <option value="scholarship_name">Scholarship Name</option>
-            <option value="status">Status</option>
-            <option value="grant_amount">Grant Amount</option>
-            <option value="submission_deadline">Deadline</option>
-          </select>
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-bsu-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                My Applications
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">
+                Track the status of your scholarship applications.
+            </p>
         </div>
-        
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Order:</label>
-          <select x-model="sortOrder" @change="sortApplications()" 
-                  class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-            <option value="desc">Newest First</option>
-            <option value="asc">Oldest First</option>
-          </select>
-        </div>
-        
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter:</label>
-          <select x-model="statusFilter" @change="filterApplications()" 
-                  class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="claimed">Claimed</option>
-          </select>
-        </div>
-      </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow p-6">
-        <div class="flex items-center">
-          <div class="p-3 bg-blue-100 dark:bg-blue-700 rounded-lg">
-            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Applications</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.length"></p>
-          </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Applications -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Applications</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $applications->count() }}</p>
+            </div>
         </div>
-      </div>
 
-      <div class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg shadow p-6">
-        <div class="flex items-center">
-          <div class="p-3 bg-green-100 dark:bg-green-700 rounded-lg">
-            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.filter(app => app.status === 'approved').length"></p>
-          </div>
+        <!-- Approved -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
+            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Approved</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $applications->where('status', 'approved')->count() }}</p>
+            </div>
         </div>
-      </div>
 
-      <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 rounded-lg shadow p-6">
-        <div class="flex items-center">
-          <div class="p-3 bg-yellow-100 dark:bg-yellow-700 rounded-lg">
-            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.filter(app => app.status === 'pending').length"></p>
-          </div>
+        <!-- Pending -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
+            <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $applications->where('status', 'pending')->count() }}</p>
+            </div>
         </div>
-      </div>
 
-      <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow p-6">
-        <div class="flex items-center">
-          <div class="p-3 bg-blue-100 dark:bg-blue-700 rounded-lg">
-            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Claimed</p>
-            <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="applications.filter(app => app.status === 'claimed').length"></p>
-          </div>
+        <!-- Claimed -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Claimed</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $applications->where('status', 'claimed')->count() }}</p>
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- Applications Count -->
-    <div class="mb-6">
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        Showing <span x-text="filteredApplications.length"></span> of <span x-text="applications.length"></span> applications
-      </p>
+    <!-- Applications List -->
+    <div class="grid grid-cols-1 gap-6">
+        @forelse($applications as $application)
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300">
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                                    {{ $application->scholarship->scholarship_name }}
+                                </h3>
+                                <!-- Status Badge -->
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                                    @if($application->status === 'approved') bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200
+                                    @elseif($application->status === 'rejected') bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200
+                                    @elseif($application->status === 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200
+                                    @elseif($application->status === 'claimed') bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200
+                                    @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
+                                    @endif">
+                                    @if($application->status === 'approved')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Approved
+                                    @elseif($application->status === 'rejected')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        Rejected
+                                    @elseif($application->status === 'pending')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Pending
+                                    @elseif($application->status === 'claimed')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Claimed
+                                    @else
+                                        {{ ucfirst($application->status) }}
+                                    @endif
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Applied on {{ $application->created_at->format('M d, Y') }}
+                            </p>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-3">
+                            <button onclick="window.open('{{ url('/student/print-application') }}', '_blank')"
+                                    class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+                                <svg class="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                </svg>
+                                Print
+                            </button>
+
+                            @if($application->status === 'pending')
+                                <form method="POST" action="{{ route('student.unapply') }}" class="inline" onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+                                    @csrf
+                                    <input type="hidden" name="scholarship_id" value="{{ $application->scholarship_id }}">
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors shadow-sm">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                        Withdraw
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if($application->status === 'approved')
+                                <button onclick="alert('Please contact the SFAO office to claim your scholarship.')"
+                                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Claim
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Deadline -->
+                        <div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Submission Deadline</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ \Carbon\Carbon::parse($application->scholarship->submission_deadline)->format('M d, Y') }}
+                            </p>
+                        </div>
+                        
+                        <!-- Amount -->
+                        <div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Grant Amount</p>
+                            <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                @if($application->scholarship->grant_amount)
+                                    ₱{{ number_format($application->scholarship->grant_amount, 2) }}
+                                @else
+                                    TBD
+                                @endif
+                            </p>
+                        </div>
+
+                        <!-- Grant Count -->
+                        <div>
+                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Grant Count</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ $application->grant_count }} grants
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- SFAO Remarks -->
+                    @if($application->remarks)
+                        <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 p-4 rounded-r-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400 dark:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">SFAO Remarks</h3>
+                                    <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                                        <p>{{ $application->remarks }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <div class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 border-dashed">
+                <div class="text-gray-400 dark:text-gray-500 mb-4">
+                    <svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Applications Found</h3>
+                <p class="text-gray-500 dark:text-gray-400 mb-6">You haven't applied for any scholarships yet.</p>
+                <button @click="tab = 'scholarships'" 
+                   class="inline-flex items-center px-6 py-3 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                    Browse Scholarships
+                </button>
+            </div>
+        @endforelse
     </div>
-
-    @if ($applicationTracking->isEmpty())
-      <div class="text-center py-12">
-        <div class="w-24 h-24 mx-auto mb-4 text-gray-400">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Applications Yet</h3>
-        <p class="text-gray-600 dark:text-gray-300 mb-4">You haven't applied to any scholarships yet.</p>
-        <button @click="tab = 'scholarships'" 
-           class="inline-flex items-center px-4 py-2 bg-bsu-red hover:bg-bsu-redDark text-white font-medium rounded-lg transition">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Browse Scholarships
-        </button>
-      </div>
-    @else
-       <!-- Applications Grid -->
-       <div x-data="applicationData()" x-init="init()" class="space-y-6">
-         <template x-for="application in filteredApplications" :key="application.id">
-          <div class="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-            <!-- Application Header -->
-            <div class="p-6 border-b border-gray-200 dark:border-gray-600">
-              <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div class="flex-1">
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" x-text="application.scholarship.scholarship_name"></h3>
-                  <p class="text-gray-600 dark:text-gray-300 text-sm mb-3" x-text="application.scholarship.description"></p>
-                  
-                  <!-- Scholarship Details -->
-                  <div class="flex flex-wrap gap-4 text-sm">
-                    <div class="flex items-center text-gray-600 dark:text-gray-300">
-                      <svg class="w-4 h-4 mr-1 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                      </svg>
-                      <span x-text="application.scholarship.grant_amount_formatted"></span>
-                    </div>
-                    
-                    <div class="flex items-center text-gray-600 dark:text-gray-300">
-                      <svg class="w-4 h-4 mr-1 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                      </svg>
-                      <span x-text="formatDate(application.scholarship.submission_deadline)"></span>
-                    </div>
-                    
-                    <div class="flex items-center text-gray-600 dark:text-gray-300" x-show="application.scholarship.days_remaining !== null">
-                      <svg class="w-4 h-4 mr-1 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                      </svg>
-                      <span x-text="application.scholarship.days_remaining + ' days remaining'"></span>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Status and Type Badges -->
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" 
-                        :class="application.scholarship.status_badge.color" 
-                        x-text="application.scholarship.status_badge.text"></span>
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" 
-                </div>
-              </div>
-            </div>
-            
-            <!-- Application Footer -->
-            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-600">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div class="text-sm text-gray-600 dark:text-gray-300">
-                  <span class="font-medium">Applied:</span> <span x-text="formatDate(application.created_at)"></span>
-                  <span class="mx-2">•</span>
-                  <span class="font-medium">Last Updated:</span> <span x-text="formatDate(application.updated_at)"></span>
-                </div>
-                
-              </div>
-            </div>
-          </div>
-         </template>
-       </div>
-     @endif
-   </div>
-
- </div>
-
-<script>
-function applicationData() {
-  return {
-    applications: [],
-    filteredApplications: [],
-    sortBy: 'created_at',
-    sortOrder: 'desc',
-    statusFilter: '',
-    
-    init() {
-      // Get data from the data attribute
-      const dataElement = document.querySelector('[data-applications]');
-      this.applications = dataElement ? JSON.parse(dataElement.dataset.applications) : [];
-      // Filter out applications where the user is already a scholar
-      this.applications = this.applications.filter(app => app.scholar_status !== 'selected');
-      this.filteredApplications = [...this.applications];
-      this.sortApplications();
-    },
-    
-    sortApplications() {
-      this.filteredApplications.sort((a, b) => {
-        let aValue, bValue;
-        
-        switch(this.sortBy) {
-          case 'scholarship_name':
-            aValue = a.scholarship.scholarship_name.toLowerCase();
-            bValue = b.scholarship.scholarship_name.toLowerCase();
-            break;
-          case 'status':
-            aValue = a.status;
-            bValue = b.status;
-            break;
-          case 'grant_amount':
-            aValue = a.scholarship.grant_amount || 0;
-            bValue = b.scholarship.grant_amount || 0;
-            break;
-          case 'submission_deadline':
-            aValue = new Date(a.scholarship.submission_deadline);
-            bValue = new Date(b.scholarship.submission_deadline);
-            break;
-          case 'type':
-            aValue = a.type;
-            bValue = b.type;
-            break;
-          default:
-            aValue = new Date(a.created_at);
-            bValue = new Date(b.created_at);
-        }
-        
-        if (this.sortOrder === 'asc') {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      });
-    },
-    
-    filterApplications() {
-      if (this.statusFilter === '') {
-        this.filteredApplications = [...this.applications];
-      } else {
-        this.filteredApplications = this.applications.filter(app => app.status === this.statusFilter);
-      }
-      this.sortApplications();
-    },
-    
-    formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    },
-    
-  }
-}
-</script>
+</div>

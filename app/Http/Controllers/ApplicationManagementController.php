@@ -449,7 +449,118 @@ class ApplicationManagementController extends Controller
             'active_tab' => $activeTab
         ]);
 
-        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder'));
+        // Calculate Analytics Data for SFAO Dashboard
+        $analytics = [];
+        
+        // 1. Basic Counts
+        $totalStudents = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds)
+            ->count();
+            
+        $studentsWithApplications = Application::whereHas('user', function($query) use ($campusIds) {
+                $query->whereIn('campus_id', $campusIds);
+            })
+            ->distinct('user_id')
+            ->count('user_id');
+            
+        $pendingApplications = Application::whereHas('user', function($query) use ($campusIds) {
+                $query->whereIn('campus_id', $campusIds);
+            })
+            ->where('status', 'pending')
+            ->count();
+            
+        $approvedApplications = Application::whereHas('user', function($query) use ($campusIds) {
+                $query->whereIn('campus_id', $campusIds);
+            })
+            ->where('status', 'approved')
+            ->count();
+            
+        $rejectedApplications = Application::whereHas('user', function($query) use ($campusIds) {
+                $query->whereIn('campus_id', $campusIds);
+            })
+            ->where('status', 'rejected')
+            ->count();
+
+        $analytics['total_students'] = $totalStudents;
+        $analytics['students_with_applications'] = $studentsWithApplications;
+        $analytics['pending_applications'] = $pendingApplications;
+        $analytics['approved_applications'] = $approvedApplications;
+        $analytics['rejected_applications'] = $rejectedApplications;
+        $analytics['approval_rate'] = $studentsWithApplications > 0 ? round(($approvedApplications / $studentsWithApplications) * 100, 1) : 0;
+
+        // 2. Department Statistics
+        // Get all departments
+        $allDepartments = \App\Models\Department::all();
+        $analytics['all_departments'] = $allDepartments;
+        
+        // Map campuses to departments
+        $campusDepartments = [];
+        foreach ($sfaoCampus->getAllCampusesUnder() as $camp) {
+            $campusDepartments[$camp->id] = $camp->departments->pluck('short_name')->toArray();
+        }
+        $analytics['campus_departments'] = $campusDepartments;
+
+        // Calculate stats per department
+        $departmentStats = [];
+        foreach ($allDepartments as $dept) {
+            // Count students in this department (assuming users.college stores short_name)
+            $deptStudentsCount = User::where('role', 'student')
+                ->whereIn('campus_id', $campusIds)
+                ->where('college', $dept->short_name)
+                ->count();
+                
+            // Count applications for students in this department
+            $deptApplicationsCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+                    $query->whereIn('campus_id', $campusIds)
+                          ->where('college', $dept->short_name);
+                })
+                ->count();
+                
+            $deptApprovedCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+                    $query->whereIn('campus_id', $campusIds)
+                          ->where('college', $dept->short_name);
+                })
+                ->where('status', 'approved')
+                ->count();
+
+            $deptPendingCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+                    $query->whereIn('campus_id', $campusIds)
+                          ->where('college', $dept->short_name);
+                })
+                ->where('status', 'pending')
+                ->count();
+
+            $deptRejectedCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+                    $query->whereIn('campus_id', $campusIds)
+                          ->where('college', $dept->short_name);
+                })
+                ->where('status', 'rejected')
+                ->count();
+
+            if ($deptStudentsCount > 0 || $deptApplicationsCount > 0) {
+                $departmentStats[] = [
+                    'name' => $dept->short_name,
+                    'full_name' => $dept->name,
+                    'total_students' => $deptStudentsCount,
+                    'total_applications' => $deptApplicationsCount,
+                    'approved_applications' => $deptApprovedCount,
+                    'pending_applications' => $deptPendingCount,
+                    'rejected_applications' => $deptRejectedCount,
+                    'approval_rate' => $deptApplicationsCount > 0 ? round(($deptApprovedCount / $deptApplicationsCount) * 100, 1) : 0
+                ];
+            }
+        }
+        $analytics['department_stats'] = $departmentStats;
+
+        // 3. All Students Data for Client-side Filtering (Gender Chart)
+        $allStudentsData = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds)
+            ->select('campus_id', 'college', 'sex')
+            ->get();
+            
+        $analytics['all_students_data'] = $allStudentsData;
+
+        return view('sfao.dashboard', compact('user', 'students', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'sfaoCampus', 'campusOptions', 'sortBy', 'sortOrder', 'campusFilter', 'statusFilter', 'reports', 'activeTab', 'scholars', 'scholarsSortBy', 'scholarsSortOrder', 'analytics'));
     }
 
     /**

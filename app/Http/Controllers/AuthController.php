@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Invitation;
+use App\Models\Scholar;
 
 /**
  * Authentication Controller
@@ -163,7 +164,8 @@ class AuthController extends Controller
     public function showRegister()
     {
         $campuses = \App\Models\Campus::all();
-        return view('auth.register', compact('campuses'));
+        $scholarships = \App\Models\Scholarship::all();
+        return view('auth.register', compact('campuses', 'scholarships'));
     }
 
     /**
@@ -187,6 +189,8 @@ class AuthController extends Controller
             'password'      => 'required|string|confirmed|min:6',
             'role'          => 'required|string',
             'campus_id'     => 'required|exists:campuses,id',
+            'selected_scholarships' => 'nullable|array',
+            'selected_scholarships.*' => 'exists:scholarships,id',
         ]);
 
         $fullName = $request->first_name . ' ' . ($request->middle_name ? $request->middle_name . ' ' : '') . $request->last_name;
@@ -209,6 +213,21 @@ class AuthController extends Controller
             'role'          => $request->role,
             'campus_id'     => $request->campus_id,
         ]);
+
+        // Handle existing scholarships
+        if ($request->has('selected_scholarships') && is_array($request->selected_scholarships)) {
+            foreach ($request->selected_scholarships as $scholarshipId) {
+                Scholar::create([
+                    'user_id' => $user->id,
+                    'scholarship_id' => $scholarshipId,
+                    'scholarship_start_date' => now(),
+                    'status' => 'active',
+                    'type' => 'new', // Default to new, or could be 'old' based on requirements
+                    'grant_count' => 0,
+                    'total_grant_received' => 0
+                ]);
+            }
+        }
 
         $user->sendEmailVerificationNotification();
 

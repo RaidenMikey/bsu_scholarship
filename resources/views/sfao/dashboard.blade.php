@@ -14,6 +14,10 @@
     Session::flush();
     return redirect()->route('login');
   }
+
+  // Calculate default stats campus
+  $allCampuses = $sfaoCampus->getAllCampusesUnder();
+  $defaultStatsCampus = $allCampuses->count() > 1 ? 'all' : $allCampuses->first()->id;
 @endphp
 
 <!DOCTYPE html>
@@ -23,12 +27,14 @@
     sidebarOpen: false,
     rightSidebarOpen: false,
     tab: localStorage.getItem('sfaoTab') || '{{ $activeTab ?? "scholarships" }}',
+    statsCampus: localStorage.getItem('sfaoStatsCampus') || '{{ $defaultStatsCampus }}',
     darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
     showLogoutModal: false
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('sfaoTab', val));
+    $watch('statsCampus', val => localStorage.setItem('sfaoStatsCampus', val));
   ">
 
   <script>
@@ -86,11 +92,11 @@
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
            x-cloak>
       
-      <!-- Close Button (Mobile) -->
-      <div class="lg:hidden flex justify-end p-4">
-        <button @click="sidebarOpen = false" class="text-white hover:text-gray-200">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      <!-- Close Button -->
+      <div class="absolute top-0 right-0 pt-4 pr-4">
+        <button @click="sidebarOpen = false" class="text-white hover:text-gray-200 focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -229,6 +235,34 @@
           </svg>
           Create Reports
         </button>
+
+      </div>
+
+      <!-- Statistics Header -->
+      <div class="space-y-1">
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+          Statistics
+        </div>
+        @if($sfaoCampus->getAllCampusesUnder()->count() > 1)
+        <button @click="tab = 'statistics'; statsCampus = 'all'; $dispatch('set-stats-filter', 'all')"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="tab === 'statistics' && statsCampus === 'all' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          All Statistics
+        </button>
+        @endif
+        @foreach($sfaoCampus->getAllCampusesUnder() as $campus)
+        <button @click="tab = 'statistics'; statsCampus = '{{ $campus->id }}'; $dispatch('set-stats-filter', '{{ $campus->id }}')"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="tab === 'statistics' && statsCampus == '{{ $campus->id }}' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          {{ $campus->name }} Statistics
+        </button>
+        @endforeach
       </div>
     </nav>
 
@@ -393,6 +427,7 @@
     @include('sfao.partials.tabs.applicants')   <!-- Applicants Lists -->
     @include('sfao.partials.tabs.scholars')     <!-- Scholars Lists -->
     @include('sfao.partials.tabs.reports')      <!-- Reports -->
+    @include('sfao.partials.tabs.statistics')   <!-- Statistics -->
     @include('sfao.partials.tabs.account')      <!-- Account -->
   </main>
 

@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
         // Call campus seeder first so campus_id exists before users
         $this->call([
             CampusSeeder::class,
+            DepartmentSeeder::class, // Add DepartmentSeeder
+            CampusDepartmentSeeder::class, // Add CampusDepartmentSeeder
             UsersTableSeeder::class,
             ScholarshipsTableSeeder::class,
             FormsTableSeeder::class,

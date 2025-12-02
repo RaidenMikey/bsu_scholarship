@@ -80,4 +80,9 @@ class Campus extends Model
     {
         return $query->where('has_sfao_admin', true);
     }
+
+    public function departments()
+    {
+        return $this->belongsToMany(Department::class, 'campus_department');
+    }
 }

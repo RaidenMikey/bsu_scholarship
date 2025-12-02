@@ -265,9 +265,17 @@ class UserManagementController extends Controller
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
             $appliedStatuses = $user->appliedScholarships->pluck('status', 'scholarship_id')->toArray();
+            
+            // Get IDs of scholarships where user is an active scholar
+            $scholarIds = \App\Models\Scholar::where('user_id', $userId)
+                ->where('status', 'active')
+                ->pluck('scholarship_id')
+                ->toArray();
+
             foreach ($scholarships as $scholarship) {
                 $scholarship->applied = in_array($scholarship->id, $appliedIds);
                 $scholarship->status = $appliedStatuses[$scholarship->id] ?? null;
+                $scholarship->is_scholar = in_array($scholarship->id, $scholarIds);
             }
         }
 
@@ -349,7 +357,20 @@ class UserManagementController extends Controller
         $unreadCountStatus = $unreadCounts['application_status'] ?? 0;
         $unreadCountComments = $unreadCounts['sfao_comment'] ?? 0;
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments'));
+        // Get user's active scholarships (My Scholarships)
+        $myScholarships = \App\Models\Scholar::where('user_id', $userId)
+            ->where('status', 'active')
+            ->with('scholarship')
+            ->get()
+            ->pluck('scholarship');
+            
+        // Mark them as scholar for the view
+        $myScholarships->each(function($s) {
+            $s->is_scholar = true;
+            $s->applied = true; // Treat as applied for visual consistency, or handle separately
+        });
+
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'myScholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments'));
     }
 
     /**
@@ -408,9 +429,17 @@ class UserManagementController extends Controller
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
             $appliedStatuses = $user->appliedScholarships->pluck('status', 'scholarship_id')->toArray();
+            
+            // Get IDs of scholarships where user is an active scholar
+            $scholarIds = \App\Models\Scholar::where('user_id', $userId)
+                ->where('status', 'active')
+                ->pluck('scholarship_id')
+                ->toArray();
+
             foreach ($scholarships as $scholarship) {
                 $scholarship->applied = in_array($scholarship->id, $appliedIds);
                 $scholarship->status = $appliedStatuses[$scholarship->id] ?? null;
+                $scholarship->is_scholar = in_array($scholarship->id, $scholarIds);
             }
         }
 
@@ -490,7 +519,20 @@ class UserManagementController extends Controller
             ->where('is_read', false)
             ->count();
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'scholarshipType'));
+        // Get user's active scholarships (My Scholarships)
+        $myScholarships = \App\Models\Scholar::where('user_id', $userId)
+            ->where('status', 'active')
+            ->with('scholarship')
+            ->get()
+            ->pluck('scholarship');
+            
+        // Mark them as scholar for the view
+        $myScholarships->each(function($s) {
+            $s->is_scholar = true;
+            $s->applied = true; // Treat as applied for visual consistency, or handle separately
+        });
+
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'myScholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'scholarshipType', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments'));
     }
 
     /**

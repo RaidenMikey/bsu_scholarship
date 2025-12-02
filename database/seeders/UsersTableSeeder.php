@@ -46,6 +46,12 @@ class UsersTableSeeder extends Seeder
                     $firstName = $faker->firstName();
                     $lastName = $faker->lastName();
                     $middleName = $faker->lastName();
+
+                    // Get valid departments for this campus
+                    $campusDepartments = $campus->departments;
+                    $randomDepartment = $campusDepartments->count() > 0 
+                        ? $campusDepartments->random()->short_name 
+                        : 'CICS'; // Fallback
                     
                     User::create([
                         'name' => "$firstName $middleName $lastName",
@@ -58,7 +64,7 @@ class UsersTableSeeder extends Seeder
                         'sr_code' => 'SR-' . $studentId,
                         'education_level' => 'Undergraduate',
                         'program' => 'BS Information Technology',
-                        'college' => 'CICS',
+                        'college' => $randomDepartment,
                         'year_level' => '3rd Year',
                         'email' => $studentEmail,
                         'email_verified_at' => now(),

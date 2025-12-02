@@ -21,7 +21,7 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unread Notifications</p>
-          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ $unreadCount }}</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1" x-text="unreadCount"></p>
         </div>
         <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
           <svg class="w-8 h-8 text-bsu-red dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,11 +173,10 @@
               <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700/50 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <div class="flex space-x-2">
                   @if($notification->type === 'scholarship_created' && isset($notification->data['scholarship_id']))
-                    <a href="{{ route('student.scholarships') }}#scholarship-{{ $notification->data['scholarship_id'] }}" 
-                       class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition shadow-sm"
-                       @click.stop>
+                    <button @click.stop="viewScholarship({{ $notification->data['scholarship_id'] }})" 
+                       class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition shadow-sm">
                       View Scholarship
-                    </a>
+                    </button>
                   @endif
                 </div>
 
@@ -381,10 +380,10 @@
                Close
              </button>
              <template x-if="selectedNotification?.type === 'scholarship_created' && selectedNotification?.data?.scholarship_id">
-               <a :href="`/student/scholarships#scholarship-${selectedNotification.data.scholarship_id}`" 
+               <button @click="viewScholarship(selectedNotification.data.scholarship_id)" 
                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">
                  View Scholarship
-               </a>
+               </button>
              </template>
            </div>
          </div>
@@ -485,6 +484,8 @@ document.addEventListener('alpine:init', () => {
             
             if (this.unreadCount > 0) {
               this.unreadCount--;
+              // Dispatch event to update global count
+              window.dispatchEvent(new CustomEvent('notification-read'));
             }
           }
         }
@@ -508,6 +509,8 @@ document.addEventListener('alpine:init', () => {
             notification.is_read = true;
           });
           this.unreadCount = 0;
+          // Dispatch event to update global count
+          window.dispatchEvent(new CustomEvent('notifications-read-all'));
           
           // Reload page to reflect changes
           window.location.reload();
@@ -541,6 +544,8 @@ document.addEventListener('alpine:init', () => {
              this.notifications.splice(index, 1);
              if (wasUnread) {
                this.unreadCount = Math.max(0, this.unreadCount - 1);
+               // Dispatch event to update global count
+               window.dispatchEvent(new CustomEvent('notification-read'));
              }
              this.updateFilteredCount();
              
@@ -553,6 +558,22 @@ document.addEventListener('alpine:init', () => {
       .catch(error => {
         console.error('Error deleting notification:', error);
       });
+    },
+
+    viewScholarship(id) {
+        this.closeModal();
+        // Dispatch event to switch tab
+        window.dispatchEvent(new CustomEvent('switch-tab', { detail: 'scholarships' }));
+        
+        // Wait for tab to switch and render
+        setTimeout(() => {
+            const el = document.getElementById(`scholarship-${id}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('ring-2', 'ring-bsu-red'); // Highlight
+                setTimeout(() => el.classList.remove('ring-2', 'ring-bsu-red'), 3000);
+            }
+        }, 300);
     }
   }));
 });

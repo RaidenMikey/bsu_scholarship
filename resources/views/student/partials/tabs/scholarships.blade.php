@@ -65,7 +65,8 @@
         </p>
 
           @foreach ($scholarships as $scholarship)
-            <div x-show="subTab === 'all' || 
+            <div id="scholarship-{{ $scholarship->id }}"
+                 x-show="subTab === 'all' || 
                         (subTab === 'private' && '{{ $scholarship->scholarship_type }}' === 'private') ||
                         (subTab === 'government' && '{{ $scholarship->scholarship_type }}' === 'government')"
                  x-transition:enter="transition ease-out duration-300"
