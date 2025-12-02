@@ -29,6 +29,14 @@
 
     
 
+    <script>
+        // Immediately apply dark mode preference to prevent FOUC
+        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true' || (!('darkMode_{{ $user->id }}' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900">

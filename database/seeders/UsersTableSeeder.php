@@ -71,7 +71,7 @@ class UsersTableSeeder extends Seeder
         }
 
         // Create 5 SFAO Admins (one for each constituent campus)
-        $sfaoCampuses = ['Pablo Borbon', 'Alangilan', 'Lipa', 'Nasugbu', 'Malvar'];
+        $sfaoCampuses = ['Pablo Borbon', 'Alangilan', 'Lipa', 'ARASOF', 'JPLPC'];
         foreach ($sfaoCampuses as $index => $campusName) {
             $campus = \App\Models\Campus::where('name', $campusName)->first();
             if ($campus) {

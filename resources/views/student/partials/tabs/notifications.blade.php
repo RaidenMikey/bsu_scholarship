@@ -15,92 +15,55 @@
   </div>
 
   <!-- Notification Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="flex items-center">
-        <div class="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
-          <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <!-- Unread Stats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-transform hover:scale-[1.02] duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Unread Notifications</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ $unreadCount }}</p>
+        </div>
+        <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
+          <svg class="w-8 h-8 text-bsu-red dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 1 0-15 0v5h5l-5 5-5-5h5v-5a7.5 7.5 0 1 1 15 0v5z"></path>
           </svg>
         </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Unread</p>
-          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $unreadCount }}</p>
-        </div>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="flex items-center">
-        <div class="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-          <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    <!-- Total Stats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-transform hover:scale-[1.02] duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Received</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ $notifications->count() }}</p>
+        </div>
+        <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+          <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
           </svg>
         </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
-          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $notifications->count() }}</p>
-        </div>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="flex items-center">
-        <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-          <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Recent Stats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 transition-transform hover:scale-[1.02] duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Recent (7 Days)</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ $notifications->where('created_at', '>=', now()->subDays(7))->count() }}</p>
+        </div>
+        <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+          <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Recent</p>
-          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $notifications->where('created_at', '>=', now()->subDays(7))->count() }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Filter and Actions -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div class="flex flex-wrap gap-2">
-      <button @click="filterType = ''" 
-              :class="filterType === '' ? 'bg-bsu-red text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        All
-      </button>
-      <button @click="filterType = 'scholarship_created'" 
-              :class="filterType === 'scholarship_created' ? 'bg-green-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        <span class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path d="M12 14l9-5-9-5-9 5 9 5z" />
-              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-            </svg>
-            Scholarships
-        </span>
-      </button>
-      <button @click="filterType = 'sfao_comment'" 
-              :class="filterType === 'sfao_comment' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        <span class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-            Comments
-        </span>
-      </button>
-      <button @click="filterType = 'application_status'" 
-              :class="filterType === 'application_status' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
-              class="px-4 py-2 rounded-lg text-sm font-medium transition">
-        <span class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            Status
-        </span>
-      </button>
-    </div>
-
+  <!-- Actions -->
+  <div class="flex justify-end gap-4 mb-6">
     <div class="flex gap-2">
       <button @click="markAllAsRead()" 
               class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition">
@@ -126,163 +89,115 @@
         <p class="text-gray-600 dark:text-gray-400">You'll receive notifications about scholarships, application updates, and comments here.</p>
       </div>
     @else
+      <!-- Empty State for Specific Filters -->
+      <div x-show="filterType !== '' && filteredCount === 0" class="text-center py-12" x-cloak>
+          <div class="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <span x-show="filterType === 'scholarship_created'">No Notification for Scholarships</span>
+              <span x-show="filterType === 'application_status'">No Notification for Status Updates</span>
+              <span x-show="filterType === 'sfao_comment'">No Notification for Comments</span>
+          </h3>
+      </div>
+
       @foreach($notifications as $notification)
         <div x-data="{ isRead: {{ $notification->is_read ? 'true' : 'false' }} }" 
              x-show="filterType === '' || filterType === '{{ $notification->type }}'"
-             class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-all duration-200 border-l-4 {{ $notification->is_read ? 'border-gray-300 dark:border-gray-600' : 'border-bsu-red' }} cursor-pointer"
-             :class="{ 'opacity-75': isRead }"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95"
+             class="rounded-xl p-5 mb-3 transition-all duration-200 border border-gray-100 dark:border-gray-700 hover:shadow-md hover:-translate-y-0.5 cursor-pointer relative overflow-hidden group"
+             :class="isRead ? 'bg-white dark:bg-gray-800' : 'bg-red-50 dark:bg-gray-800 dark:border-l-4 dark:border-l-bsu-red'"
              @click="openNotificationModal({{ $notification->id }})"
              data-notification-id="{{ $notification->id }}">
           
-          <div class="p-4">
-            <div class="flex items-start space-x-3">
-              <!-- Notification Icon -->
-              <div class="flex-shrink-0">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg {{ $notification->color }}">
-                  {{ $notification->icon }}
-                </div>
+          <!-- Unread Indicator (Light Mode) -->
+          <div x-show="!isRead" class="absolute left-0 top-0 bottom-0 w-1 bg-bsu-red dark:hidden"></div>
+          
+          <div class="flex items-start space-x-4">
+            <!-- Notification Icon -->
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-sm {{ $notification->color }} bg-white dark:bg-gray-700">
+                {{ $notification->icon }}
+              </div>
+            </div>
+
+            <!-- Notification Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <h4 class="text-base font-semibold {{ $notification->is_read ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white' }}">
+                  {{ $notification->title }}
+                </h4>
+                
+                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
+                  {{ $notification->time_ago }}
+                </span>
               </div>
 
-              <!-- Notification Content -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-medium {{ $notification->is_read ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white' }}">
-                    {{ $notification->title }}
-                  </h4>
-                  
-                  <div class="flex items-center space-x-2">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                      {{ $notification->time_ago }}
+              <p class="text-sm {{ $notification->is_read ? 'text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300' }} line-clamp-2 mb-3">
+                {{ $notification->message }}
+              </p>
+
+              <!-- Additional Data Display -->
+              @if($notification->data)
+                <div class="flex flex-wrap gap-2 mb-3">
+                  @if(isset($notification->data['scholarship_name']))
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                      <svg class="mr-1.5 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                      {{ $notification->data['scholarship_name'] }}
                     </span>
-                    
-                    @if(!$notification->is_read)
-                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                        New
-                      </span>
-                    @endif
-                  </div>
+                  @endif
+                  
+                  @if(isset($notification->data['status']))
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium
+                      @if($notification->data['status'] === 'approved') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                      @elseif($notification->data['status'] === 'rejected') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
+                      @elseif($notification->data['status'] === 'in_progress') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
+                      @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
+                      @endif">
+                      {{ ucfirst(str_replace('_', ' ', $notification->data['status'])) }}
+                    </span>
+                  @endif
                 </div>
+              @endif
 
-                <p class="mt-1 text-sm {{ $notification->is_read ? 'text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300' }}">
-                  {{ $notification->message }}
-                </p>
-
-                <!-- Additional Data Display -->
-                @if($notification->data)
-                  <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    @if(isset($notification->data['scholarship_name']))
-                      <span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 mr-2">
-                        <span class="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                            {{ $notification->data['scholarship_name'] }}
-                        </span>
-                      </span>
-                    @endif
-                    
-                    @if(isset($notification->data['status']))
-                      <span class="inline-flex items-center px-2 py-1 rounded 
-                        @if($notification->data['status'] === 'approved') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                        @elseif($notification->data['status'] === 'rejected') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
-                        @elseif($notification->data['status'] === 'in_progress') bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
-                        @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
-                        @endif">
-                        {{ ucfirst(str_replace('_', ' ', $notification->data['status'])) }}
-                      </span>
-                    @endif
-                  </div>
-
-                  <!-- SFAO Remarks -->
-                  @if(isset($notification->data['remarks']) && !empty($notification->data['remarks']))
-                    <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-400">
-                      <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                          <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                          </svg>
-                        </div>
-                        <div class="ml-3">
-                          <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">SFAO Comments:</h4>
-                          <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">{{ $notification->data['remarks'] }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  @endif
-
-                  <!-- Document Status Details -->
-                  @if(isset($notification->data['document_status']) && $notification->data['document_status'])
-                    <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Document Status:</h4>
-                      <div class="grid grid-cols-3 gap-2 text-xs">
-                        @if($notification->data['document_status']['approved'] > 0)
-                          <div class="flex items-center">
-                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            <span class="text-gray-600 dark:text-gray-400">{{ $notification->data['document_status']['approved'] }} Approved</span>
-                          </div>
-                        @endif
-                        @if($notification->data['document_status']['pending'] > 0)
-                          <div class="flex items-center">
-                            <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                            <span class="text-gray-600 dark:text-gray-400">{{ $notification->data['document_status']['pending'] }} Pending</span>
-                          </div>
-                        @endif
-                        @if($notification->data['document_status']['rejected'] > 0)
-                          <div class="flex items-center">
-                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                            <span class="text-gray-600 dark:text-gray-400">{{ $notification->data['document_status']['rejected'] }} Rejected</span>
-                          </div>
-                        @endif
-                      </div>
-                    </div>
-                  @endif
-
-                  <!-- Specific Document Lists -->
-                  @if(isset($notification->data['pending_documents']) && count($notification->data['pending_documents']) > 0)
-                    <div class="mt-2">
-                      <span class="flex items-center gap-1 text-xs font-medium text-yellow-600 dark:text-yellow-400">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Pending Documents:
-                      </span>
-                      <div class="mt-1 flex flex-wrap gap-1">
-                        @foreach($notification->data['pending_documents'] as $doc)
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                            {{ $doc }}
-                          </span>
-                        @endforeach
-                      </div>
-                    </div>
-                  @endif
-
-                  @if(isset($notification->data['rejected_documents']) && count($notification->data['rejected_documents']) > 0)
-                    <div class="mt-2">
-                      <span class="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          Rejected Documents:
-                      </span>
-                      <div class="mt-1 flex flex-wrap gap-1">
-                        @foreach($notification->data['rejected_documents'] as $doc)
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                            {{ $doc }}
-                          </span>
-                        @endforeach
-                      </div>
-                    </div>
-                  @endif
-                @endif
-
-                <!-- Action Buttons -->
-                <div class="mt-3 flex space-x-2">
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700/50 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div class="flex space-x-2">
                   @if($notification->type === 'scholarship_created' && isset($notification->data['scholarship_id']))
                     <a href="{{ route('student.scholarships') }}#scholarship-{{ $notification->data['scholarship_id'] }}" 
-                       class="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition">
+                       class="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition shadow-sm"
+                       @click.stop>
                       View Scholarship
                     </a>
                   @endif
+                </div>
+
+                <div class="flex space-x-2">
+                  <button x-show="!isRead" 
+                          @click.stop="markAsRead({{ $notification->id }})"
+                          class="text-xs px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 dark:border-gray-600 rounded-md transition shadow-sm flex items-center gap-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Mark Read
+                  </button>
+                  
+                  <button @click.stop="deleteNotification({{ $notification->id }})"
+                          class="text-xs px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 dark:bg-gray-700 dark:hover:bg-red-900/30 dark:text-red-400 dark:border-gray-600 dark:hover:border-red-800 rounded-md transition shadow-sm flex items-center gap-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                  </button>
                 </div>
               </div>
             </div>
@@ -486,30 +401,40 @@ document.addEventListener('alpine:init', () => {
     unreadCount: 0,
     selectedNotification: null,
     showModal: false,
+    filteredCount: 0,
 
     init() {
-      // Initialize data from HTML attributes
-      const dataElement = document.querySelector('[data-notifications]');
-      this.notifications = dataElement ? JSON.parse(dataElement.dataset.notifications) : [];
-      this.unreadCount = parseInt(dataElement?.dataset.unreadCount || '0');
+      this.notifications = JSON.parse(this.$el.dataset.notifications);
+      this.unreadCount = parseInt(this.$el.dataset.unreadCount);
+      this.updateFilteredCount();
+
+      // Listen for subtab-changed event from parent dashboard
+      window.addEventListener('subtab-changed', (e) => {
+        this.syncFilterWithSubTab(e.detail);
+      });
+
+      // Initial sync
+      this.syncFilterWithSubTab(this.$parent.subTab);
+    },
+
+    updateFilteredCount() {
+      if (this.filterType === '') {
+        this.filteredCount = this.notifications.length;
+      } else {
+        this.filteredCount = this.notifications.filter(n => n.type === this.filterType).length;
+      }
     },
 
     openNotificationModal(notificationId) {
-      console.log('Opening modal for notification:', notificationId);
-      
       // Mark as read when clicked
       this.markAsRead(notificationId);
       
       // Find notification data
       const notification = this.notifications.find(n => n.id === notificationId);
-      console.log('Found notification:', notification);
       
       if (notification) {
         this.selectedNotification = notification;
         this.showModal = true;
-        console.log('Modal should be visible now');
-      } else {
-        console.error('Notification not found with ID:', notificationId);
       }
     },
 
@@ -518,36 +443,53 @@ document.addEventListener('alpine:init', () => {
       this.selectedNotification = null;
     },
 
+    syncFilterWithSubTab(subTab) {
+      // Remove the tab check to ensure filter updates even when switching tabs simultaneously
+      // if (this.$parent.tab !== 'notifications') return;
+
+      switch(subTab) {
+        case 'scholarship_created':
+          this.filterType = 'scholarship_created';
+          break;
+        case 'application_status':
+          this.filterType = 'application_status';
+          break;
+        case 'sfao_comment':
+          this.filterType = 'sfao_comment';
+          break;
+        default:
+          this.filterType = '';
+      }
+      this.updateFilteredCount();
+    },
+
     markAsRead(notificationId) {
       fetch(`/notifications/${notificationId}/mark-read`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Content-Type': 'application/json'
         }
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Update local state
           const notification = this.notifications.find(n => n.id === notificationId);
           if (notification) {
             notification.is_read = true;
-            this.unreadCount = Math.max(0, this.unreadCount - 1);
-          }
-          
-          // Update UI
-          const element = document.querySelector(`[data-notification-id="${notificationId}"]`);
-          if (element) {
-            element.classList.add('opacity-75');
-            element.classList.remove('border-bsu-red');
-            element.classList.add('border-gray-300');
+            // Update local state for immediate feedback
+            const el = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            if (el) {
+              el.__x.$data.isRead = true;
+            }
+            
+            if (this.unreadCount > 0) {
+              this.unreadCount--;
+            }
           }
         }
       })
-      .catch(error => {
-        console.error('Error marking notification as read:', error);
-      });
+      .catch(error => console.error('Error:', error));
     },
 
     markAllAsRead() {
@@ -578,6 +520,39 @@ document.addEventListener('alpine:init', () => {
 
     refreshNotifications() {
       window.location.reload();
+    },
+
+    deleteNotification(notificationId) {
+      if (!confirm('Are you sure you want to delete this notification?')) return;
+
+      fetch(`/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const index = this.notifications.findIndex(n => n.id === notificationId);
+          if (index > -1) {
+             const wasUnread = !this.notifications[index].is_read;
+             this.notifications.splice(index, 1);
+             if (wasUnread) {
+               this.unreadCount = Math.max(0, this.unreadCount - 1);
+             }
+             this.updateFilteredCount();
+             
+             // Remove element from DOM
+             const el = document.querySelector(`[data-notification-id="${notificationId}"]`);
+             if (el) el.remove();
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting notification:', error);
+      });
     }
   }));
 });

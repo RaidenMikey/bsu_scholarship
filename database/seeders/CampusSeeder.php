@@ -43,7 +43,7 @@ class CampusSeeder extends Seeder
         ]);
 
         $nasugbu = DB::table('campuses')->insertGetId([
-            'name' => 'Nasugbu',
+            'name' => 'ARASOF',
             'type' => 'constituent',
             'parent_campus_id' => null,
             'has_sfao_admin' => true,
@@ -52,7 +52,7 @@ class CampusSeeder extends Seeder
         ]);
 
         $malvar = DB::table('campuses')->insertGetId([
-            'name' => 'Malvar',
+            'name' => 'JPLPC',
             'type' => 'constituent',
             'parent_campus_id' => null,
             'has_sfao_admin' => true,

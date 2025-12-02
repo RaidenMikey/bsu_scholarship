@@ -230,6 +230,18 @@ class ApplicationManagementController extends Controller
             $students = $students->reverse();
         }
 
+        // Pagination Logic for Students (Applicants)
+        $perPageStudents = 10;
+        $pageStudents = $request->get('page_applicants', 1);
+        
+        $students = new LengthAwarePaginator(
+            $students->forPage($pageStudents, $perPageStudents),
+            $students->count(),
+            $perPageStudents,
+            $pageStudents,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_applicants']
+        );
+
         // Load applications for each student separately to ensure relationships are loaded
         $studentIds = $students->pluck('student_id');
         $applicationsData = Application::with('scholarship')

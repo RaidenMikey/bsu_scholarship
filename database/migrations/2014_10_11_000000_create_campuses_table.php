@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('campuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // e.g., Pablo Borbon, Alangilan, Nasugbu
+            $table->string('name'); // e.g., Pablo Borbon, Alangilan, ARASOF
             $table->enum('type', ['constituent', 'extension'])->default('constituent');
             $table->foreignId('parent_campus_id')->nullable()->constrained('campuses')->onDelete('cascade');
             $table->boolean('has_sfao_admin')->default(false); // Only constituent campuses have SFAO admins

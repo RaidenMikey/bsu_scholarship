@@ -355,5 +355,10 @@
             </div>
         </div>
     @endif
+
+    <!-- Pagination Links -->
+    <div class="mt-8">
+        {{ $students->appends(['tab' => 'applicants'])->links('vendor.pagination.custom') }}
+    </div>
 </div>
 

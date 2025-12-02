@@ -219,37 +219,8 @@ Route::post('/sfao/password-setup', [UserManagementController::class, 'setupSFAO
 // NOTIFICATION ROUTES
 // =====================================================
 
-// Mark notification as read
-Route::post('/notifications/{id}/mark-read', function ($id) {
-    if (!session()->has('user_id')) {
-        return response()->json(['error' => 'Unauthorized'], 401);
-    }
-    
-    $notification = \App\Models\Notification::where('id', $id)
-        ->where('user_id', session('user_id'))
-        ->first();
-    
-    if (!$notification) {
-        return response()->json(['error' => 'Notification not found'], 404);
-    }
-    
-    $notification->markAsRead();
-    
-    return response()->json(['success' => true]);
-});
-
-// Mark all notifications as read
-Route::post('/notifications/mark-all-read', function () {
-    if (!session()->has('user_id')) {
-        return response()->json(['error' => 'Unauthorized'], 401);
-    }
-    
-    \App\Models\Notification::where('user_id', session('user_id'))
-        ->where('is_read', false)
-        ->update([
-            'is_read' => true,
-            'read_at' => now()
-        ]);
-    
-    return response()->json(['success' => true]);
+Route::middleware(['web'])->group(function () {
+    Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 });

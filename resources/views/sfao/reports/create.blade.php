@@ -23,8 +23,11 @@
     x-init="$watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val))">
 <head>
     <script>
-        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true') {
-            document.documentElement.classList.add('dark');
+        // Immediately apply dark mode preference to prevent FOUC
+        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true' || (!('darkMode_{{ $user->id }}' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
     </script>
     <meta charset="UTF-8">
@@ -42,8 +45,8 @@
         .focus\:border-bsu-red:focus { border-color: #dc2626; }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="max-w-4xl mx-auto py-8 px-4">
             <!-- Header -->
             @include('sfao.partials.page-header', [
@@ -51,7 +54,7 @@
                 'subtitle' => 'Generate a comprehensive report for Central Administration'
             ])
 
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden transition-colors duration-200">
                 <div class="bg-bsu-red px-8 py-6">
                     <h3 class="text-xl font-semibold text-white">Report Information</h3>
                     <p class="text-white mt-1">Fill in the details below to create your report</p>
@@ -61,7 +64,7 @@
                     @csrf
                     
                     <!-- Report Type -->
-                    <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,14 +72,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <label for="report_type" class="block text-sm font-semibold text-bsu-red">
+                                <label for="report_type" class="block text-sm font-semibold text-bsu-red dark:text-red-400">
                                     Report Type <span class="text-red-500">*</span>
                                 </label>
-                                <p class="text-sm text-gray-500">Choose the type of report you want to create</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Choose the type of report you want to create</p>
                             </div>
                         </div>
                         <select name="report_type" id="report_type" required 
-                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
+                                class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200">
                             <option value="">Select Report Type</option>
                             <option value="monthly" {{ old('report_type') == 'monthly' ? 'selected' : '' }}>Monthly Report</option>
                             <option value="quarterly" {{ old('report_type') == 'quarterly' ? 'selected' : '' }}>Quarterly Report</option>
@@ -94,7 +97,7 @@
                     </div>
 
                     <!-- Campus Selection -->
-                    <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,14 +105,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <label for="campus_id" class="block text-sm font-semibold text-bsu-red">
+                                <label for="campus_id" class="block text-sm font-semibold text-bsu-red dark:text-red-400">
                                     Campus to Report On <span class="text-red-500">*</span>
                                 </label>
-                                <p class="text-sm text-gray-500">Select which campus you want to generate a report for</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Select which campus you want to generate a report for</p>
                             </div>
                         </div>
                         <select name="campus_id" id="campus_id" required 
-                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
+                                class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200">
                             <option value="">Select Campus</option>
                             @foreach($campusOptions as $campusOption)
                                 <option value="{{ $campusOption->id }}" {{ old('campus_id') == $campusOption->id ? 'selected' : '' }}>
@@ -128,7 +131,7 @@
                     </div>
 
                     <!-- Title -->
-                    <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,14 +139,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <label for="title" class="block text-sm font-semibold text-bsu-red">
+                                <label for="title" class="block text-sm font-semibold text-bsu-red dark:text-red-400">
                                     Report Title <span class="text-red-500">*</span>
                                 </label>
-                                <p class="text-sm text-gray-500">Give your report a descriptive title</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Give your report a descriptive title</p>
                             </div>
                         </div>
                         <input type="text" name="title" id="title" required value="{{ old('title') }}"
-                               class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200"
+                               class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200"
                                placeholder="e.g., Scholarship Applications Report - January 2025">
                         @error('title')
                             <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -156,7 +159,7 @@
                     </div>
 
                     <!-- Description -->
-                    <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,14 +167,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <label for="description" class="block text-sm font-semibold text-bsu-red">
+                                <label for="description" class="block text-sm font-semibold text-bsu-red dark:text-red-400">
                                     Description
                                 </label>
-                                <p class="text-sm text-gray-500">Provide a brief overview of the report</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Provide a brief overview of the report</p>
                             </div>
                         </div>
                         <textarea name="description" id="description" rows="4"
-                                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200 resize-none"
+                                  class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200 resize-none"
                                   placeholder="Brief description of the report...">{{ old('description') }}</textarea>
                         @error('description')
                             <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -184,7 +187,7 @@
                     </div>
 
                     <!-- Report Period -->
-                    <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-center mb-6">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,17 +195,17 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-sm font-semibold text-bsu-red">Report Period</h3>
-                                <p class="text-sm text-gray-500">Define the time range for your report</p>
+                                <h3 class="text-sm font-semibold text-bsu-red dark:text-red-400">Report Period</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Define the time range for your report</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="report_period_start" class="block text-sm font-medium text-bsu-red mb-2">
+                                <label for="report_period_start" class="block text-sm font-medium text-bsu-red dark:text-red-400 mb-2">
                                     Start Date <span class="text-red-500">*</span>
                                 </label>
                                 <input type="date" name="report_period_start" id="report_period_start" required value="{{ old('report_period_start') }}"
-                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
+                                       class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200">
                                 @error('report_period_start')
                                     <p class="mt-2 text-sm text-red-600 flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -213,11 +216,11 @@
                                 @enderror
                             </div>
                             <div>
-                                <label for="report_period_end" class="block text-sm font-medium text-bsu-red mb-2">
+                                <label for="report_period_end" class="block text-sm font-medium text-bsu-red dark:text-red-400 mb-2">
                                     End Date <span class="text-red-500">*</span>
                                 </label>
                                 <input type="date" name="report_period_end" id="report_period_end" required value="{{ old('report_period_end') }}"
-                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200">
+                                       class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200">
                                 @error('report_period_end')
                                     <p class="mt-2 text-sm text-red-600 flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -231,7 +234,7 @@
                     </div>
 
                     <!-- Campus Info -->
-                    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 transition-colors duration-200">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,30 +242,30 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-sm font-semibold text-bsu-red">Campus Information</h3>
-                                <p class="text-sm text-gray-500">Your campus details for this report</p>
+                                <h3 class="text-sm font-semibold text-bsu-red dark:text-red-400">Campus Information</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-300">Your campus details for this report</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <p class="text-sm font-medium text-gray-500">Campus Name</p>
-                                <p class="text-lg font-semibold text-gray-900">{{ $campus->name }}</p>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Campus Name</p>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ $campus->name }}</p>
                             </div>
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <p class="text-sm font-medium text-gray-500">Campus Type</p>
-                                <p class="text-lg font-semibold text-gray-900">{{ ucfirst($campus->type) }}</p>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Campus Type</p>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ ucfirst($campus->type) }}</p>
                             </div>
                             @if($campus->extensionCampuses->count() > 0)
-                            <div class="bg-white rounded-lg p-4 border border-gray-200 md:col-span-2">
-                                <p class="text-sm font-medium text-gray-500">Extension Campuses</p>
-                                <p class="text-lg font-semibold text-gray-900">{{ $campus->extensionCampuses->pluck('name')->join(', ') }}</p>
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600 md:col-span-2">
+                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Extension Campuses</p>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ $campus->extensionCampuses->pluck('name')->join(', ') }}</p>
                             </div>
                             @endif
                         </div>
                     </div>
 
                     <!-- Notes -->
-                    <div class="border border-gray-200 rounded-lg p-6">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,14 +273,14 @@
                                 </svg>
                             </div>
                             <div>
-                                <label for="notes" class="block text-sm font-semibold text-bsu-red">
+                                <label for="notes" class="block text-sm font-semibold text-bsu-red dark:text-red-400">
                                     Additional Notes
                                 </label>
-                                <p class="text-sm text-gray-500">Any additional information or comments</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Any additional information or comments</p>
                             </div>
                         </div>
                         <textarea name="notes" id="notes" rows="4"
-                                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red transition duration-200 resize-none"
+                                  class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white transition duration-200 resize-none"
                                   placeholder="Any additional notes or comments...">{{ old('notes') }}</textarea>
                         @error('notes')
                             <p class="mt-2 text-sm text-red-600 flex items-center">
@@ -290,7 +293,7 @@
                     </div>
 
                     <!-- Submit Options -->
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-6 transition-colors duration-200">
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
                                 <div class="w-10 h-10 bg-bsu-red rounded-lg flex items-center justify-center mr-4">
@@ -306,10 +309,10 @@
                                                class="h-5 w-5 text-bsu-red focus:ring-bsu-red border-gray-300 rounded">
                                     </div>
                                     <div class="ml-3">
-                                        <label for="submit_immediately" class="text-sm font-semibold text-bsu-red">
+                                        <label for="submit_immediately" class="text-sm font-semibold text-bsu-red dark:text-red-400">
                                             Submit immediately to Central Administration
                                         </label>
-                                        <p class="text-sm text-gray-600 mt-1">
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                             If unchecked, the report will be saved as a draft that you can edit and submit later.
                                         </p>
                                     </div>
@@ -319,9 +322,9 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 border border-gray-200 dark:border-gray-600 transition-colors duration-200">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center text-sm text-gray-500">
+                            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -329,7 +332,7 @@
                             </div>
                             <div class="flex items-center space-x-4">
                                 <a href="/sfao"
-                                   class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200">
+                                   class="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>

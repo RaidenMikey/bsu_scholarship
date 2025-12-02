@@ -335,14 +335,21 @@ class UserManagementController extends Controller
         // Get notifications for the student
         $notifications = Notification::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
-            ->limit(20)
+            ->limit(50)
             ->get();
 
-        $unreadCount = Notification::where('user_id', $userId)
+        $unreadCounts = Notification::where('user_id', $userId)
             ->where('is_read', false)
-            ->count();
+            ->selectRaw('type, count(*) as count')
+            ->groupBy('type')
+            ->pluck('count', 'type');
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount'));
+        $unreadCount = $unreadCounts->sum();
+        $unreadCountScholarships = $unreadCounts['scholarship_created'] ?? 0;
+        $unreadCountStatus = $unreadCounts['application_status'] ?? 0;
+        $unreadCountComments = $unreadCounts['sfao_comment'] ?? 0;
+
+        return view('student.dashboard', compact('hasApplication', 'scholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments'));
     }
 
     /**
@@ -476,7 +483,7 @@ class UserManagementController extends Controller
         // Get notifications for the student
         $notifications = Notification::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
-            ->limit(20)
+            ->limit(50)
             ->get();
 
         $unreadCount = Notification::where('user_id', $userId)

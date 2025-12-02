@@ -23,8 +23,11 @@
     x-init="$watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val))">
 <head>
     <script>
-        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true') {
-            document.documentElement.classList.add('dark');
+        // Immediately apply dark mode preference to prevent FOUC
+        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true' || (!('darkMode_{{ $user->id }}' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
     </script>
     <meta charset="UTF-8">
@@ -55,9 +58,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen transition-colors duration-200">
 
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             
             <!-- Page Header -->
@@ -66,7 +69,7 @@
             ])
             
             <!-- Enhanced Header -->
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in">
+            <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in transition-colors duration-200">
                 <div class="gradient-bg px-8 py-8 relative overflow-hidden">
                     <!-- Background Pattern -->
                     <div class="absolute inset-0 opacity-10">
@@ -135,45 +138,45 @@
                 </div>
 
                 @if($report->description)
-                <div class="px-8 py-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <div class="px-8 py-6 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         Description
                     </h3>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <p class="text-gray-700 leading-relaxed">{{ $report->description }}</p>
+                    <div class="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-600">
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ $report->description }}</p>
                     </div>
                 </div>
                 @endif
 
                 @if($report->notes)
-                <div class="px-8 py-6 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="px-8 py-6 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                         Notes
                     </h3>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-blue-200">
-                        <p class="text-gray-700 leading-relaxed">{{ $report->notes }}</p>
+                    <div class="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-blue-200 dark:border-blue-800">
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ $report->notes }}</p>
                     </div>
                 </div>
                 @endif
 
                 @if($report->central_feedback)
-                <div class="px-8 py-6 border-t border-gray-200 bg-gradient-to-r from-yellow-50 to-amber-50">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                <div class="px-8 py-6 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                         </svg>
                         Central Administration Feedback
                     </h3>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-yellow-200">
-                        <p class="text-gray-700 leading-relaxed mb-3">{{ $report->central_feedback }}</p>
+                    <div class="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-sm border border-yellow-200 dark:border-yellow-800">
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ $report->central_feedback }}</p>
                         @if($report->reviewed_at)
-                            <div class="flex items-center text-sm text-gray-500 border-t border-gray-200 pt-3">
+                            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-3">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -189,7 +192,7 @@
             </div>
 
             <!-- Enhanced Summary Statistics -->
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in">
+            <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in transition-colors duration-200">
                 <div class="gradient-bg px-8 py-6 relative overflow-hidden">
                     <!-- Background Pattern -->
                     <div class="absolute inset-0 opacity-10">
@@ -216,13 +219,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-8 bg-gradient-to-br from-gray-50 to-white">
+                <div class="p-8 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-bsu-red">Total Applications</p>
-                                    <p class="text-3xl font-bold text-gray-900">{{ $report->report_data['summary']['total_applications'] ?? 0 }}</p>
+                                    <p class="text-sm font-medium text-bsu-red dark:text-red-400">Total Applications</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['summary']['total_applications'] ?? 0 }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-bsu-red/10 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,11 +235,11 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-green-600">Approved Applications</p>
-                                    <p class="text-3xl font-bold text-gray-900">{{ $report->report_data['summary']['approved_applications'] ?? 0 }}</p>
+                                    <p class="text-sm font-medium text-green-600 dark:text-green-400">Approved Applications</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['summary']['approved_applications'] ?? 0 }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,11 +249,11 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-red-600">Rejected Applications</p>
-                                    <p class="text-3xl font-bold text-gray-900">{{ $report->report_data['summary']['rejected_applications'] ?? 0 }}</p>
+                                    <p class="text-sm font-medium text-red-600 dark:text-red-400">Rejected Applications</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['summary']['rejected_applications'] ?? 0 }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,11 +263,11 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-yellow-600">Pending Applications</p>
-                                    <p class="text-3xl font-bold text-gray-900">{{ $report->report_data['summary']['pending_applications'] ?? 0 }}</p>
+                                    <p class="text-sm font-medium text-yellow-600 dark:text-yellow-400">Pending Applications</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['summary']['pending_applications'] ?? 0 }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,11 +277,11 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-blue-600">Approval Rate</p>
-                                    <p class="text-3xl font-bold text-gray-900">{{ number_format($report->report_data['summary']['approval_rate'] ?? 0, 1) }}%</p>
+                                    <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Approval Rate</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($report->report_data['summary']['approval_rate'] ?? 0, 1) }}%</p>
                                 </div>
                                 <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,11 +291,11 @@
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-purple-600">Total Scholarships</p>
-                                    <p class="text-3xl font-bold text-gray-900">{{ $report->report_data['summary']['total_scholarships'] ?? 0 }}</p>
+                                    <p class="text-sm font-medium text-purple-600 dark:text-purple-400">Total Scholarships</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['summary']['total_scholarships'] ?? 0 }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,7 +311,7 @@
 
             @if(isset($report->report_data['scholarship_performance']))
             <!-- Scholarship Performance -->
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in">
+            <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in transition-colors duration-200">
                 <div class="gradient-bg px-8 py-6 relative overflow-hidden">
                     <div class="absolute inset-0 opacity-10">
                         <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
@@ -331,25 +334,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-8 bg-gradient-to-br from-gray-50 to-white">
+                <div class="p-8 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead class="bg-gray-50 dark:bg-gray-900">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scholarship</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approval Rate</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Scholarship</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Applications</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Approved</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Approval Rate</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                                 @foreach($report->report_data['scholarship_performance'] as $scholarship)
-                                <tr class="hover:bg-gray-50 transition-colors">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $scholarship['name'] }}</div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $scholarship['name'] }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $scholarship['total_applications'] ?? 0 }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $scholarship['approved_applications'] ?? 0 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">{{ $scholarship['total_applications'] ?? 0 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">{{ $scholarship['approved_applications'] ?? 0 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             {{ ($scholarship['approval_rate'] ?? 0) >= 70 ? 'bg-green-100 text-green-800' : 
@@ -368,7 +371,7 @@
 
             @if(isset($report->report_data['performance_insights']))
             <!-- Enhanced Performance Insights -->
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in">
+            <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden mb-8 card-hover fade-in transition-colors duration-200">
                 <div class="gradient-bg px-8 py-6 relative overflow-hidden">
                     <div class="absolute inset-0 opacity-10">
                         <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
@@ -391,25 +394,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-8 bg-gradient-to-br from-gray-50 to-white">
+                <div class="p-8 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
-                            <h4 class="text-sm font-medium text-bsu-red mb-2">Overall Performance Score</h4>
-                            <p class="text-2xl font-bold text-gray-900">{{ $report->report_data['performance_insights']['overall_score'] ?? 0 }}/100</p>
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
+                            <h4 class="text-sm font-medium text-bsu-red dark:text-red-400 mb-2">Overall Performance Score</h4>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['performance_insights']['overall_score'] ?? 0 }}/100</p>
                         </div>
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
-                            <h4 class="text-sm font-medium text-bsu-red mb-2">Campus Consistency</h4>
-                            <p class="text-2xl font-bold text-gray-900">{{ $report->report_data['performance_insights']['consistency_score'] ?? 0 }}%</p>
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
+                            <h4 class="text-sm font-medium text-bsu-red dark:text-red-400 mb-2">Campus Consistency</h4>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['performance_insights']['consistency_score'] ?? 0 }}%</p>
                         </div>
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-lg card-hover">
-                            <h4 class="text-sm font-medium text-bsu-red mb-2">Scholarship Utilization</h4>
-                            <p class="text-2xl font-bold text-gray-900">{{ $report->report_data['performance_insights']['utilization_score'] ?? 0 }}%</p>
+                        <div class="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-600 shadow-lg card-hover">
+                            <h4 class="text-sm font-medium text-bsu-red dark:text-red-400 mb-2">Scholarship Utilization</h4>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $report->report_data['performance_insights']['utilization_score'] ?? 0 }}%</p>
                         </div>
                     </div>
 
                     @if(isset($report->report_data['performance_insights']['warnings']) && count($report->report_data['performance_insights']['warnings']) > 0)
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-4">
-                        <h4 class="text-sm font-medium text-yellow-800 mb-3 flex items-center">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 mb-4">
+                        <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-3 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                             </svg>
@@ -417,15 +420,15 @@
                         </h4>
                         <ul class="list-disc list-inside space-y-2">
                             @foreach($report->report_data['performance_insights']['warnings'] as $warning)
-                            <li class="text-sm text-yellow-800">{{ $warning }}</li>
+                            <li class="text-sm text-yellow-800 dark:text-yellow-300">{{ $warning }}</li>
                             @endforeach
                         </ul>
                     </div>
                     @endif
 
                     @if(isset($report->report_data['performance_insights']['recommendations']) && count($report->report_data['performance_insights']['recommendations']) > 0)
-                    <div class="bg-green-50 border border-green-200 rounded-xl p-6">
-                        <h4 class="text-sm font-medium text-green-800 mb-3 flex items-center">
+                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6">
+                        <h4 class="text-sm font-medium text-green-800 dark:text-green-400 mb-3 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
@@ -433,7 +436,7 @@
                         </h4>
                         <ul class="list-disc list-inside space-y-2">
                             @foreach($report->report_data['performance_insights']['recommendations'] as $recommendation)
-                            <li class="text-sm text-green-800">{{ $recommendation }}</li>
+                            <li class="text-sm text-green-800 dark:text-green-300">{{ $recommendation }}</li>
                             @endforeach
                         </ul>
                     </div>
@@ -443,7 +446,7 @@
             @endif
 
             <!-- Enhanced Report Actions -->
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden card-hover fade-in">
+            <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden card-hover fade-in transition-colors duration-200">
                 <div class="gradient-bg px-8 py-6 relative overflow-hidden">
                     <div class="absolute inset-0 opacity-10">
                         <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
@@ -467,10 +470,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-8 bg-gradient-to-br from-gray-50 to-white">
+                <div class="p-8 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <!-- Report Info -->
-                        <div class="flex items-center text-sm text-gray-500">
+                        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -496,7 +499,7 @@
                                     </form>
                                     
                                     <a href="{{ route('sfao.reports.edit', $report->id) }}"
-                                       class="inline-flex items-center px-6 py-3 border border-bsu-red shadow-sm text-sm font-medium rounded-lg text-bsu-red bg-white hover:bg-bsu-red hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition duration-200 h-12">
+                                       class="inline-flex items-center px-6 py-3 border border-bsu-red shadow-sm text-sm font-medium rounded-lg text-bsu-red bg-white dark:bg-gray-800 hover:bg-bsu-red hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition duration-200 h-12">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
@@ -507,7 +510,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                                class="inline-flex items-center px-6 py-3 border border-red-600 shadow-sm text-sm font-medium rounded-lg text-red-600 bg-white hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 h-12"
+                                                class="inline-flex items-center px-6 py-3 border border-red-600 shadow-sm text-sm font-medium rounded-lg text-red-600 bg-white dark:bg-gray-800 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 h-12"
                                                 onclick="return confirm('Are you sure you want to delete this report? This action cannot be undone.')">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>

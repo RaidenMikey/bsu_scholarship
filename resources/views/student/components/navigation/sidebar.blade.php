@@ -20,7 +20,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholarships
         </div>
-        <button @click="tab = 'scholarships'; subTab = 'all'"
+        <button type="button" @click="tab = 'scholarships'; subTab = 'all'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'all') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -30,7 +30,7 @@
           </svg>
           All Scholarships
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'private'"
+        <button type="button" @click="tab = 'scholarships'; subTab = 'private'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'private') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,7 +38,7 @@
           </svg>
           Private Scholarships
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'government'"
+        <button type="button" @click="tab = 'scholarships'; subTab = 'government'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'government') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,7 +53,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Application Forms
         </div>
-        <button @click="tab = 'scholarships'; subTab = 'form'"
+        <button type="button" @click="tab = 'scholarships'; subTab = 'form'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,7 @@
           </svg>
           SFAO Application Form
         </button>
-        <button @click="tab = 'scholarships'; subTab = 'gvsreap_form'"
+        <button type="button" @click="tab = 'scholarships'; subTab = 'gvsreap_form'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="(tab === 'scholarships' && subTab === 'gvsreap_form') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,7 +76,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Applications
         </div>
-        <button @click="tab = 'applied-scholarships'"
+        <button type="button" @click="tab = 'applied-scholarships'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'applied-scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,7 +86,7 @@
           </svg>
           Applied Scholarships
         </button>
-        <button @click="tab = 'application-tracking'"
+        <button type="button" @click="tab = 'application-tracking'"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'application-tracking' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,23 +96,70 @@
         </button>
       </div>
 
-      <button @click="tab = 'notifications'"
-              class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition relative"
-              :class="tab === 'notifications' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-        <span class="flex items-center justify-between">
-          <span class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            Notifications
-          </span>
+      <!-- Notifications Header -->
+      <div class="space-y-1">
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider flex justify-between items-center">
+          <span>Notifications</span>
+        </div>
+        
+        <button type="button" @click="tab = 'notifications'; subTab = 'all'"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="(tab === 'notifications' && (subTab === 'all' || !subTab)) ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          All Notifications
           @if($unreadCount > 0)
-            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-auto">
               {{ $unreadCount }}
             </span>
           @endif
-        </span>
-      </button>
+        </button>
+
+        <button type="button" @click="tab = 'notifications'; subTab = 'scholarship_created'"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="(tab === 'notifications' && subTab === 'scholarship_created') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+          </svg>
+          Scholarships
+          @if($unreadCountScholarships > 0)
+            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-auto">
+              {{ $unreadCountScholarships }}
+            </span>
+          @endif
+        </button>
+
+        <button type="button" @click="tab = 'notifications'; subTab = 'application_status'"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="(tab === 'notifications' && subTab === 'application_status') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          </svg>
+          Status Updates
+          @if($unreadCountStatus > 0)
+            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-auto">
+              {{ $unreadCountStatus }}
+            </span>
+          @endif
+        </button>
+
+        <button type="button" @click="tab = 'notifications'; subTab = 'sfao_comment'"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="(tab === 'notifications' && subTab === 'sfao_comment') ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          Comments
+          @if($unreadCountComments > 0)
+            <span class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-auto">
+              {{ $unreadCountComments }}
+            </span>
+          @endif
+        </button>
+      </div>
     </nav>
 
     <!-- Settings Section Removed -->

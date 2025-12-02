@@ -31,6 +31,7 @@
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
+    $watch('subTab', val => $dispatch('subtab-changed', val));
   ">
 
 <head>
