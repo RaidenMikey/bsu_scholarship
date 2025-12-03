@@ -1,4 +1,4 @@
-<div x-show="tab === 'applicants' || tab === 'applicants-not_applied' || tab === 'applicants-in_progress' || tab === 'applicants-pending' || tab === 'applicants-rejected' || tab === 'applicants-approved'" 
+<div x-show="tab.startsWith('applicants')" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
@@ -124,7 +124,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Students</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $studentsAll->total() }}</p>
                 </div>
             </div>
         </div>
@@ -139,7 +139,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->filter(function($student) { return in_array('pending', $student->application_status ?? []); })->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $studentsPending->total() }}</p>
                 </div>
             </div>
         </div>
@@ -153,7 +153,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Rejected</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->filter(function($student) { return in_array('rejected', $student->application_status ?? []); })->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $studentsRejected->total() }}</p>
                 </div>
             </div>
         </div>
@@ -167,7 +167,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Not Applied</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->where('has_applications', false)->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $studentsNotApplied->total() }}</p>
                 </div>
             </div>
         </div>
@@ -181,184 +181,191 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $students->filter(function($student) { return isset($student->has_approved_documents) && $student->has_approved_documents; })->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $studentsApproved->total() }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    @if($students->isEmpty())
-        <div class="text-center py-12">
-            <div class="text-gray-400 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Students Found</h3>
-            <p class="text-gray-500 dark:text-gray-500">No students have registered in the system yet.</p>
-        </div>
-    @else
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-bsu-red text-white">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">#</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Student</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Application Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Documents</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Applied Scholarships</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Grant Count</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        @foreach($students as $index => $student)
-                            <tr x-show="
-                                tab === 'applicants' ||
-                                (tab === 'applicants-not_applied' && {{ !$student->has_applications ? 'true' : 'false' }}) ||
-                                (tab === 'applicants-in_progress' && {{ in_array('in_progress', $student->application_status ?? []) ? 'true' : 'false' }}) ||
-                                (tab === 'applicants-pending' && {{ in_array('pending', $student->application_status ?? []) ? 'true' : 'false' }}) ||
-                                (tab === 'applicants-rejected' && {{ in_array('rejected', $student->application_status ?? []) ? 'true' : 'false' }}) ||
-                                (tab === 'applicants-approved' && {{ $student->has_approved_documents ? 'true' : 'false' }})
-                            " class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $index + 1 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-10 w-10">
-                                            <div class="h-10 w-10 rounded-full bg-bsu-red flex items-center justify-center">
-                                                <span class="text-sm font-medium text-white">
-                                                    {{ strtoupper(substr($student->name, 0, 2)) }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $student->name }}</div>
-                                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $student->email }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($student->has_applications)
-                                        <div class="flex flex-col space-y-2">
-                                            @foreach($student->application_status as $status)
-                                                <div class="flex items-center space-x-2">
-                                                    @if($status === 'rejected')
-                                                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                        </svg>
-                                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                            <span class="flex items-center gap-1 text-red-600">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                                </svg>
-                                                                Rejected
-                                                            </span>
+    @php
+        $tabs = [
+            'applicants' => $studentsAll,
+            'applicants-not_applied' => $studentsNotApplied,
+            'applicants-in_progress' => $studentsInProgress,
+            'applicants-pending' => $studentsPending,
+            'applicants-approved' => $studentsApproved,
+            'applicants-rejected' => $studentsRejected,
+        ];
+    @endphp
+
+    @foreach($tabs as $tabKey => $studentsList)
+        <div x-show="tab === '{{ $tabKey }}'">
+            @if($studentsList->isEmpty())
+                <div class="text-center py-12">
+                    <div class="text-gray-400 mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Students Found</h3>
+                    <p class="text-gray-500 dark:text-gray-500">No students found for this category.</p>
+                </div>
+            @else
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-bsu-red text-white">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">#</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Student</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Application Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Documents</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Applied Scholarships</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Grant Count</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                @foreach($studentsList as $index => $student)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                            {{ $studentsList->firstItem() + $index }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <div class="h-10 w-10 rounded-full bg-bsu-red flex items-center justify-center">
+                                                        <span class="text-sm font-medium text-white">
+                                                            {{ strtoupper(substr($student->name, 0, 2)) }}
                                                         </span>
-                                                    @elseif($status === 'pending')
-                                                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                        </svg>
-                                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                            <span class="flex items-center gap-1 text-yellow-600">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                                Pending
-                                                            </span>
-                                                        </span>
-                                                    @else
-                                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                                            {{ ucfirst($status) }}
-                                                        </span>
-                                                    @endif
+                                                    </div>
                                                 </div>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <div class="flex items-center space-x-2">
-                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
-                                            </svg>
-                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                                Not Applied
-                                            </span>
-                                        </div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($student->has_documents)
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                            </svg>
-                                            <span class="text-sm text-green-600 dark:text-green-400 font-medium">
-                                                {{ $student->documents_count }} uploaded
-                                            </span>
-                                        </div>
-                                        @if($student->last_uploaded)
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {{ \Carbon\Carbon::parse($student->last_uploaded)?->format('M d, Y') }}
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $student->name }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $student->email }}</div>
+                                                </div>
                                             </div>
-                                        @endif
-                                    @else
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 text-red-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                            </svg>
-                                            <span class="text-sm text-red-600 dark:text-red-400 font-medium">No documents</span>
-                                        </div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if($student->has_applications && count($student->applied_scholarships) > 0)
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($student->applied_scholarships as $scholarship)
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
-                                                    {{ $scholarship }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if($student->has_applications && isset($student->applications_with_types))
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($student->applications_with_types as $app)
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $app['grant_count_badge_color'] }}">
-                                                    {{ $app['grant_count_display'] }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex space-x-2">
-                                        @if($student->has_documents)
-                                            <a href="{{ route('sfao.evaluation.show', $student->student_id) }}"
-                                               class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                Evaluate
-                                            </a>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($student->has_applications)
+                                                <div class="flex flex-col space-y-2">
+                                                    @foreach($student->application_status as $status)
+                                                        <div class="flex items-center space-x-2">
+                                                            @if($status === 'rejected')
+                                                                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                                </svg>
+                                                                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                                    <span class="flex items-center gap-1 text-red-600">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                        Rejected
+                                                                    </span>
+                                                                </span>
+                                                            @elseif($status === 'pending')
+                                                                <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                </svg>
+                                                                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                                    <span class="flex items-center gap-1 text-yellow-600">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                        Pending
+                                                                    </span>
+                                                                </span>
+                                                            @else
+                                                                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                                                    {{ ucfirst($status) }}
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <div class="flex items-center space-x-2">
+                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
+                                                    </svg>
+                                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                                        Not Applied
+                                                    </span>
+                                                </div>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($student->has_documents)
+                                                <div class="flex items-center">
+                                                    <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <span class="text-sm text-green-600 dark:text-green-400 font-medium">
+                                                        {{ $student->documents_count }} uploaded
+                                                    </span>
+                                                </div>
+                                                @if($student->last_uploaded)
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        {{ \Carbon\Carbon::parse($student->last_uploaded)?->format('M d, Y') }}
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="flex items-center">
+                                                    <svg class="w-4 h-4 text-red-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <span class="text-sm text-red-600 dark:text-red-400 font-medium">No documents</span>
+                                                </div>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            @if($student->has_applications && count($student->applied_scholarships) > 0)
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach($student->applied_scholarships as $scholarship)
+                                                        <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
+                                                            {{ $scholarship }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            @if($student->has_applications && isset($student->applications_with_types))
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach($student->applications_with_types as $app)
+                                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded {{ $app['grant_count_badge_color'] }}">
+                                                            {{ $app['grant_count_display'] }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex space-x-2">
+                                                @if($student->has_documents)
+                                                    <a href="{{ route('sfao.evaluation.show', $student->student_id) }}"
+                                                       class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                        Evaluate
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination Links -->
+                <div class="mt-8">
+                    {{ $studentsList->appends(['tab' => $tabKey])->links('vendor.pagination.custom') }}
+                </div>
+            @endif
         </div>
-    @endif
-
-    <!-- Pagination Links -->
-    <div class="mt-8">
-        {{ $students->appends(['tab' => 'applicants'])->links('vendor.pagination.custom') }}
-    </div>
+    @endforeach
 </div>
-

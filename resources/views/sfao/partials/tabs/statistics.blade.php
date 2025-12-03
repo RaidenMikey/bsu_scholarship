@@ -55,7 +55,7 @@
                         <option value="all">All Departments</option>
                         <!-- Departments will be populated dynamically based on campus selection or all available -->
                         <template x-for="dept in availableDepartments" :key="dept.id">
-                            <option :value="dept.short_name" x-text="dept.short_name + ' - ' + dept.name"></option>
+                            <option :value="dept.short_name" x-text="dept.short_name"></option>
                         </template>
                     </select>
                 </div>
@@ -80,15 +80,28 @@
         </div>
 
         <!-- Analytics Charts Section -->
+        
+        <!-- Row 1: Department Application Status (Full Width) -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
+            <div class="text-center mb-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Department Application Status</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400" x-text="getCurrentFilterLabel()"></p>
+            </div>
+            <div class="h-96 flex items-center justify-center">
+                <canvas id="sfaoDepartmentChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Row 2: Gender & Scholarship Type -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Application Status Chart -->
+            <!-- Scholarship Scholar Status Chart -->
             <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <div class="text-center mb-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Application Status</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Scholarship Scholar Status</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400" x-text="getCurrentFilterLabel()"></p>
                 </div>
                 <div class="h-64 flex items-center justify-center">
-                    <canvas id="sfaoApplicationStatusChart"></canvas>
+                    <canvas id="sfaoScholarshipTypeChart"></canvas>
                 </div>
             </div>
 
@@ -101,17 +114,6 @@
                 <div class="h-64 flex items-center justify-center">
                     <canvas id="sfaoGenderChart"></canvas>
                 </div>
-            </div>
-        </div>
-
-        <!-- Department Distribution Chart (Full Width) -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
-            <div class="text-center mb-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Department Distribution</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400" x-text="getCurrentFilterLabel()"></p>
-            </div>
-            <div class="h-80 flex items-center justify-center">
-                <canvas id="sfaoDepartmentChart"></canvas>
             </div>
         </div>
 
@@ -232,317 +234,446 @@
     
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('sfaoStatisticsTab', () => ({
-                charts: {
-                    applicationStatus: null,
+            Alpine.data('sfaoStatisticsTab', () => {
+                // Store chart instances outside of Alpine's reactive scope
+                let charts = {
                     department: null,
-                    gender: null
-                },
-                analyticsData: JSON.parse(document.getElementById('sfao-analytics-data').dataset.analytics || '{}'),
-                campusOptions: @json($campusOptions),
-                filteredData: {},
-                availableDepartments: [],
-                filters: {
-                    campus: localStorage.getItem('sfaoStatsCampus') || '{{ $defaultStatsCampus }}',
-                    department: 'all',
-                    timePeriod: 'all'
-                },
-                
-                init() {
-                    console.log('SFAO Statistics tab initialized');
-                    console.log('Initial Campus Filter:', this.filters.campus);
-                    console.log('Campus Departments Map:', this.analyticsData.campus_departments);
+                    gender: null,
+                    scholarshipType: null
+                };
+
+                return {
+                    analyticsData: JSON.parse(document.getElementById('sfao-analytics-data').dataset.analytics || '{}'),
+                    campusOptions: @json($campusOptions),
+                    filteredData: {},
+                    availableDepartments: [],
+                    filters: {
+                        campus: localStorage.getItem('sfaoStatsCampus') || '{{ $defaultStatsCampus }}',
+                        department: 'all',
+                        timePeriod: 'all'
+                    },
                     
-                    this.availableDepartments = this.analyticsData.all_departments || [];
-                    
-                    // Initialize departments list based on current campus filter
-                    this.updateDepartmentsList(this.filters.campus);
-                    this.updateFilteredData();
-                    
-                    this.$watch('filters.campus', (value) => {
-                        console.log('Campus filter changed to:', value);
-                        this.updateDepartmentsList(value);
-                        this.applyFilters();
-                    });
-
-                    this.$watch('filters.department', () => {
-                        this.applyFilters();
-                    });
-
-                    this.$watch('filters.timePeriod', () => {
-                        this.applyFilters();
-                    });
-                    
-                    this.$nextTick(() => {
-                        setTimeout(() => {
-                            this.createAllCharts();
-                        }, 100);
-                    });
-
-                    // Listen for sidebar campus selection
-                    window.addEventListener('set-stats-filter', (e) => {
-                        console.log('Received set-stats-filter event:', e.detail);
-                        this.filters.campus = e.detail;
-                        // No need to call applyFilters here because $watch('filters.campus') handles it
-                    });
-                },
-
-                updateDepartmentsList(campusId) {
-                    console.log('Updating departments for campus:', campusId);
-                    
-                    if (campusId === 'all') {
-                        // All unique departments from all campuses
-                        const allShortNames = [...new Set(Object.values(this.analyticsData.campus_departments || {}).flat())];
-                        this.availableDepartments = (this.analyticsData.all_departments || []).filter(d => allShortNames.includes(d.short_name));
-                    } else {
-                        // Departments for specific campus
-                        const campusShortNames = this.analyticsData.campus_departments[campusId] || [];
-                        console.log('Short names for campus:', campusShortNames);
-                        this.availableDepartments = (this.analyticsData.all_departments || []).filter(d => campusShortNames.includes(d.short_name));
-                    }
-                    console.log('Available Departments:', this.availableDepartments);
-                    
-                    // Reset department selection if invalid
-                    if (this.filters.department !== 'all' && !this.availableDepartments.find(d => d.short_name === this.filters.department)) {
-                        this.filters.department = 'all';
-                    }
-                },
-                
-                updateFilteredData() {
-                    let data = JSON.parse(JSON.stringify(this.analyticsData)); // Deep copy
-                    let allStudents = this.analyticsData.all_students_data || [];
-
-                    // 1. Filter Department Stats based on Campus (Sidebar)
-                    let allowedDepartments = [];
-                    if (this.filters.campus === 'all') {
-                        const allDepts = Object.values(this.analyticsData.campus_departments || {}).flat();
-                        allowedDepartments = [...new Set(allDepts)];
-                        // allStudents remains as is (all campuses under SFAO)
-                    } else {
-                        allowedDepartments = this.analyticsData.campus_departments[this.filters.campus] || [];
-                        // Filter students by campus
-                        allStudents = allStudents.filter(s => s.campus_id == this.filters.campus);
-                    }
-
-                    if (data.department_stats) {
-                        data.department_stats = data.department_stats.filter(d => allowedDepartments.includes(d.name));
-                    }
-
-                    // 2. Filter by Department (Dropdown)
-                    if (this.filters.department !== 'all') {
-                        // Filter the stats list
-                        data.department_stats = data.department_stats.filter(d => d.name === this.filters.department);
+                    init() {
+                        console.log('SFAO Statistics tab initialized');
                         
-                        // Filter students by department
-                        allStudents = allStudents.filter(s => s.college === this.filters.department);
+                        this.availableDepartments = this.analyticsData.all_departments || [];
                         
-                        // Update Global Metrics based on the selected department
-                        const selectedDeptStats = this.analyticsData.department_stats.find(d => d.name === this.filters.department);
+                        // Initialize departments list based on current campus filter
+                        this.updateDepartmentsList(this.filters.campus);
+                        this.updateFilteredData();
                         
-                        if (selectedDeptStats) {
-                            data.total_students = selectedDeptStats.total_students;
-                            data.total_applications = selectedDeptStats.total_applications;
-                            data.approved_applications = selectedDeptStats.approved_applications;
-                            data.pending_applications = selectedDeptStats.pending_applications || 0;
-                            data.rejected_applications = selectedDeptStats.rejected_applications || 0;
-                            data.students_with_applications = selectedDeptStats.total_applications; // Approximation
-                            data.approval_rate = selectedDeptStats.approval_rate;
+                        this.$watch('filters.campus', (value) => {
+                            this.updateDepartmentsList(value);
+                            this.applyFilters();
+                        });
+
+                        this.$watch('filters.department', () => {
+                            this.applyFilters();
+                        });
+
+                        this.$watch('filters.timePeriod', () => {
+                            this.applyFilters();
+                        });
+                        
+                        this.$nextTick(() => {
+                            setTimeout(() => {
+                                this.createAllCharts();
+                            }, 100);
+                        });
+
+                        // Listen for sidebar campus selection
+                        window.addEventListener('set-stats-filter', (e) => {
+                            this.filters.campus = e.detail;
+                            // No need to call applyFilters here because $watch('filters.campus') handles it
+                        });
+
+                        // Watch for dark mode changes
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.attributeName === 'class') {
+                                    this.createAllCharts();
+                                }
+                            });
+                        });
+                        observer.observe(document.documentElement, { attributes: true });
+                    },
+
+                    getTextColor() {
+                        return document.documentElement.classList.contains('dark') ? '#ffffff' : '#374151';
+                    },
+
+                    updateDepartmentsList(campusId) {
+                        if (campusId === 'all') {
+                            // All unique departments from all campuses
+                            const allShortNames = [...new Set(Object.values(this.analyticsData.campus_departments || {}).flat())];
+                            this.availableDepartments = (this.analyticsData.all_departments || []).filter(d => allShortNames.includes(d.short_name));
                         } else {
-                            data.total_students = 0;
-                            data.total_applications = 0;
-                            data.approved_applications = 0;
-                            data.pending_applications = 0;
-                            data.rejected_applications = 0;
-                            data.approval_rate = 0;
+                            // Departments for specific campus
+                            const campusShortNames = this.analyticsData.campus_departments[campusId] || [];
+                            this.availableDepartments = (this.analyticsData.all_departments || []).filter(d => campusShortNames.includes(d.short_name));
                         }
-                    }
-
-                    // Calculate Gender Stats
-                    const genderCounts = { Male: 0, Female: 0 };
-                    allStudents.forEach(student => {
-                        if (student.sex === 'Male') genderCounts.Male++;
-                        else if (student.sex === 'Female') genderCounts.Female++;
-                    });
-                    data.genderStats = genderCounts;
-
-                    this.filteredData = data;
-                },
-
-                applyFilters() {
-                    this.updateFilteredData();
-                    this.updateCharts();
-                },
-                
-                getCurrentFilterLabel() {
-                    let label = 'All Data';
-                    if (this.filters.campus !== 'all') {
-                        const campus = this.campusOptions.find(c => c.id == this.filters.campus);
-                        label = 'Campus: ' + (campus ? campus.name : this.filters.campus);
-                    }
-                    if (this.filters.department !== 'all') {
-                        label += (this.filters.campus === 'all' ? ' | ' : ', ') + 'Dept: ' + this.filters.department;
-                    }
-                    return label;
-                },
-
-                createAllCharts() {
-                    this.createApplicationStatusChart();
-                    this.createDepartmentChart();
-                    this.createGenderChart();
-                },
-                
-                updateCharts() {
-                    this.updateApplicationStatusChart();
-                    this.updateDepartmentChart();
-                    this.updateGenderChart();
-                },
-                
-                createApplicationStatusChart() {
-                    const ctx = document.getElementById('sfaoApplicationStatusChart');
-                    if (!ctx) return;
-                    
-                    if (this.charts.applicationStatus) {
-                        this.charts.applicationStatus.destroy();
-                    }
-                    
-                    const data = this.getChartDataForType('application_status');
-                    
-                    this.charts.applicationStatus = new Chart(ctx, {
-                        type: 'pie',
-                        data: data,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'bottom' }
-                            }
-                        }
-                    });
-                },
-
-                updateApplicationStatusChart() {
-                    if (this.charts.applicationStatus) {
-                        const data = this.getChartDataForType('application_status');
-                        this.charts.applicationStatus.data = data;
-                        this.charts.applicationStatus.update();
-                    }
-                },
-
-                createDepartmentChart() {
-                    const ctx = document.getElementById('sfaoDepartmentChart');
-                    if (!ctx) return;
-                    
-                    if (this.charts.department) {
-                        this.charts.department.destroy();
-                    }
-
-                    // Prepare data from filteredData.department_stats
-                    const labels = (this.filteredData.department_stats || []).map(d => d.name);
-                    const values = (this.filteredData.department_stats || []).map(d => d.total_applications);
-
-                    this.charts.department = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Total Applications',
-                                data: values,
-                                backgroundColor: '#dd2222'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'bottom' }
-                            }
-                        }
-                    });
-                },
-
-                updateDepartmentChart() {
-                    if (this.charts.department) {
-                        const labels = (this.filteredData.department_stats || []).map(d => d.name);
-                        const values = (this.filteredData.department_stats || []).map(d => d.total_applications);
                         
-                        this.charts.department.data.labels = labels;
-                        this.charts.department.data.datasets[0].data = values;
-                        this.charts.department.update();
-                    }
-                },
+                        // Reset department selection if invalid
+                        if (this.filters.department !== 'all' && !this.availableDepartments.find(d => d.short_name === this.filters.department)) {
+                            this.filters.department = 'all';
+                        }
+                    },
+                    
+                    updateFilteredData() {
+                        let data = JSON.parse(JSON.stringify(this.analyticsData)); // Deep copy
+                        let allStudents = this.analyticsData.all_students_data || [];
+                        let allApplications = this.analyticsData.all_applications_data || [];
 
-                createGenderChart() {
-                    const ctx = document.getElementById('sfaoGenderChart');
-                    if (!ctx) return;
+                        // 1. Filter Department Stats based on Campus (Sidebar)
+                        let allowedDepartments = [];
+                        if (this.filters.campus === 'all') {
+                            const allDepts = Object.values(this.analyticsData.campus_departments || {}).flat();
+                            allowedDepartments = [...new Set(allDepts)];
+                            // allStudents remains as is (all campuses under SFAO)
+                        } else {
+                            allowedDepartments = this.analyticsData.campus_departments[this.filters.campus] || [];
+                            // Filter students by campus
+                            allStudents = allStudents.filter(s => s.campus_id == this.filters.campus);
+                            // Filter applications by campus
+                            allApplications = allApplications.filter(a => a.campus_id == this.filters.campus);
+                        }
 
-                    if (this.charts.gender) {
-                        this.charts.gender.destroy();
-                    }
+                        if (data.department_stats) {
+                            data.department_stats = data.department_stats.filter(d => allowedDepartments.includes(d.name));
+                        }
 
-                    this.charts.gender = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            labels: ['Male', 'Female'],
-                            datasets: [{
-                                data: [
-                                    this.filteredData.genderStats?.Male || 0,
-                                    this.filteredData.genderStats?.Female || 0
-                                ],
-                                backgroundColor: ['#3B82F6', '#EC4899'],
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
+                        // 2. Filter by Department (Dropdown)
+                        if (this.filters.department !== 'all') {
+                            // Filter the stats list
+                            data.department_stats = data.department_stats.filter(d => d.name === this.filters.department);
+                            
+                            // Filter students by department
+                            allStudents = allStudents.filter(s => s.college === this.filters.department);
+
+                            // Filter applications by department
+                            allApplications = allApplications.filter(a => a.college === this.filters.department);
+                            
+                            // Update Global Metrics based on the selected department
+                            const selectedDeptStats = this.analyticsData.department_stats.find(d => d.name === this.filters.department);
+                            
+                            if (selectedDeptStats) {
+                                data.total_students = selectedDeptStats.total_students;
+                                data.total_applications = selectedDeptStats.total_applications;
+                                data.approved_applications = selectedDeptStats.approved_applications;
+                                data.pending_applications = selectedDeptStats.pending_applications || 0;
+                                data.rejected_applications = selectedDeptStats.rejected_applications || 0;
+                                data.students_with_applications = selectedDeptStats.total_applications; // Approximation
+                                data.approval_rate = selectedDeptStats.approval_rate;
+                            } else {
+                                data.total_students = 0;
+                                data.total_applications = 0;
+                                data.approved_applications = 0;
+                                data.pending_applications = 0;
+                                data.rejected_applications = 0;
+                                data.approval_rate = 0;
+                            }
+                        }
+
+                        // 3. Filter by Time Period (if applicable)
+                        if (this.filters.timePeriod !== 'all') {
+                            const now = new Date();
+                            allApplications = allApplications.filter(a => {
+                                const date = new Date(a.created_at);
+                                if (this.filters.timePeriod === 'this_month') {
+                                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                                } else if (this.filters.timePeriod === 'last_3_months') {
+                                    const threeMonthsAgo = new Date();
+                                    threeMonthsAgo.setMonth(now.getMonth() - 3);
+                                    return date >= threeMonthsAgo;
+                                } else if (this.filters.timePeriod === 'this_year') {
+                                    return date.getFullYear() === now.getFullYear();
+                                }
+                                return true;
+                            });
+                        }
+
+                        // Calculate Gender Stats
+                        const genderCounts = { Male: 0, Female: 0 };
+                        allStudents.forEach(student => {
+                            if (student.sex === 'Male') genderCounts.Male++;
+                            else if (student.sex === 'Female') genderCounts.Female++;
+                        });
+                        data.genderStats = genderCounts;
+
+                        // Calculate Scholarship Stats (Scholars vs Non-Scholars)
+                        const scholarshipStats = {};
+                        allApplications.forEach(app => {
+                            const name = app.scholarship_name || 'Unknown Scholarship';
+                            if (!scholarshipStats[name]) {
+                                scholarshipStats[name] = { scholars: 0, nonScholars: 0 };
+                            }
+                            
+                            if (app.status === 'approved') {
+                                scholarshipStats[name].scholars++;
+                            } else {
+                                scholarshipStats[name].nonScholars++;
+                            }
+                        });
+                        data.scholarshipStats = scholarshipStats;
+
+                        this.filteredData = data;
+                    },
+
+                    applyFilters() {
+                        this.updateFilteredData();
+                        this.updateCharts();
+                    },
+                    
+                    getCurrentFilterLabel() {
+                        let label = 'All Data';
+                        if (this.filters.campus !== 'all') {
+                            const campus = this.campusOptions.find(c => c.id == this.filters.campus);
+                            label = 'Campus: ' + (campus ? campus.name : this.filters.campus);
+                        }
+                        if (this.filters.department !== 'all') {
+                            label += (this.filters.campus === 'all' ? ' | ' : ', ') + 'Dept: ' + this.filters.department;
+                        }
+                        return label;
+                    },
+
+                    createAllCharts() {
+                        this.createDepartmentChart();
+                        this.createGenderChart();
+                        this.createScholarshipStatusChart();
+                    },
+                    
+                    updateCharts() {
+                        this.updateDepartmentChart();
+                        this.updateGenderChart();
+                        this.updateScholarshipStatusChart();
+                    },
+                    
+                    createDepartmentChart() {
+                        const ctx = document.getElementById('sfaoDepartmentChart');
+                        if (!ctx) return;
+                        
+                        if (charts.department) {
+                            charts.department.destroy();
+                        }
+
+                        // Prepare data from filteredData.department_stats
+                        const labels = (this.filteredData.department_stats || []).map(d => d.name);
+                        const pending = (this.filteredData.department_stats || []).map(d => d.pending_applications || 0);
+                        const approved = (this.filteredData.department_stats || []).map(d => d.approved_applications || 0);
+                        const rejected = (this.filteredData.department_stats || []).map(d => d.rejected_applications || 0);
+                        const notApplied = (this.filteredData.department_stats || []).map(d => (d.total_students || 0) - (d.total_applications || 0));
+
+                        charts.department = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    {
+                                        label: 'Not Applied',
+                                        data: notApplied,
+                                        backgroundColor: '#9CA3AF'
+                                    },
+                                    {
+                                        label: 'Pending',
+                                        data: pending,
+                                        backgroundColor: '#F59E0B'
+                                    },
+                                    {
+                                        label: 'Approved',
+                                        data: approved,
+                                        backgroundColor: '#10B981'
+                                    },
+                                    {
+                                        label: 'Rejected',
+                                        data: rejected,
+                                        backgroundColor: '#EF4444'
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { 
+                                        position: 'bottom',
+                                        labels: { color: this.getTextColor() }
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: { color: this.getTextColor() },
+                                        grid: { color: this.getTextColor() === '#ffffff' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                                    },
+                                    y: {
+                                        ticks: { color: this.getTextColor() },
+                                        grid: { color: this.getTextColor() === '#ffffff' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                                    }
                                 }
                             }
+                        });
+                    },
+
+                    updateDepartmentChart() {
+                        if (charts.department) {
+                            const labels = (this.filteredData.department_stats || []).map(d => d.name);
+                            const pending = (this.filteredData.department_stats || []).map(d => d.pending_applications || 0);
+                            const approved = (this.filteredData.department_stats || []).map(d => d.approved_applications || 0);
+                            const rejected = (this.filteredData.department_stats || []).map(d => d.rejected_applications || 0);
+                            const notApplied = (this.filteredData.department_stats || []).map(d => (d.total_students || 0) - (d.total_applications || 0));
+                            
+                            charts.department.data.labels = labels;
+                            charts.department.data.datasets[0].data = notApplied;
+                            charts.department.data.datasets[1].data = pending;
+                            charts.department.data.datasets[2].data = approved;
+                            charts.department.data.datasets[3].data = rejected;
+                            charts.department.update();
                         }
-                    });
-                },
+                    },
 
-                updateGenderChart() {
-                    if (this.charts.gender) {
-                        this.charts.gender.data.datasets[0].data = [
-                            this.filteredData.genderStats?.Male || 0,
-                            this.filteredData.genderStats?.Female || 0
-                        ];
-                        this.charts.gender.update();
-                    }
-                },
+                    createGenderChart() {
+                        const ctx = document.getElementById('sfaoGenderChart');
+                        if (!ctx) return;
 
-                getChartDataForType(type) {
-                    if (type === 'application_status') {
-                        return {
-                            labels: ['Applied', 'Not Applied', 'Pending', 'Approved', 'Rejected'],
-                            datasets: [{
-                                data: [
-                                    this.filteredData.students_with_applications || 0,
-                                    (this.filteredData.total_students || 0) - (this.filteredData.students_with_applications || 0),
-                                    this.filteredData.pending_applications || 0,
-                                    this.filteredData.approved_applications || 0,
-                                    this.filteredData.rejected_applications || 0
-                                ],
-                                backgroundColor: ['#3B82F6', '#6B7280', '#F59E0B', '#10B981', '#EF4444']
-                            }]
-                        };
+                        if (charts.gender) {
+                            charts.gender.destroy();
+                        }
+
+                        charts.gender = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Male', 'Female'],
+                                datasets: [{
+                                    data: [
+                                        this.filteredData.genderStats?.Male || 0,
+                                        this.filteredData.genderStats?.Female || 0
+                                    ],
+                                    backgroundColor: ['#3B82F6', '#EC4899'],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: { color: this.getTextColor() }
+                                    }
+                                }
+                            }
+                        });
+                    },
+
+                    updateGenderChart() {
+                        if (charts.gender) {
+                            charts.gender.data.datasets[0].data = [
+                                this.filteredData.genderStats?.Male || 0,
+                                this.filteredData.genderStats?.Female || 0
+                            ];
+                            charts.gender.update();
+                        }
+                    },
+
+                    createScholarshipStatusChart() {
+                        const ctx = document.getElementById('sfaoScholarshipTypeChart');
+                        if (!ctx) return;
+
+                        if (charts.scholarshipType) {
+                            charts.scholarshipType.destroy();
+                        }
+
+                        // Prepare data
+                        const rawLabels = Object.keys(this.filteredData.scholarshipStats || {});
+                        // Split labels into array of words for multi-line display
+                        const labels = rawLabels.map(name => name.split(' '));
+                        const scholars = rawLabels.map(name => this.filteredData.scholarshipStats[name].scholars);
+                        const nonScholars = rawLabels.map(name => this.filteredData.scholarshipStats[name].nonScholars);
+
+                        charts.scholarshipType = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    {
+                                        label: 'Scholars',
+                                        data: scholars,
+                                        backgroundColor: '#10B981' // Green
+                                    },
+                                    {
+                                        label: 'Non-Scholars',
+                                        data: nonScholars,
+                                        backgroundColor: '#EF4444' // Red
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                interaction: {
+                                    mode: 'index',
+                                    intersect: false,
+                                },
+                                plugins: {
+                                    legend: { 
+                                        position: 'bottom',
+                                        labels: { color: this.getTextColor() }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            title: function(context) {
+                                                // Join the array back to string for tooltip title
+                                                return context[0].label.join(' ');
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: {
+                                            color: this.getTextColor(),
+                                            maxRotation: 0, // Prevent rotation to force wrapping
+                                            autoSkip: false
+                                        },
+                                        grid: { color: this.getTextColor() === '#ffffff' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                                    },
+                                    y: {
+                                        ticks: { color: this.getTextColor() },
+                                        grid: { color: this.getTextColor() === '#ffffff' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }
+                                    }
+                                }
+                            }
+                        });
+                    },
+
+                    updateScholarshipStatusChart() {
+                        if (charts.scholarshipType) {
+                            const rawLabels = Object.keys(this.filteredData.scholarshipStats || {});
+                            const labels = rawLabels.map(name => name.split(' '));
+                            const scholars = rawLabels.map(name => this.filteredData.scholarshipStats[name].scholars);
+                            const nonScholars = rawLabels.map(name => this.filteredData.scholarshipStats[name].nonScholars);
+
+                            charts.scholarshipType.data.labels = labels;
+                            charts.scholarshipType.data.datasets[0].data = scholars;
+                            charts.scholarshipType.data.datasets[1].data = nonScholars;
+                            charts.scholarshipType.update();
+                        }
+                    },
+                    
+                    clearFilters() {
+                        this.filters.campus = 'all';
+                        this.filters.department = 'all';
+                        this.filters.timePeriod = 'all';
+                    },
+                    
+                    refreshAnalytics() {
+                        window.location.reload();
                     }
-                    return {};
-                },
-                
-                clearFilters() {
-                    this.filters.campus = 'all';
-                    this.filters.department = 'all';
-                    this.filters.timePeriod = 'all';
-                },
-                
-                refreshAnalytics() {
-                    window.location.reload();
-                }
-            }));
+                };
+            });
         });
     </script>
 </div>

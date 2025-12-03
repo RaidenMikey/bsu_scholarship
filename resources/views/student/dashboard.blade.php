@@ -24,24 +24,39 @@
     sidebarOpen: false,
     rightSidebarOpen: false,
     tab: localStorage.getItem('activeTab') || 'scholarships',
-    subTab: '{{ $scholarshipType ?? 'all' }}' !== 'all' ? '{{ $scholarshipType ?? 'all' }}' : (new URLSearchParams(window.location.search).get('type') || 'all'),
+    subTab: new URLSearchParams(window.location.search).get('type') || 'all',
     darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
     showLogoutModal: false,
-    unreadCount: {{ $unreadCount ?? 0 }}
+    unreadCount: {{ $unreadCount ?? 0 }},
+    unreadCountScholarships: {{ $unreadCountScholarships ?? 0 }},
+    unreadCountStatus: {{ $unreadCountStatus ?? 0 }},
+    unreadCountComments: {{ $unreadCountComments ?? 0 }}
   }"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
     $watch('subTab', val => $dispatch('subtab-changed', val));
-    window.addEventListener('notification-read', () => {
-        if (this.unreadCount > 0) this.unreadCount--;
-    });
-    window.addEventListener('notifications-read-all', () => {
-        this.unreadCount = 0;
-    });
-    window.addEventListener('switch-tab', (event) => {
-        this.tab = event.detail;
-    });
+  "
+  @notification-read.window="
+    if (unreadCount > 0) unreadCount--;
+    if ($event.detail && $event.detail.type) {
+        if ($event.detail.type === 'scholarship_created' && unreadCountScholarships > 0) {
+            unreadCountScholarships--;
+        } else if ($event.detail.type === 'application_status' && unreadCountStatus > 0) {
+            unreadCountStatus--;
+        } else if ($event.detail.type === 'sfao_comment' && unreadCountComments > 0) {
+            unreadCountComments--;
+        }
+    }
+  "
+  @notifications-read-all.window="
+    unreadCount = 0;
+    unreadCountScholarships = 0;
+    unreadCountStatus = 0;
+    unreadCountComments = 0;
+  "
+  x-on:switch-tab.window="
+    tab = $event.detail;
   ">
 
 <head>

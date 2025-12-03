@@ -485,7 +485,10 @@ document.addEventListener('alpine:init', () => {
             if (this.unreadCount > 0) {
               this.unreadCount--;
               // Dispatch event to update global count
-              window.dispatchEvent(new CustomEvent('notification-read'));
+              console.log('Dispatching notification-read', { type: notification.type });
+              window.dispatchEvent(new CustomEvent('notification-read', { 
+                  detail: { type: notification.type } 
+              }));
             }
           }
         }
@@ -541,11 +544,14 @@ document.addEventListener('alpine:init', () => {
           const index = this.notifications.findIndex(n => n.id === notificationId);
           if (index > -1) {
              const wasUnread = !this.notifications[index].is_read;
+             const notificationType = this.notifications[index].type;
              this.notifications.splice(index, 1);
              if (wasUnread) {
                this.unreadCount = Math.max(0, this.unreadCount - 1);
                // Dispatch event to update global count
-               window.dispatchEvent(new CustomEvent('notification-read'));
+               window.dispatchEvent(new CustomEvent('notification-read', { 
+                   detail: { type: notificationType } 
+               }));
              }
              this.updateFilteredCount();
              
