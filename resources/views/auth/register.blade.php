@@ -40,12 +40,11 @@
     <div x-show="currentStep === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-x-4" x-transition:enter-end="opacity-100 transform translate-x-0">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b pb-2">Personal Information</h3>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <x-auth.input type="text" label="First Name" name="first_name" placeholder="First Name" required x-model="formData.first_name" />
         <x-auth.input type="text" label="Middle Name (Optional)" name="middle_name" placeholder="Middle Name" x-model="formData.middle_name" />
+        <x-auth.input type="text" label="Last Name" name="last_name" placeholder="Last Name" required x-model="formData.last_name" />
       </div>
-      
-      <x-auth.input type="text" label="Last Name" name="last_name" placeholder="Last Name" required x-model="formData.last_name" />
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <x-auth.input type="date" label="Birthdate" name="birthdate" required x-model="formData.birthdate" />
@@ -89,13 +88,22 @@
       </div>
 
       <div class="mb-4">
+        <label for="campus_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campus <span class="text-red-500">*</span></label>
+        <select id="campus_id" name="campus_id" required x-model="formData.campus_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+          <option value="" disabled selected>Select a campus</option>
+          @foreach($campuses as $campus)
+            <option value="{{ $campus->id }}">{{ $campus->name }}</option>
+          @endforeach
+        </select>
+      </div>
+
+      <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">College / Department <span class="text-red-500">*</span></label>
-        <select name="college" required x-model="formData.college" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-          <option value="" disabled selected>Select College</option>
-          <option value="CICS">CICS</option>
-          <option value="CTE">CTE</option>
-          <option value="CABEIHM">CABEIHM</option>
-          <option value="CAS">CAS</option>
+        <select name="college" required x-model="formData.college" :disabled="!formData.campus_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed">
+          <option value="" disabled selected x-text="formData.campus_id ? 'Select College' : 'Select Campus First'"></option>
+          <template x-for="dept in availableDepartments" :key="dept.id">
+            <option :value="dept.name" x-text="dept.name"></option>
+          </template>
         </select>
       </div>
 
@@ -117,16 +125,6 @@
           <option value="2nd Year">2nd Year</option>
           <option value="3rd Year">3rd Year</option>
           <option value="4th Year">4th Year</option>
-        </select>
-      </div>
-      
-      <div class="mb-4">
-        <label for="campus_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campus <span class="text-red-500">*</span></label>
-        <select id="campus_id" name="campus_id" required x-model="formData.campus_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-          <option value="" disabled selected>Select a campus</option>
-          @foreach($campuses as $campus)
-            <option value="{{ $campus->id }}">{{ $campus->name }}</option>
-          @endforeach
         </select>
       </div>
     </div>
@@ -203,6 +201,177 @@
   <div class="mt-4 text-center">
     <a href="{{ url('/login') }}" class="text-sm text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors duration-200">Already have an account? Sign In</a>
   </div>
+
+  <!-- Age Validation Modal -->
+  <div x-show="showAgeErrorModal" 
+       class="fixed inset-0 z-50 overflow-y-auto" 
+       aria-labelledby="modal-title" 
+       role="dialog" 
+       aria-modal="true"
+       style="display: none;">
+       
+    <!-- Backdrop -->
+    <div x-show="showAgeErrorModal" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0" 
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" 
+         aria-hidden="true"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div x-show="showAgeErrorModal" 
+           x-transition:enter="ease-out duration-300" 
+           x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave="ease-in duration-200" 
+           x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-xs p-6">
+        
+        <div class="flex flex-col items-center justify-center">
+            <!-- Icon -->
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+              <svg class="h-8 w-8 text-red-600 dark:text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <!-- Content -->
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" id="modal-title">
+              Age Restriction
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+              We apologize, but you must be at least <span class="font-bold text-gray-700 dark:text-gray-300">18 years old</span> to register for an account on this platform.
+            </p>
+
+            <!-- Button -->
+            <button type="button" 
+                    @click="showAgeErrorModal = false" 
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent bg-bsu-red px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+              I Understand
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Required Fields Modal -->
+  <div x-show="showRequiredFieldsModal" 
+       class="fixed inset-0 z-50 overflow-y-auto" 
+       aria-labelledby="modal-title" 
+       role="dialog" 
+       aria-modal="true"
+       style="display: none;">
+       
+    <!-- Backdrop -->
+    <div x-show="showRequiredFieldsModal" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0" 
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" 
+         aria-hidden="true"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div x-show="showRequiredFieldsModal" 
+           x-transition:enter="ease-out duration-300" 
+           x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave="ease-in duration-200" 
+           x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-xs p-6">
+        
+        <div class="flex flex-col items-center justify-center">
+            <!-- Icon -->
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30 mb-4">
+              <svg class="h-8 w-8 text-yellow-600 dark:text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <!-- Content -->
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" id="modal-title">
+              Missing Information
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+              Please fill in all required fields to proceed to the next step.
+            </p>
+
+            <!-- Button -->
+            <button type="button" 
+                    @click="showRequiredFieldsModal = false" 
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent bg-bsu-red px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+              Okay, I'll check
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invalid Email Modal -->
+  <div x-show="showEmailErrorModal" 
+       class="fixed inset-0 z-50 overflow-y-auto" 
+       aria-labelledby="modal-title" 
+       role="dialog" 
+       aria-modal="true"
+       style="display: none;">
+       
+    <!-- Backdrop -->
+    <div x-show="showEmailErrorModal" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0" 
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" 
+         aria-hidden="true"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div x-show="showEmailErrorModal" 
+           x-transition:enter="ease-out duration-300" 
+           x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave="ease-in duration-200" 
+           x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-xs p-6">
+        
+        <div class="flex flex-col items-center justify-center">
+            <!-- Icon -->
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+              <svg class="h-8 w-8 text-red-600 dark:text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+
+            <!-- Content -->
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" id="modal-title">
+              Invalid Email Format
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+              Please use your G-Suite email address ending with <span class="font-bold text-gray-700 dark:text-gray-300">@g.batstate-u.edu.ph</span>.
+            </p>
+
+            <!-- Button -->
+            <button type="button" 
+                    @click="showEmailErrorModal = false" 
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent bg-bsu-red px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+              Okay, I'll fix it
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection
 
@@ -220,6 +389,8 @@
   function signupForm() {
     return {
       currentStep: 1,
+      campuses: @json($campuses),
+      availableDepartments: [],
       steps: ['Personal Info', 'Contact Info', 'Academic Info', 'Scholarship Verification', 'Credentials'],
       formData: {
         first_name: '',
@@ -241,6 +412,9 @@
         password_confirmation: '',
         terms: false
       },
+      showAgeErrorModal: false,
+      showRequiredFieldsModal: false,
+      showEmailErrorModal: false,
       isSubmitting: false,
       
       nextStep() {
@@ -259,21 +433,35 @@
         // Basic validation logic
         if (step === 1) {
           if (!this.formData.first_name || !this.formData.last_name || !this.formData.birthdate || !this.formData.sex) {
-            alert('Please fill in all required fields.');
+            this.showRequiredFieldsModal = true;
             return false;
+          }
+          
+          // Age Validation
+          const birthdate = new Date(this.formData.birthdate);
+          const today = new Date();
+          let age = today.getFullYear() - birthdate.getFullYear();
+          const m = today.getMonth() - birthdate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) {
+              age--;
+          }
+          
+          if (age < 18) {
+              this.showAgeErrorModal = true;
+              return false;
           }
         } else if (step === 2) {
           if (!this.formData.email || !this.formData.contact_number) {
-            alert('Please fill in all required fields.');
+            this.showRequiredFieldsModal = true;
             return false;
           }
           if (!this.formData.email.endsWith('@g.batstate-u.edu.ph')) {
-            alert('Email must end with @g.batstate-u.edu.ph');
+            this.showEmailErrorModal = true;
             return false;
           }
         } else if (step === 3) {
           if (!this.formData.sr_code || !this.formData.education_level || !this.formData.college || !this.formData.program || !this.formData.year_level || !this.formData.campus_id) {
-            alert('Please fill in all required fields.');
+            this.showRequiredFieldsModal = true;
             return false;
           }
         } else if (step === 4) {
@@ -335,6 +523,28 @@
         this.$watch('currentStep', (value) => {
           sessionStorage.setItem('signupCurrentStep', value);
         });
+
+        // Watch for campus changes to update departments
+        this.$watch('formData.campus_id', (value) => {
+            if (value) {
+                const selectedCampus = this.campuses.find(c => c.id == value);
+                this.availableDepartments = selectedCampus ? selectedCampus.departments : [];
+                // Reset college if it's not in the new list (unless it's a reload)
+                // We can just reset it to ensure validity
+                if (!this.availableDepartments.some(d => d.name === this.formData.college)) {
+                    this.formData.college = '';
+                }
+            } else {
+                this.availableDepartments = [];
+                this.formData.college = '';
+            }
+        });
+
+        // Initialize departments if campus is already selected (e.g. from session storage)
+        if (this.formData.campus_id) {
+             const selectedCampus = this.campuses.find(c => c.id == this.formData.campus_id);
+             this.availableDepartments = selectedCampus ? selectedCampus.departments : [];
+        }
       },
 
       submitForm() {

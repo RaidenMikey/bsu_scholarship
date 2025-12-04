@@ -18,7 +18,7 @@
     <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md">
             <div class="flex justify-center">
-                <img class="h-12 w-auto" src="{{ asset('images/bsu-logo.png') }}" alt="BSU Logo">
+                <img class="h-12 w-auto" src="{{ asset('images/Batangas_State_Logo.png') }}" alt="BSU Logo">
             </div>
             <p class="mt-2 text-center text-sm text-gray-600">
                 Complete your SFAO admin account setup

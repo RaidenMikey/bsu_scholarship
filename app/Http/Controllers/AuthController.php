@@ -163,7 +163,7 @@ class AuthController extends Controller
      */
     public function showRegister()
     {
-        $campuses = \App\Models\Campus::all();
+        $campuses = \App\Models\Campus::with('departments')->get();
         $scholarships = \App\Models\Scholarship::all();
         return view('auth.register', compact('campuses', 'scholarships'));
     }
@@ -177,7 +177,7 @@ class AuthController extends Controller
             'first_name'    => 'required|string|max:255',
             'middle_name'   => 'nullable|string|max:255',
             'last_name'     => 'required|string|max:255',
-            'birthdate'     => 'required|date',
+            'birthdate'     => 'required|date|before:-18 years',
             'sex'           => 'required|in:Male,Female',
             'email'         => ['required','email','unique:users,email','regex:/^[a-zA-Z0-9._%+-]+@g\.batstate-u\.edu\.ph$/'],
             'contact_number'=> 'required|string|max:20',

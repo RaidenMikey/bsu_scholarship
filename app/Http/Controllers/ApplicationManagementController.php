@@ -159,7 +159,8 @@ class ApplicationManagementController extends Controller
         
         // Get the SFAO admin's campus and all campuses under it
         $sfaoCampus = $user->campus;
-        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
+        $monitoredCampuses = $sfaoCampus->getAllCampusesUnder();
+        $campusIds = $monitoredCampuses->pluck('id');
 
         // Get sorting parameters
         $sortBy = $request->get('sort_by', 'name');
@@ -613,6 +614,7 @@ class ApplicationManagementController extends Controller
             'scholarshipsPrivate', 
             'scholarshipsGov', 
             'sfaoCampus', 
+            'monitoredCampuses',
             'campusOptions', 
             'sortBy', 
             'sortOrder', 

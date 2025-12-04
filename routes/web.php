@@ -144,6 +144,11 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::post('/reports/{id}/submit', [ReportController::class, 'submitReport'])->name('reports.submit');
     Route::delete('/reports/{id}', [ReportController::class, 'deleteReport'])->name('reports.delete');
     Route::post('/reports/generate-data', [ReportController::class, 'generateReportData'])->name('reports.generate-data');
+    
+    // Specific Report Summaries
+    Route::get('/student-summary', [ReportController::class, 'studentSummary'])->name('reports.student-summary');
+    Route::get('/scholar-summary', [ReportController::class, 'scholarSummary'])->name('reports.scholar-summary');
+    Route::get('/grant-summary', [ReportController::class, 'grantSummary'])->name('reports.grant-summary');
 });
 
 // --------------------------------------------------

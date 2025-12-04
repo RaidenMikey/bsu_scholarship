@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Report;
 use App\Models\User;
 use App\Models\Campus;
@@ -374,6 +375,231 @@ class ReportController extends Controller
         return redirect()->route('sfao.dashboard')
             ->with('success', 'Report deleted successfully!')
             ->with('active_tab', 'reports');
+    }
+
+    /**
+     * Student Summary Report Page
+     */
+    /**
+     * Student Summary Report Page
+     */
+    public function studentSummary(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $user = User::with('campus')->find(session('user_id'));
+        $campus = $user->campus;
+        $monitoredCampuses = $campus->getAllCampusesUnder();
+        
+        // Filter by campus if requested
+        if ($request->has('campus_id') && $request->campus_id != 'all') {
+            $monitoredCampuses = $monitoredCampuses->where('id', $request->campus_id);
+        }
+
+        $reportData = [];
+        $remarksData = [];
+        $summaryStats = [
+            'accepted' => 0,
+            'rejected' => 0,
+            'pending' => 0,
+            'not_applied' => 0,
+            'total' => 0
+        ];
+
+        foreach ($monitoredCampuses as $camp) {
+            $campusData = [
+                'campus' => $camp,
+                'departments' => []
+            ];
+            // Eager load departments for the campus
+            $departments = $camp->departments;
+
+            foreach ($departments as $dept) {
+                // Fetch students for this campus and department
+                // Matching User 'college' column with Department 'name' or 'short_name'
+                $students = User::where('campus_id', $camp->id)
+                    ->where(function($q) use ($dept) {
+                        $q->where('college', $dept->name)
+                          ->orWhere('college', $dept->short_name);
+                    })
+                    ->where('role', 'student')
+                    ->with(['applications' => function($q) {
+                        $q->latest();
+                    }, 'form'])
+                    ->get();
+
+                $processedStudents = [];
+
+                foreach ($students as $student) {
+                    $latestApp = $student->applications->first();
+                    $status = $latestApp ? $latestApp->status : 'Not Applied';
+                    
+                    // Normalize status for summary
+                    $normalizedStatus = strtolower($status);
+                    if (in_array($normalizedStatus, ['approved', 'accepted', 'claimed'])) {
+                        $summaryStats['accepted']++;
+                    } elseif (in_array($normalizedStatus, ['rejected', 'disapproved'])) {
+                        $summaryStats['rejected']++;
+                    } elseif ($normalizedStatus == 'not applied') {
+                        $summaryStats['not_applied']++;
+                    } else {
+                        $summaryStats['pending']++;
+                    }
+                    $summaryStats['total']++;
+
+                    $processedStudents[] = [
+                        'name' => $student->last_name . ', ' . $student->first_name,
+                        'sex' => $student->sex,
+                        'status' => ucfirst($status),
+                        'remarks' => $student->form ? $student->form->reviewer_remarks : null
+                    ];
+
+                    // Collect remarks
+                    if ($student->form && $student->form->reviewer_remarks) {
+                        $remarksData[] = [
+                            'campus' => $camp->name,
+                            'name' => $student->last_name . ', ' . $student->first_name,
+                            'status' => ucfirst($status),
+                            'remarks' => $student->form->reviewer_remarks
+                        ];
+                    }
+                }
+
+                $campusData['departments'][] = [
+                    'department' => $dept,
+                    'students' => $processedStudents
+                ];
+            }
+            
+            // Also catch students who don't match any department (optional, but good for data integrity)
+            // For now, we'll stick to the requested structure.
+            
+            $reportData[] = $campusData;
+        }
+
+        return view('sfao.reports.student-summary', compact('user', 'monitoredCampuses', 'reportData', 'summaryStats', 'remarksData'));
+    }
+
+    /**
+     * Scholar Summary Report Page
+     */
+    public function scholarSummary(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $user = User::with('campus')->find(session('user_id'));
+        $campus = $user->campus;
+        $monitoredCampuses = $campus->getAllCampusesUnder();
+        
+        // Filter by campus if selected
+        if ($request->has('campus_id') && $request->campus_id != 'all') {
+            $monitoredCampuses = $monitoredCampuses->where('id', $request->campus_id);
+        }
+
+        $reportData = [];
+        $summaryStats = [
+            'old_scholars' => 0,
+            'new_scholars' => 0,
+            'non_scholars' => 0,
+            'total' => 0
+        ];
+
+        foreach ($monitoredCampuses as $camp) {
+            $campusData = [
+                'campus' => $camp,
+                'scholars' => [],
+                'non_scholars' => []
+            ];
+
+            // Fetch all students for this campus
+            $students = User::where('campus_id', $camp->id)
+                ->where('role', 'student')
+                ->with(['scholars' => function($q) {
+                    $q->where('status', 'active');
+                }])
+                ->get();
+
+            foreach ($students as $student) {
+                $activeScholar = $student->scholars->first();
+
+                $studentData = [
+                    'name' => $student->last_name . ', ' . $student->first_name,
+                    'department' => $student->college ?? 'N/A', // Using college as department/program
+                    'year_level' => $student->year_level ?? 'N/A',
+                ];
+
+                if ($activeScholar) {
+                    $type = $activeScholar->type; // 'old' or 'new'
+                    $studentData['status'] = ucfirst($type) . ' Scholar';
+                    $campusData['scholars'][] = $studentData;
+
+                    if ($type === 'old') {
+                        $summaryStats['old_scholars']++;
+                    } else {
+                        $summaryStats['new_scholars']++;
+                    }
+                } else {
+                    $studentData['status'] = 'Non-Scholar';
+                    $campusData['non_scholars'][] = $studentData;
+                    $summaryStats['non_scholars']++;
+                }
+                $summaryStats['total']++;
+            }
+
+            $reportData[] = $campusData;
+        }
+
+        return view('sfao.reports.scholar-summary', compact('user', 'monitoredCampuses', 'reportData', 'summaryStats'));
+    }
+
+    /**
+     * Grant Summary Report Page
+     */
+    public function grantSummary(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $user = User::with('campus')->find(session('user_id'));
+        $campus = $user->campus;
+        $monitoredCampuses = $campus->getAllCampusesUnder();
+        $campusIds = $monitoredCampuses->pluck('id');
+
+        // Base query for approved/claimed applications (Grants)
+        $query = Application::whereIn('status', ['approved', 'claimed'])
+            ->whereHas('user', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            });
+
+        // Apply filters
+        if ($request->has('campus_id') && $request->campus_id != 'all') {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('campus_id', $request->campus_id);
+            });
+        }
+
+        $totalGrants = (clone $query)->count();
+
+        // Claimed vs Unclaimed
+        $statusStats = (clone $query)->select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        // Grants by Scholarship Type
+        $typeStats = (clone $query)
+            ->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+            ->select('scholarships.scholarship_type', DB::raw('count(*) as total'))
+            ->groupBy('scholarships.scholarship_type')
+            ->pluck('total', 'scholarship_type')
+            ->toArray();
+
+        return view('sfao.reports.grant-summary', compact('user', 'monitoredCampuses', 'totalGrants', 'statusStats', 'typeStats'));
     }
 
     // =====================================================

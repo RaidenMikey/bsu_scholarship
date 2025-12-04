@@ -1,4 +1,4 @@
-<div x-show="tab === 'reports'" 
+<div x-show="tab.startsWith('reports')" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
@@ -7,14 +7,42 @@
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Reports</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Generate and submit reports to Central Administration
-        </p>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white" x-text="
+            tab === 'reports-student_summary' ? 'Student Summary Report' :
+            (tab === 'reports-scholar_summary' ? 'Scholar Summary Report' :
+            (tab === 'reports-grant_summary' ? 'Grant Summary Report' : 'Reports'))
+        "></h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" x-text="
+            tab === 'reports-student_summary' ? 'Select a campus to generate a report' :
+            (tab === 'reports-scholar_summary' ? 'Generate and view scholar summary reports' :
+            (tab === 'reports-grant_summary' ? 'Generate and view grant summary reports' : 'Manage reports'))
+        "></p>
       </div>
       <div class="mt-4 sm:mt-0">
+        <!-- Scholar Summary Button -->
+        <a href="{{ route('sfao.reports.scholar-summary') }}"
+           x-show="tab === 'reports-scholar_summary'"
+           class="inline-flex items-center px-4 py-2 bg-bsu-red border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-bsu-redDark focus:bg-bsu-redDark active:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2 transition ease-in-out duration-150">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          Generate Scholar Report
+        </a>
+
+        <!-- Grant Summary Button -->
+        <a href="{{ route('sfao.reports.grant-summary') }}"
+           x-show="tab === 'reports-grant_summary'"
+           class="inline-flex items-center px-4 py-2 bg-bsu-red border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-bsu-redDark focus:bg-bsu-redDark active:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2 transition ease-in-out duration-150">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Generate Grant Report
+        </a>
+        
+        <!-- Default Create Report Button (Fallback) -->
         <a href="{{ route('sfao.reports.create') }}"
-          class="inline-flex items-center px-4 py-2 bg-bsu-red border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-bsu-redDark focus:bg-bsu-redDark active:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2 transition ease-in-out duration-150">
+           x-show="!tab.startsWith('reports-')"
+           class="inline-flex items-center px-4 py-2 bg-bsu-red border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-bsu-redDark focus:bg-bsu-redDark active:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2 transition ease-in-out duration-150">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
@@ -23,10 +51,214 @@
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+    <!-- Features Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg class="h-8 w-8 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+              </path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Monthly Reports</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Generate monthly scholarship application summaries</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg class="h-8 w-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
+              </path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Performance Tracking</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Monitor approval rates and application trends</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <svg class="h-8 w-8 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+              </path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Central Communication</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Submit reports and receive feedback from Central Admin
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campus Selection Cards (Student Summary) -->
+    <div x-show="tab === 'reports-student_summary'" class="mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- All Campuses Card -->
+            <a href="{{ route('sfao.reports.student-summary', ['campus_id' => 'all']) }}" 
+               class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                <div class="p-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-bsu-red group-hover:bg-bsu-red group-hover:text-white transition-colors duration-300">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-bsu-red dark:group-hover:text-red-400 transition-colors">All Campuses</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Generate report for all campuses</p>
+                        </div>
+                    </div>
+                    <svg class="w-6 h-6 text-gray-400 group-hover:text-bsu-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Individual Campus Cards -->
+            @if(isset($monitoredCampuses))
+                @foreach($monitoredCampuses as $campus)
+                    <a href="{{ route('sfao.reports.student-summary', ['campus_id' => $campus->id]) }}" 
+                       class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ $campus->name }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate report for this campus</p>
+                                </div>
+                            </div>
+                            <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                @endforeach
+            @endif
+        </div>
+    </div>
+
+    <!-- Campus Selection Cards (Scholar Summary) -->
+    <div x-show="tab === 'reports-scholar_summary'" class="mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- All Campuses Card -->
+            <a href="{{ route('sfao.reports.scholar-summary', ['campus_id' => 'all']) }}" 
+               class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                <div class="p-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-bsu-red group-hover:bg-bsu-red group-hover:text-white transition-colors duration-300">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-bsu-red dark:group-hover:text-red-400 transition-colors">All Campuses</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Generate scholar report for all campuses</p>
+                        </div>
+                    </div>
+                    <svg class="w-6 h-6 text-gray-400 group-hover:text-bsu-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Individual Campus Cards -->
+            @if(isset($monitoredCampuses))
+                @foreach($monitoredCampuses as $campus)
+                    <a href="{{ route('sfao.reports.scholar-summary', ['campus_id' => $campus->id]) }}" 
+                       class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ $campus->name }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate scholar report for this campus</p>
+                                </div>
+                            </div>
+                            <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                @endforeach
+            @endif
+        </div>
+    </div>
+
+    <!-- Campus Selection Cards (Grant Summary) -->
+    <div x-show="tab === 'reports-grant_summary'" class="mt-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- All Campuses Card -->
+            <a href="{{ route('sfao.reports.grant-summary', ['campus_id' => 'all']) }}" 
+               class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                <div class="p-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-bsu-red group-hover:bg-bsu-red group-hover:text-white transition-colors duration-300">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-bsu-red dark:group-hover:text-red-400 transition-colors">All Campuses</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Generate grant report for all campuses</p>
+                        </div>
+                    </div>
+                    <svg class="w-6 h-6 text-gray-400 group-hover:text-bsu-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Individual Campus Cards -->
+            @if(isset($monitoredCampuses))
+                @foreach($monitoredCampuses as $campus)
+                    <a href="{{ route('sfao.reports.grant-summary', ['campus_id' => $campus->id]) }}" 
+                       class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                        <div class="p-6 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ $campus->name }}</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate grant report for this campus</p>
+                                </div>
+                            </div>
+                            <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                @endforeach
+            @endif
+        </div>
+    </div>
+
+    <!-- Filters (Shared for now) - Hidden on Summary Reports -->
+    <div x-show="!['reports-student_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
       <form method="GET" action="{{ route('sfao.dashboard') }}" class="flex flex-wrap gap-4">
-        <input type="hidden" name="tab" value="reports">
+        <input type="hidden" name="tab" :value="tab">
         <div class="flex-1 min-w-0">
           <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
           <select name="status" id="status"
@@ -58,8 +290,8 @@
       </form>
     </div>
 
-    <!-- Reports Table -->
-    <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <!-- Reports Table - Hidden on Summary Reports -->
+    <div x-show="!['reports-student_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
       @if (isset($reports) && $reports->count() > 0)
         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
           @foreach ($reports as $report)
@@ -188,72 +420,26 @@
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
             </path>
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No reports</h3>
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No reports found</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Get started by creating a new report.
           </p>
           <div class="mt-6">
-            <a href="{{ route('sfao.reports.create') }}"
-              class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-bsu-red hover:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-              </svg>
-              Create Report
-            </a>
+            <!-- Default Create Report Button (Empty State) -->
+            <div x-show="tab !== 'reports-student_summary'">
+              <a href="{{ route('sfao.reports.create') }}"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-bsu-red hover:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Create Report
+              </a>
+            </div>
           </div>
         </div>
       @endif
     </div>
 
-    <!-- Features Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-              </path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Monthly Reports</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Generate monthly scholarship application summaries</p>
-          </div>
-        </div>
-      </div>
 
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
-              </path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Performance Tracking</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Monitor approval rates and application trends</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <svg class="h-8 w-8 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-              </path>
-            </svg>
-          </div>
-          <div class="ml-4">
-            <h4 class="text-lg font-medium text-gray-900 dark:text-white">Central Communication</h4>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Submit reports and receive feedback from Central Admin
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
