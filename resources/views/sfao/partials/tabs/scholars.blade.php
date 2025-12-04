@@ -1,85 +1,24 @@
-<div x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" 
+<div x-show="tab === 'scholars' || tab.startsWith('scholars-')" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
      x-cloak 
-     class="px-4 py-6">
+     class="px-4 py-6"
+     x-data="sfaoScholarsFilter()"
+     x-init="$watch('tab', value => handleTabChange(value))">
+    
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-bsu-red dark:text-red-400 mb-2">
-            <span x-show="tab === 'scholars'" class="flex items-center"><span class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>All Scholars</span>
-            <span x-show="tab === 'scholars-new'" class="flex items-center"><span class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>New Scholars</span>
-            <span x-show="tab === 'scholars-old'" class="flex items-center"><span class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>Old Scholars</span>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <span class="flex items-center">
+                <span x-show="filters.type === 'all'" class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>
+                <span x-show="filters.type === 'new'" class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+                <span x-show="filters.type === 'old'" class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>
+                <span x-text="getHeaderTitle()"></span>
+            </span>
         </h2>
         <p class="text-gray-600 dark:text-gray-300">
-          <span x-show="tab === 'scholars'">All students who have been accepted as scholars from {{ $sfaoCampus->name }}</span>
-          <span x-show="tab === 'scholars-new'">Scholars who have not yet received any grant from {{ $sfaoCampus->name }}</span>
-          <span x-show="tab === 'scholars-old'">Continuing scholars with one or more grants from {{ $sfaoCampus->name }}</span>
-          @if($sfaoCampus->extensionCampuses->count() > 0)
-            and its extension campuses: {{ $sfaoCampus->extensionCampuses->pluck('name')->join(', ') }}
-          @endif
+            <span x-text="getHeaderDescription()"></span>
         </p>
-    </div>
-
-    <!-- Sorting and Filtering Controls -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-        <form method="GET" action="{{ route('sfao.dashboard') }}" class="space-y-4">
-            <!-- Hidden field to maintain tab -->
-            <input type="hidden" name="tab" :value="tab">
-            
-            <!-- Filter Row -->
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Sort:</label>
-                    <select name="scholars_sort_by" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        <option value="created_at" {{ ($scholarsSortBy ?? 'created_at') === 'created_at' ? 'selected' : '' }}>Date Added</option>
-                        <option value="name" {{ ($scholarsSortBy ?? 'created_at') === 'name' ? 'selected' : '' }}>Name</option>
-                        <option value="email" {{ ($scholarsSortBy ?? 'created_at') === 'email' ? 'selected' : '' }}>Email</option>
-                        <option value="scholarship" {{ ($scholarsSortBy ?? 'created_at') === 'scholarship' ? 'selected' : '' }}>Scholarship</option>
-                        <option value="status" {{ ($scholarsSortBy ?? 'created_at') === 'status' ? 'selected' : '' }}>Status</option>
-                        <option value="type" {{ ($scholarsSortBy ?? 'created_at') === 'type' ? 'selected' : '' }}>Type</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Order:</label>
-                    <select name="scholars_sort_order" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        <option value="asc" {{ ($scholarsSortOrder ?? 'desc') === 'asc' ? 'selected' : '' }}>Ascending</option>
-                        <option value="desc" {{ ($scholarsSortOrder ?? 'desc') === 'desc' ? 'selected' : '' }}>Descending</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Campus:</label>
-                    <select name="campus_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        @foreach($campusOptions as $campus)
-                            <option value="{{ $campus['id'] }}" {{ ($campusFilter ?? 'all') == $campus['id'] ? 'selected' : '' }}>
-                                {{ $campus['name'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
-                    <select name="status_filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-bsu-red focus:border-bsu-red">
-                        <option value="all" {{ ($statusFilter ?? 'all') === 'all' ? 'selected' : '' }}>All Status</option>
-                        <option value="active" {{ ($statusFilter ?? 'all') === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="inactive" {{ ($statusFilter ?? 'all') === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                        <option value="suspended" {{ ($statusFilter ?? 'all') === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                        <option value="completed" {{ ($statusFilter ?? 'all') === 'completed' ? 'selected' : '' }}>Completed</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    <button type="submit" class="bg-bsu-red text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
-                        Apply
-                    </button>
-                    <button type="button" @click="tab = 'scholars'; window.location.href = '/sfao?tab=scholars'" class="bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors">
-                        Clear
-                    </button>
-                </div>
-            </div>
-        </form>
     </div>
 
     <!-- Statistics Cards -->
@@ -93,7 +32,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Scholars</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $scholars->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="counts.total"></p>
                 </div>
             </div>
         </div>
@@ -107,7 +46,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $scholars->where('status', 'active')->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="counts.active"></p>
                 </div>
             </div>
         </div>
@@ -121,7 +60,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">New Scholars</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $scholars->where('type', 'new')->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="counts.new"></p>
                 </div>
             </div>
         </div>
@@ -135,93 +74,204 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Continuing</p>
-                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $scholars->where('type', 'old')->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="counts.old"></p>
                 </div>
             </div>
         </div>
     </div>
 
-    @if($scholars->isEmpty())
-        <div class="text-center py-12">
-            <div class="text-gray-400 dark:text-gray-500 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                </svg>
+    <!-- Sorting and Filtering Controls -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+        <div class="flex flex-wrap gap-4 items-end">
+            <!-- Sort By -->
+            <div class="flex-1 min-w-[140px]">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Sort By</label>
+                <div class="relative">
+                    <select x-model="filters.sort_by" class="block w-full pl-3 pr-10 py-2 text-base border border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white">
+                        <option value="created_at">Date Added</option>
+                        <option value="name">Name</option>
+                        <option value="email">Email</option>
+                        <option value="scholarship">Scholarship</option>
+                        <option value="status">Status</option>
+                        <option value="type">Type</option>
+                    </select>
+                </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Scholars Found</h3>
-            <p class="text-gray-500 dark:text-gray-500">No students have been accepted as scholars yet.</p>
-        </div>
-    @else
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-bsu-red text-white">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">#</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Scholar</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Campus</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Scholarship</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Grants</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total Received</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        @foreach($scholars as $index => $scholar)
-                            <tr x-show="
-                                tab === 'scholars' ||
-                                (tab === 'scholars-new' && '{{ $scholar->type }}' === 'new') ||
-                                (tab === 'scholars-old' && '{{ $scholar->type }}' === 'old')
-                            " class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                    {{ $index + 1 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-10 w-10">
-                                            <div class="h-10 w-10 rounded-full bg-bsu-red flex items-center justify-center">
-                                                <span class="text-sm font-medium text-white">
-                                                    {{ strtoupper(substr($scholar->user->name ?? 'N/A', 0, 2)) }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $scholar->user->name ?? 'Unknown Student' }}</div>
-                                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $scholar->user->email ?? 'N/A' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $scholar->user->campus->name ?? 'N/A' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $scholar->scholarship->scholarship_name ?? 'N/A' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold {{ $scholar->type === 'new' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' }}">
-                                        {{ ucfirst($scholar->type) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold {{ $scholar->isActive() ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' }}">
-                                        {{ ucfirst($scholar->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $scholar->grant_count ?? 0 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $scholar->total_grant_received ? '₱' . number_format((float)$scholar->total_grant_received, 0) : '₱0' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endif
-</div>
 
+            <!-- Order -->
+            <div class="flex-1 min-w-[140px]">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Order</label>
+                <select x-model="filters.sort_order" class="block w-full pl-3 pr-10 py-2 text-base border border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+
+            <!-- Campus -->
+            <div class="flex-1 min-w-[140px]">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Campus</label>
+                <select x-model="filters.campus" class="block w-full pl-3 pr-10 py-2 text-base border border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white">
+                    @foreach($campusOptions as $campus)
+                        <option value="{{ $campus['id'] }}">{{ $campus['name'] }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+
+
+            <!-- Status -->
+            <div class="flex-1 min-w-[140px]">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Status</label>
+                <select x-model="filters.status" class="block w-full pl-3 pr-10 py-2 text-base border border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex-none">
+                <button type="button" @click="resetFilters()" class="bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-red-500 dark:border-red-500 p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red shadow-sm h-[38px] w-[38px] flex items-center justify-center" title="Reset Filters">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scholars List Container -->
+    <div id="scholars-list-container">
+        @include('sfao.partials.tabs.scholars_list', ['scholars' => $scholars])
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('sfaoScholarsFilter', () => ({
+                filters: {
+                    sort_by: localStorage.getItem('sfaoScholarsSortBy') || 'created_at',
+                    sort_order: localStorage.getItem('sfaoScholarsSortOrder') || 'desc',
+                    campus: localStorage.getItem('sfaoScholarsCampus') || 'all',
+                    status: localStorage.getItem('sfaoScholarsStatus') || 'all',
+                    type: localStorage.getItem('sfaoScholarsType') || 'all'
+                },
+                counts: {
+                    total: {{ $scholars->count() }},
+                    active: {{ $scholars->where('status', 'active')->count() }},
+                    new: {{ $scholars->where('type', 'new')->count() }},
+                    old: {{ $scholars->where('type', 'old')->count() }}
+                },
+                campusOptions: @json($campusOptions),
+                sfaoCampusName: '{{ $sfaoCampus->name }}',
+                extensionCampuses: @json($sfaoCampus->extensionCampuses->pluck('name')),
+
+                init() {
+                    this.$watch('filters.sort_by', (value) => {
+                        localStorage.setItem('sfaoScholarsSortBy', value);
+                        this.fetchScholars();
+                    });
+                    this.$watch('filters.sort_order', (value) => {
+                        localStorage.setItem('sfaoScholarsSortOrder', value);
+                        this.fetchScholars();
+                    });
+                    this.$watch('filters.campus', (value) => {
+                        localStorage.setItem('sfaoScholarsCampus', value);
+                        this.fetchScholars();
+                    });
+                    this.$watch('filters.status', (value) => {
+                        localStorage.setItem('sfaoScholarsStatus', value);
+                        this.fetchScholars();
+                    });
+                    this.$watch('filters.type', (value) => {
+                        localStorage.setItem('sfaoScholarsType', value);
+                        this.fetchScholars();
+                    });
+
+                    if (this.filters.status !== 'all' || this.filters.campus !== 'all' || this.filters.type !== 'all') {
+                        this.fetchScholars();
+                    }
+                },
+
+                fetchScholars() {
+                    const params = new URLSearchParams({
+                        tab: 'scholars',
+                        scholars_sort_by: this.filters.sort_by,
+                        scholars_sort_order: this.filters.sort_order,
+                        campus_filter: this.filters.campus,
+                        status_filter: this.filters.status,
+                        type_filter: this.filters.type
+                    });
+
+                    fetch(`{{ route('sfao.dashboard') }}?${params.toString()}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('scholars-list-container').innerHTML = data.html;
+                        this.counts = data.counts;
+                    })
+                    .catch(error => console.error('Error fetching scholars:', error));
+                },
+
+                resetFilters() {
+                    this.filters.sort_by = 'created_at';
+                    this.filters.sort_order = 'desc';
+                    this.filters.campus = 'all';
+                    this.filters.status = 'all';
+                    this.filters.type = 'all';
+                },
+
+                getHeaderTitle() {
+                    let title = 'All Scholars';
+                    let campusName = 'All';
+                    
+                    if (this.filters.campus !== 'all') {
+                        const campus = this.campusOptions.find(c => c.id == this.filters.campus);
+                        if (campus) campusName = campus.name;
+                    }
+
+                    let typeLabel = 'Scholars';
+                    if (this.filters.type === 'new') typeLabel = 'New Scholars';
+                    else if (this.filters.type === 'old') typeLabel = 'Old Scholars';
+
+                    title = campusName === 'All' ? (this.filters.type === 'all' ? 'All Scholars' : typeLabel) : `${campusName} - ${typeLabel}`;
+                    
+                    return title;
+                },
+
+                getHeaderDescription() {
+                    let desc = '';
+                    let campusName = this.sfaoCampusName;
+                    
+                    if (this.filters.type === 'all') {
+                        desc = `All students who have been accepted as scholars from ${campusName}`;
+                    } else if (this.filters.type === 'new') {
+                        desc = `Scholars who have not yet received any grant from ${campusName}`;
+                    } else if (this.filters.type === 'old') {
+                        desc = `Continuing scholars with one or more grants from ${campusName}`;
+                    }
+
+                    if (this.extensionCampuses.length > 0) {
+                        desc += ` and its extension campuses: ${this.extensionCampuses.join(', ')}`;
+                    }
+                    return desc;
+                },
+
+                handleTabChange(tab) {
+                    if (tab === 'scholars') {
+                        if (this.filters.type !== 'all') {
+                            this.filters.type = 'all';
+                        }
+                    } else if (tab.startsWith('scholars-')) {
+                        const type = tab.replace('scholars-', '');
+                        if (this.filters.type !== type) {
+                            this.filters.type = type;
+                        }
+                    }
+                }
+            }));
+        });
+    </script>
+</div>

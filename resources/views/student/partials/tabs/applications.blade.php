@@ -79,7 +79,7 @@
                         <div>
                             <div class="flex items-center gap-3">
                                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                                    {{ $application->scholarship->scholarship_name }}
+                                    {{ $application->scholarship->scholarship_name ?? 'Scholarship Unavailable' }}
                                 </h3>
                                 <!-- Status Badge -->
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
@@ -155,7 +155,11 @@
                         <div>
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Submission Deadline</p>
                             <p class="text-sm font-semibold text-gray-900 dark:text-white">
-                                {{ \Carbon\Carbon::parse($application->scholarship->submission_deadline)->format('M d, Y') }}
+                                @if($application->scholarship && $application->scholarship->submission_deadline)
+                                    {{ \Carbon\Carbon::parse($application->scholarship->submission_deadline)->format('M d, Y') }}
+                                @else
+                                    N/A
+                                @endif
                             </p>
                         </div>
                         
@@ -163,7 +167,7 @@
                         <div>
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Grant Amount</p>
                             <p class="text-sm font-semibold text-green-600 dark:text-green-400">
-                                @if($application->scholarship->grant_amount)
+                                @if($application->scholarship && $application->scholarship->grant_amount)
                                     ₱{{ number_format($application->scholarship->grant_amount, 2) }}
                                 @else
                                     TBD

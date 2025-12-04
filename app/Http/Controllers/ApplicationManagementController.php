@@ -258,14 +258,15 @@ class ApplicationManagementController extends Controller
             }
 
             $perPage = 10;
-            $page = $request->get($pageName, 1);
+            // Use generic page param for AJAX, specific for normal load
+            $page = $request->ajax() ? $request->get('page_applicants', 1) : $request->get($pageName, 1);
             
             return new LengthAwarePaginator(
                 $students->forPage($page, $perPage),
                 $students->count(),
                 $perPage,
                 $page,
-                ['path' => $request->url(), 'query' => $request->query(), 'pageName' => $pageName]
+                ['path' => $request->url(), 'query' => $request->query(), 'pageName' => $request->ajax() ? 'page_applicants' : $pageName]
             );
         };
 
@@ -426,10 +427,29 @@ class ApplicationManagementController extends Controller
             });
         }
 
-        // Apply status filter for scholars (only if not using tab-based filtering)
-        // Tab-based filtering (scholars-new, scholars-old) is done client-side
+        // Get counts BEFORE applying status/type filters for the list
+        // We need to clone the query because get() or count() might modify it or we need to reuse it
+        $countQuery = clone $scholarsQuery;
+        $scholarsTotalCount = $countQuery->count();
+        $scholarsActiveCount = (clone $countQuery)->where('status', 'active')->count();
+        $scholarsNewCount = (clone $countQuery)->where('type', 'new')->count();
+        $scholarsOldCount = (clone $countQuery)->where('type', 'old')->count();
+
+        // Apply status filter for scholars
         if ($statusFilter !== 'all' && $statusFilter !== 'not_applied' && !str_starts_with($activeTab, 'scholars-')) {
             $scholarsQuery->where('status', $statusFilter);
+        }
+
+        // Apply type filter (from request param or tab)
+        $typeFilter = $request->get('type_filter', 'all');
+        if ($typeFilter !== 'all') {
+             $scholarsQuery->where('type', $typeFilter);
+        } elseif (str_starts_with($activeTab, 'scholars-')) {
+            // Fallback to tab-based filtering if no explicit type filter
+            $typeFromTab = str_replace('scholars-', '', $activeTab);
+            if (in_array($typeFromTab, ['new', 'old'])) {
+                $scholarsQuery->where('type', $typeFromTab);
+            }
         }
 
         // Apply sorting for scholars
@@ -599,6 +619,43 @@ class ApplicationManagementController extends Controller
             ->get();
             
         $analytics['all_applications_data'] = $allApplicationsData;
+
+        // Handle AJAX Requests
+        if ($request->ajax()) {
+            if ($activeTab === 'applicants') {
+                // Determine which list to return based on status_filter
+                $studentsList = $studentsAll; // Default
+                
+                switch ($statusFilter) {
+                    case 'not_applied': $studentsList = $studentsNotApplied; break;
+                    case 'in_progress': $studentsList = $studentsInProgress; break;
+                    case 'pending': $studentsList = $studentsPending; break;
+                    case 'approved': $studentsList = $studentsApproved; break;
+                    case 'rejected': $studentsList = $studentsRejected; break;
+                }
+
+                return response()->json([
+                    'html' => view('sfao.partials.tabs.applicants_list', ['students' => $studentsList])->render(),
+                    'counts' => [
+                        'total' => $studentsAll->total(),
+                        'pending' => $studentsPending->total(),
+                        'rejected' => $studentsRejected->total(),
+                        'not_applied' => $studentsNotApplied->total(),
+                        'approved' => $studentsApproved->total()
+                    ]
+                ]);
+            } elseif ($activeTab === 'scholars') {
+                return response()->json([
+                    'html' => view('sfao.partials.tabs.scholars_list', compact('scholars'))->render(),
+                    'counts' => [
+                        'total' => $scholarsTotalCount,
+                        'active' => $scholarsActiveCount,
+                        'new' => $scholarsNewCount,
+                        'old' => $scholarsOldCount
+                    ]
+                ]);
+            }
+        }
 
         return view('sfao.dashboard', compact(
             'user', 

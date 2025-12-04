@@ -8,7 +8,7 @@
         <!-- Header Section -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Campus Analytics Dashboard</h2>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white" x-text="getStatisticsHeader()">All Statistics</h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Insights into scholarship applications and student performance for {{ $sfaoCampus->name }} and its extensions.
                 </p>
@@ -424,6 +424,14 @@
                         this.updateCharts();
                     },
                     
+                    getStatisticsHeader() {
+                        if (this.filters.campus === 'all') {
+                            return 'All Statistics';
+                        }
+                        const campus = this.campusOptions.find(c => c.id == this.filters.campus);
+                        return (campus ? campus.name : 'All') + ' Statistics';
+                    },
+
                     getCurrentFilterLabel() {
                         let label = 'All Data';
                         if (this.filters.campus !== 'all') {
