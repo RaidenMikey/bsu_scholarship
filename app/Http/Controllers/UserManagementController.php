@@ -290,10 +290,15 @@ class UserManagementController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        $applications = $user ? $user->appliedScholarships : collect();
+        $applications = Application::where('user_id', $userId)
+            ->whereHas('scholarship')
+            ->with('scholarship')
+            ->orderBy('created_at', 'desc')
+            ->get();
         
         // Get detailed application tracking data with enhanced information
         $applicationTracking = Application::where('user_id', $userId)
+            ->whereHas('scholarship')
             ->with(['scholarship' => function($query) {
                 $query->with(['conditions', 'requiredDocuments']);
             }])
@@ -459,10 +464,15 @@ class UserManagementController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        $applications = $user ? $user->appliedScholarships : collect();
+        $applications = Application::where('user_id', $userId)
+            ->whereHas('scholarship')
+            ->with('scholarship')
+            ->orderBy('created_at', 'desc')
+            ->get();
         
         // Get detailed application tracking data with enhanced information
         $applicationTracking = Application::where('user_id', $userId)
+            ->whereHas('scholarship')
             ->with(['scholarship' => function($query) {
                 $query->with(['conditions', 'requiredDocuments']);
             }])
