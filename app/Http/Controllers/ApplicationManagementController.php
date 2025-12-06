@@ -352,8 +352,8 @@ class ApplicationManagementController extends Controller
         $queryGov->where('scholarship_type', 'government');
         
         // Apply sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
         
         $scholarshipsAll = $this->sortScholarships($queryAll->get(), $sortBy, $sortOrder);
         $scholarshipsPrivate = $this->sortScholarships($queryPrivate->get(), $sortBy, $sortOrder);
@@ -453,8 +453,8 @@ class ApplicationManagementController extends Controller
         }
 
         // Apply sorting for scholars
-        $scholarsSortBy = $request->get('scholars_sort_by', 'created_at');
-        $scholarsSortOrder = $request->get('scholars_sort_order', 'desc');
+        $scholarsSortBy = $request->get('scholars_sort_by', 'name');
+        $scholarsSortOrder = $request->get('scholars_sort_order', 'asc');
         
         switch ($scholarsSortBy) {
             case 'name':
@@ -653,6 +653,38 @@ class ApplicationManagementController extends Controller
                         'new' => $scholarsNewCount,
                         'old' => $scholarsOldCount
                     ]
+                ]);
+            } elseif ($activeTab === 'scholarships') {
+                $filteredScholarships = $scholarshipsAll;
+                
+                $typeFilter = $request->get('type_filter', 'all');
+                if ($typeFilter !== 'all') {
+                    $filteredScholarships = $filteredScholarships->filter(function($s) use ($typeFilter) {
+                         return $s->scholarship_type === $typeFilter;
+                    });
+                }
+                
+                // Pagination for AJAX
+                $page = $request->get('page_scholarships', 1);
+                $perPage = 5;
+                $paginatedScholarships = new \Illuminate\Pagination\LengthAwarePaginator(
+                    $filteredScholarships->forPage($page, $perPage),
+                    $filteredScholarships->count(),
+                    $perPage,
+                    $page,
+                    ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_scholarships']
+                );
+                
+                $paginatedScholarships->getCollection()->each(function($scholarship) {
+                    if($scholarship->slots_available && $scholarship->slots_available > 0) {
+                        $scholarship->fill_percentage = min(($scholarship->applications_count / $scholarship->slots_available) * 100, 100);
+                    } else {
+                        $scholarship->fill_percentage = 0;
+                    }
+                });
+
+                return response()->json([
+                    'html' => view('sfao.partials.tabs.scholarships_list', ['scholarships' => $paginatedScholarships])->render()
                 ]);
             }
         }
@@ -1020,9 +1052,7 @@ class ApplicationManagementController extends Controller
         $query = \App\Models\Report::with(['sfaoUser', 'campus', 'reviewer']);
 
         // Apply filters if provided
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+
 
         if ($request->filled('type') && $request->type !== 'all') {
             $query->where('report_type', $request->type);
@@ -1051,24 +1081,29 @@ class ApplicationManagementController extends Controller
                 $query->orderBy('created_at', $sortOrder);
         }
 
-        $reports = $query->get();
+        // Clone query for different tabs (filters remain applied to base query)
+        $querySubmitted = clone $query;
+        $queryReviewed = clone $query;
+        $queryApproved = clone $query;
+        $queryRejected = clone $query;
+
+        // Paginate results (10 per page)
+        $reportsParams = ['status', 'type', 'campus', 'sort', 'order']; // Params to append
+        
+        $reportsSubmitted = $querySubmitted->where('status', 'submitted')->paginate(10, ['*'], 'page_submitted')->appends($request->only($reportsParams));
+        $reportsReviewed = $queryReviewed->where('status', 'reviewed')->paginate(10, ['*'], 'page_reviewed')->appends($request->only($reportsParams));
+        $reportsApproved = $queryApproved->where('status', 'approved')->paginate(10, ['*'], 'page_approved')->appends($request->only($reportsParams));
+        $reportsRejected = $queryRejected->where('status', 'rejected')->paginate(10, ['*'], 'page_rejected')->appends($request->only($reportsParams));
+
         $totalReports = \App\Models\Report::count();
 
-        // Group reports by status
-        $reportsByStatus = [
-            'submitted' => $reports->where('status', 'submitted'),
-            'reviewed' => $reports->where('status', 'reviewed'),
-            'approved' => $reports->where('status', 'approved'),
-            'rejected' => $reports->where('status', 'rejected')
-        ];
-
-        // Get report statistics
+        // Get report statistics for dashboard counts
         $reportStats = [
             'total_reports' => $totalReports,
-            'submitted_reports' => $reportsByStatus['submitted']->count(),
-            'reviewed_reports' => $reportsByStatus['reviewed']->count(),
-            'approved_reports' => $reportsByStatus['approved']->count(),
-            'pending_reports' => $reportsByStatus['submitted']->count(),
+            'submitted_reports' => \App\Models\Report::where('status', 'submitted')->count(),
+            'reviewed_reports' => \App\Models\Report::where('status', 'reviewed')->count(),
+            'approved_reports' => \App\Models\Report::where('status', 'approved')->count(),
+            'pending_reports' => \App\Models\Report::where('status', 'submitted')->count(),
         ];
 
         // Generate comprehensive analytics data
@@ -1103,14 +1138,11 @@ class ApplicationManagementController extends Controller
         
 
 
-        // Get scholars data for the scholars tab
+        // Scholars Query - Base
+        // Get scholars data for the scholars tab (students who have scholar records)
         $scholarsQuery = \App\Models\Scholar::with(['user', 'scholarship', 'user.campus']);
 
-        // Apply scholars filtering
-        if ($statusFilter !== 'all') {
-            $scholarsQuery->where('status', $statusFilter);
-        }
-
+        // Apply filters (shared filters like campus, status, etc.)
         // Apply campus filter for scholars
         if ($campusFilter !== 'all') {
             $scholarsQuery->whereHas('user', function($query) use ($campusFilter) {
@@ -1123,16 +1155,11 @@ class ApplicationManagementController extends Controller
             $scholarsQuery->where('scholarship_id', $scholarshipFilter);
         }
 
-        // Apply tab-based filtering for scholars
-        $tab = $request->get('tab', 'scholarships');
-        if ($tab === 'scholars-new') {
-            $scholarsQuery->where('type', 'new');
-        } elseif ($tab === 'scholars-old') {
-            $scholarsQuery->where('type', 'old');
-        }
-
-        // Apply scholars sorting
+        // Apply sorting
         switch ($sortBy) {
+            // ... (sorting logic is shared, so we can keep it on the base query assuming we clone it properly OR apply it to each clone)
+            // Actually, we should clone BEFORE sorting if sorting might differ, but here sorting is global for the page.
+            // Let's apply sorting to the base query.
             case 'name':
                 $scholarsQuery->join('users', 'scholars.user_id', '=', 'users.id')
                     ->orderBy('users.name', $sortOrder);
@@ -1155,7 +1182,29 @@ class ApplicationManagementController extends Controller
                 $scholarsQuery->orderBy('scholars.created_at', $sortOrder);
         }
 
-        $scholars = $scholarsQuery->get();
+        // Prepare Queries for Tabs
+        $queryScholarsAll = clone $scholarsQuery;
+        $queryScholarsNew = clone $scholarsQuery;
+        $queryScholarsOld = clone $scholarsQuery;
+
+        // Apply specific filters
+        // All Scholars tab might still respect the global status filter if set
+        if ($statusFilter !== 'all') {
+             $queryScholarsAll->where('status', $statusFilter);
+             $queryScholarsNew->where('status', $statusFilter);
+             $queryScholarsOld->where('status', $statusFilter);
+        }
+
+        $queryScholarsNew->where('type', 'new');
+        $queryScholarsOld->where('type', 'old');
+
+        // Paginate
+        $scholarsAll = $queryScholarsAll->paginate(10, ['*'], 'page_scholars_all')->withQueryString();
+        $scholarsNew = $queryScholarsNew->paginate(10, ['*'], 'page_scholars_new')->withQueryString();
+        $scholarsOld = $queryScholarsOld->paginate(10, ['*'], 'page_scholars_old')->withQueryString();
+
+        // Deprecate single $scholars
+        $scholars = $scholarsAll;
 
         // Get qualified applicants (approved by SFAO but not yet selected as scholars)
         $qualifiedApplicantsQuery = User::with(['applications.scholarship', 'campus'])
@@ -1257,7 +1306,7 @@ class ApplicationManagementController extends Controller
             ->orderBy('rejected_at', 'desc')
             ->get();
 
-        return view('central.dashboard', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reports', 'reportStats', 'analytics', 'reportsByStatus', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports'));
+        return view('central.dashboard', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reportStats', 'analytics', 'reportsSubmitted', 'reportsReviewed', 'reportsApproved', 'reportsRejected', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'scholarsAll', 'scholarsNew', 'scholarsOld', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports'));
     }
 
     public function getFilteredAnalytics(Request $request)

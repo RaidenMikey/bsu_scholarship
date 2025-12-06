@@ -1474,6 +1474,27 @@ class UserManagementController extends Controller
     }
 
     /**
+     * Update user display name only
+     */
+    public function updateName(Request $request)
+    {
+        if (!session()->has('user_id')) {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user = User::find(session('user_id'));
+        $user->update([
+            'name' => $request->name,
+        ]);
+
+        return back()->with('success', 'Display name updated successfully.');
+    }
+
+    /**
      * Change user password
      */
     public function changePassword(Request $request)

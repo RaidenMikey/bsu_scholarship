@@ -6,76 +6,69 @@
      x-data="sfaoStatisticsTab()">
     <div class="space-y-6">
         <!-- Header Section -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white" x-text="getStatisticsHeader()">All Statistics</h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Insights into scholarship applications and student performance for {{ $sfaoCampus->name }} and its extensions.
                 </p>
             </div>
-            <div class="mt-4 sm:mt-0">
-                <button @click="refreshAnalytics()" 
-                        class="inline-flex items-center px-4 py-2 bg-bsu-red border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-bsu-redDark focus:bg-bsu-redDark active:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-bsu-red focus:ring-offset-2 transition ease-in-out duration-150">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                    Refresh Data
-                </button>
-            </div>
         </div>
 
         <!-- Filter Controls -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Filter Controls</h3>
-                <div class="flex space-x-3">
-                    <button @click="clearFilters()" 
-                            class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-150 text-sm">
-                        Clear All Filters
-                    </button>
-                    <button @click="applyFilters()" 
-                            class="px-4 py-2 bg-bsu-red text-white rounded-md hover:bg-bsu-redDark transition duration-150 text-sm">
-                        Apply Filters
-                    </button>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-end">
+                
                 <!-- Department Filter -->
-                <div class="space-y-2">
-                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                        Department
-                    </label>
-                    <select x-model="filters.department" 
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
-                        <option value="all">All Departments</option>
-                        <!-- Departments will be populated dynamically based on campus selection or all available -->
-                        <template x-for="dept in availableDepartments" :key="dept.id">
-                            <option :value="dept.short_name" x-text="dept.short_name"></option>
-                        </template>
-                    </select>
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Department</label>
+                    <div class="relative">
+                        <select x-model="filters.department" 
+                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
+                                style="border-width: 1px;">
+                            <option value="all">All Departments</option>
+                            <template x-for="dept in availableDepartments" :key="dept.id">
+                                <option :value="dept.short_name" x-text="dept.short_name"></option>
+                            </template>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Time Period Filter -->
-                <div class="space-y-2">
-                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Time Period
-                    </label>
-                    <select x-model="filters.timePeriod" 
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
-                        <option value="all">All Time</option>
-                        <option value="this_month">This Month</option>
-                        <option value="last_3_months">Last 3 Months</option>
-                        <option value="this_year">This Year</option>
-                    </select>
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Time Period</label>
+                    <div class="relative">
+                        <select x-model="filters.timePeriod" 
+                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
+                                style="border-width: 1px;">
+                            <option value="all">All Time</option>
+                            <option value="this_month">This Month</option>
+                            <option value="last_3_months">Last 3 Months</option>
+                            <option value="this_year">This Year</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
                 </div>
+
+
+
+                <!-- Reset Filters Icon -->
+                <div class="flex flex-col items-center">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Clear</label>
+                    <button @click="clearFilters()" 
+                            class="inline-flex items-center justify-center p-2 border border-red-500 rounded-full shadow-sm text-gray-500 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-400 dark:border-red-500 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition ease-in-out duration-150 h-[38px] w-[38px]"
+                            title="Reset Filters">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+
             </div>
         </div>
 

@@ -686,6 +686,221 @@ class ReportController extends Controller
     }
 
     /**
+     * Submit Summary Report from Tab
+     */
+    public function submitSummaryReport(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'report_type' => 'required|in:student_summary,scholar_summary,grant_summary',
+            'frequency' => 'required|in:monthly,quarterly,semi-annual,annual',
+            'description' => 'nullable|string',
+            'campus_id' => 'required'
+        ]);
+
+        $user = User::with('campus')->find(session('user_id'));
+        $campus = $user->campus;
+
+        // Determine Campus ID for the report
+        $reportCampusId = $request->campus_id;
+        if ($reportCampusId === 'all') {
+            // If 'all' is selected, we might want to store the user's main campus ID 
+            // but indicate it covers all monitored campuses in the report data or a separate field.
+            // For now, let's use the user's campus ID as the primary owner.
+            $reportCampusId = $campus->id;
+        }
+
+        // 1. Regenerate Data Snapshot
+        $reportData = [];
+        $title = '';
+
+        if ($request->report_type === 'student_summary') {
+            $title = 'Student Summary Report';
+            // Logic validation: Re-run studentSummary logic or similar
+            // For simplicity and DRY, we should ideally refactor the logic. 
+            // For this quick implementation, I will call a private method or duplicate the logic core.
+            // A better way: internal request dispatching or refactoring.
+            // Let's refactor the logic into private helper methods to stay clean.
+            $reportData = $this->generateStudentSummaryData($request->campus_id, $campus);
+        } 
+        elseif ($request->report_type === 'scholar_summary') {
+            $title = 'Scholar Summary Report';
+            $reportData = $this->generateScholarSummaryData($request->campus_id, $campus);
+        } 
+        elseif ($request->report_type === 'grant_summary') {
+            $title = 'Grant Summary Report';
+            $reportData = $this->generateGrantSummaryData($request->campus_id, $campus);
+        }
+
+        // 2. Create Report Record
+        $report = Report::create([
+            'sfao_user_id' => session('user_id'),
+            'campus_id' => $reportCampusId, 
+            'original_campus_selection' => $request->campus_id,
+            'report_type' => $request->report_type . '_' . $request->frequency, // e.g., student_summary_monthly
+            'title' => $title . ' - ' . ucfirst($request->frequency),
+            'description' => $request->description,
+            'report_period_start' => now()->startOfMonth(), // Defaulting to current month/period logic
+            'report_period_end' => now()->endOfMonth(),
+            'report_data' => $reportData,
+            'status' => 'submitted',
+            'submitted_at' => now()
+        ]);
+
+        // 3. Notify Central
+        $this->notifyCentralAdmin($report);
+
+        return redirect()->back()->with('success', 'Report submitted successfully to Central Office!');
+    }
+
+    // =====================================================
+    // DATA GENERATION HELPERS
+    // =====================================================
+
+    private function generateStudentSummaryData($campusIdSelection, $userCampus)
+    {
+        $monitoredCampuses = $userCampus->getAllCampusesUnder();
+        if ($campusIdSelection && $campusIdSelection != 'all') {
+            $monitoredCampuses = $monitoredCampuses->where('id', $campusIdSelection);
+        }
+
+        $reportData = [];
+        $summaryStats = ['accepted' => 0, 'rejected' => 0, 'pending' => 0, 'not_applied' => 0, 'total' => 0];
+        $remarksData = [];
+
+        foreach ($monitoredCampuses as $camp) {
+            $campusData = ['campus_name' => $camp->name, 'departments' => []];
+            $departments = $camp->departments;
+
+            foreach ($departments as $dept) {
+                $students = User::where('campus_id', $camp->id)
+                    ->where(function($q) use ($dept) {
+                        $q->where('college', $dept->name)->orWhere('college', $dept->short_name);
+                    })
+                    ->where('role', 'student')
+                    ->with(['applications' => function($q) { $q->latest(); }, 'form'])
+                    ->get();
+
+                $processedStudents = [];
+                foreach ($students as $student) {
+                    $latestApp = $student->applications->first();
+                    $status = $latestApp ? $latestApp->status : 'Not Applied';
+                    $normStatus = strtolower($status);
+                    
+                    if (in_array($normStatus, ['approved', 'accepted', 'claimed'])) $summaryStats['accepted']++;
+                    elseif (in_array($normStatus, ['rejected', 'disapproved'])) $summaryStats['rejected']++;
+                    elseif ($normStatus == 'not applied') $summaryStats['not_applied']++;
+                    else $summaryStats['pending']++;
+                    $summaryStats['total']++;
+
+                    $processedStudents[] = [
+                        'name' => $student->last_name . ', ' . $student->first_name,
+                        'sex' => $student->sex,
+                        'status' => ucfirst($status)
+                    ];
+
+                    if ($student->form && $student->form->reviewer_remarks) {
+                        $remarksData[] = [
+                            'campus' => $camp->name,
+                            'name' => $student->last_name . ', ' . $student->first_name,
+                            'status' => ucfirst($status),
+                            'remarks' => $student->form->reviewer_remarks
+                        ];
+                    }
+                }
+                $campusData['departments'][] = ['department_name' => $dept->name, 'students' => $processedStudents];
+            }
+            $reportData[] = $campusData;
+        }
+        
+        return [
+            'type' => 'student_summary',
+            'details' => $reportData,
+            'stats' => $summaryStats,
+            'remarks' => $remarksData
+        ];
+    }
+
+    private function generateScholarSummaryData($campusIdSelection, $userCampus)
+    {
+        $monitoredCampuses = $userCampus->getAllCampusesUnder();
+        if ($campusIdSelection && $campusIdSelection != 'all') {
+            $monitoredCampuses = $monitoredCampuses->where('id', $campusIdSelection);
+        }
+
+        $reportData = [];
+        $summaryStats = ['old_scholars' => 0, 'new_scholars' => 0, 'non_scholars' => 0, 'total' => 0];
+
+        foreach ($monitoredCampuses as $camp) {
+            $campusData = ['campus_name' => $camp->name, 'scholars' => [], 'non_scholars' => []];
+            $students = User::where('campus_id', $camp->id)->where('role', 'student')->with('scholars')->get();
+
+            foreach ($students as $student) {
+                $activeScholar = $student->scholars->where('status', 'active')->first();
+                $sData = [
+                    'name' => $student->last_name . ', ' . $student->first_name,
+                    'department' => $student->college ?? 'N/A',
+                    'year_level' => $student->year_level ?? 'N/A'
+                ];
+
+                if ($activeScholar) {
+                    $sData['status'] = ucfirst($activeScholar->type) . ' Scholar';
+                    $campusData['scholars'][] = $sData;
+                    if ($activeScholar->type === 'old') $summaryStats['old_scholars']++;
+                    else $summaryStats['new_scholars']++;
+                } else {
+                    $sData['status'] = 'Non-Scholar';
+                    $campusData['non_scholars'][] = $sData;
+                    $summaryStats['non_scholars']++;
+                }
+                $summaryStats['total']++;
+            }
+            $reportData[] = $campusData;
+        }
+
+        return [
+            'type' => 'scholar_summary',
+            'details' => $reportData,
+            'stats' => $summaryStats
+        ];
+    }
+
+    private function generateGrantSummaryData($campusIdSelection, $userCampus)
+    {
+        $monitoredCampuses = $userCampus->getAllCampusesUnder();
+        
+        $campusIds = $monitoredCampuses->pluck('id');
+        if ($campusIdSelection && $campusIdSelection != 'all') {
+            $campusIds = [$campusIdSelection];
+        }
+
+        $query = Application::whereIn('status', ['approved', 'claimed'])
+            ->whereHas('user', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            });
+
+        $totalGrants = (clone $query)->count();
+        $statusStats = (clone $query)->select('status', DB::raw('count(*) as total'))->groupBy('status')->pluck('total', 'status')->toArray();
+        $typeStats = (clone $query)
+            ->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+            ->select('scholarships.scholarship_type', DB::raw('count(*) as total'))
+            ->groupBy('scholarships.scholarship_type')
+            ->pluck('total', 'scholarship_type')
+            ->toArray();
+
+        return [
+            'type' => 'grant_summary',
+            'total_grants' => $totalGrants,
+            'status_stats' => $statusStats,
+            'type_stats' => $typeStats
+        ];
+    }
+
+
+    /**
      * Notify SFAO admin about report review
      */
     private function notifySfaoAdmin(Report $report)

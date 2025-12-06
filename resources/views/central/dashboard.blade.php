@@ -20,16 +20,110 @@
 <html lang="en"
   :class="{ 'dark': darkMode }"
   x-data="{
-    sidebarOpen: false,
-    rightSidebarOpen: false,
-    tab: localStorage.getItem('activeTab') || 'scholarships',
+    sidebarOpen: JSON.parse(localStorage.getItem('sidebarOpen')) || false,
+    rightSidebarOpen: JSON.parse(localStorage.getItem('rightSidebarOpen')) || false,
+    tab: {{ json_encode(request()->query("tab")) }} || localStorage.getItem('activeTab') || 'scholarships',
+    currentStatsCampus: 'all',
     darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
-    showLogoutModal: false
-  }"
+    showLogoutModal: false,
+    initialParams: new URLSearchParams(window.location.search),
+    
+    getTabGroup(tab) {
+        if (tab.startsWith('scholarships')) return 'scholarships';
+        if (tab === 'reports') return 'reports';
+        if (tab === 'statistics') return 'statistics';
+        if (tab.startsWith('scholars')) return 'scholars';
+        if (tab.startsWith('endorsed-applicants') || tab.startsWith('rejected-applicants')) return 'applications';
+        return 'default';
+    },
+
+    getGroupKeys(group) {
+        const keys = {
+            'scholarships': ['sort_by', 'sort_order', 'page_all', 'page_private', 'page_gov'],
+            'reports': ['type', 'campus', 'sort', 'order', 'page_submitted', 'page_reviewed', 'page_approved', 'page_rejected'],
+            'statistics': ['timePeriod', 'campus'],
+            'scholars': ['page_scholars_all', 'page_scholars_new', 'page_scholars_old', 'sort_by', 'status', 'type'],
+            'applications': ['sort_by', 'status_filter', 'campus_filter', 'scholarship_filter']
+        };
+        return keys[group] || [];
+    },
+
+    switchTab(newTab) {
+        // 1. Identify Groups
+        const currentGroup = this.getTabGroup(this.tab);
+        const newGroup = this.getTabGroup(newTab);
+
+        // 2. Save Current Group State
+        if (currentGroup !== 'default') {
+            const currentParams = new URLSearchParams(window.location.search);
+            const groupKeys = this.getGroupKeys(currentGroup);
+            const stateToSave = new URLSearchParams();
+            
+            groupKeys.forEach(key => {
+                if (currentParams.has(key)) {
+                    stateToSave.set(key, currentParams.get(key));
+                }
+            });
+            localStorage.setItem('groupState_' + currentGroup, stateToSave.toString());
+        }
+
+        // 3. Restore New Group State
+        let newParams = new URLSearchParams();
+        if (newGroup !== 'default') {
+            const savedState = localStorage.getItem('groupState_' + newGroup);
+            if (savedState) {
+                newParams = new URLSearchParams(savedState);
+            }
+        }
+        
+        // Always set the new tab
+        newParams.set('tab', newTab);
+
+        // 4. Construct New URL
+        const newUrl = new URL(window.location);
+        newUrl.search = newParams.toString();
+
+        // 5. Smart Switch Logic
+        // Compare the target params with what the page was initially loaded with.
+        
+        const initialParamsCopy = new URLSearchParams(this.initialParams);
+        initialParamsCopy.delete('tab');
+        
+        const checkParams = new URLSearchParams(newParams);
+        checkParams.delete('tab');
+
+        // Logic: activeTabParams == initialPageParams ? switch : reload
+        // Exception: Statistics tab is self-healing via Ajax, so we can always pushState for it (unless users prefers full reload consistency).
+        // Actually, if we use pushState for Statistics, our previous fix in statistics.blade.php handles the data fetching.
+        // For other tabs (Blade rendered), we MUST reload if params differ.
+        
+        if (checkParams.toString() === initialParamsCopy.toString() || newGroup === 'statistics') {
+            this.tab = newTab;
+            window.history.pushState({}, '', newUrl);
+        } else {
+            window.location.href = newUrl.toString();
+        }
+    }
+  }" 
+  @change-stats-campus.window="currentStatsCampus = $event.detail"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
+    $watch('sidebarOpen', val => localStorage.setItem('sidebarOpen', val));
+    $watch('rightSidebarOpen', val => localStorage.setItem('rightSidebarOpen', val));
+    
+    // Ensure initialParams is set correctly
+    initialParams = new URLSearchParams(window.location.search);
   ">
+
+  <script>
+    // Immediately apply dark mode preference to prevent FOUC
+    if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true' || (!('darkMode_{{ $user->id }}' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
 
 <head>
   <meta charset="UTF-8">
@@ -98,29 +192,27 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholarships
         </div>
-        <button @click="tab = 'scholarships'"
+        <button @click="switchTab('scholarships')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path d="M12 14l9-5-9-5-9 5 9 5z" />
-            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
           All Scholarships
         </button>
-        <button @click="tab = 'scholarships-private'"
+        <button @click="switchTab('scholarships-private')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships-private' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
           Private Scholarships
         </button>
-        <button @click="tab = 'scholarships-government'"
+        <button @click="switchTab('scholarships-government')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholarships-government' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
           </svg>
           Government Scholarships
         </button>
@@ -131,42 +223,42 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Scholars
         </div>
-        <button @click="tab = 'scholars'"
+        <button @click="switchTab('scholars')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholars' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
           All Scholars
         </button>
-        <button @click="tab = 'scholars-new'"
+        <button @click="switchTab('scholars-new')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholars-new' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
           </svg>
           New Scholars
         </button>
-        <button @click="tab = 'scholars-old'"
+        <button @click="switchTab('scholars-old')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'scholars-old' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Old Scholars
         </button>
-        <button @click="tab = 'endorsed-applicants'"
+        <button @click="switchTab('endorsed-applicants')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'endorsed-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Endorsed Applicants
         </button>
-        <button @click="tab = 'rejected-applicants'"
+        <button @click="switchTab('rejected-applicants')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'rejected-applicants' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Rejected Applicants
@@ -178,7 +270,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Reports
         </div>
-        <button @click="tab = 'reports'"
+        <button @click="switchTab('reports')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'reports' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,14 +278,34 @@
           </svg>
           SFAO Reports
         </button>
-        <button @click="tab = 'statistics'"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="tab === 'statistics' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+      </div>
+
+      <!-- Statistics Header -->
+       <div class="space-y-1">
+        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Statistics
+        </div>
+        <button @click="switchTab('statistics'); $dispatch('change-stats-campus', 'all')"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
+                :class="tab === 'statistics' && currentStatsCampus === 'all' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
+          All Campus Statistics
         </button>
+
+        <!-- Dynamic Campus Statistics Tabs -->
+        @foreach($campuses as $campus)
+        <button @click="switchTab('statistics'); $dispatch('change-stats-campus', '{{ $campus->id }}')"
+                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2 pl-8"
+                :class="tab === 'statistics' && currentStatsCampus === '{{ $campus->id }}' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-gray-300 dark:text-gray-400'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            {{ $campus->name }}
+        </button>
+        @endforeach
       </div>
 
       <!-- Manage Users Header -->
@@ -201,7 +313,7 @@
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
           Manage Users
         </div>
-        <button @click="tab = 'staff'"
+        <button @click="switchTab('staff')"
                 class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
                 :class="tab === 'staff' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,30 +324,7 @@
       </div>
     </nav>
 
-    <!-- Settings Section - Fixed at bottom -->
-    <div class="px-4 pb-4 flex-shrink-0 border-t border-bsu-redDark/30 dark:border-gray-700 pt-4">
-      <div class="space-y-1">
-        <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
-          Settings
-        </div>
-        <button @click="tab = 'settings'"
-                class="w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm flex items-center gap-2"
-                :class="tab === 'settings' ? 'bg-white text-bsu-red dark:bg-gray-200' : 'text-white dark:text-white'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Settings
-        </button>
-        <button @click="showLogoutModal = true"
-                class="block w-full text-left px-4 py-2 rounded hover:bg-bsu-redDark dark:hover:bg-gray-700 transition text-sm text-white dark:text-white flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Logout
-        </button>
-      </div>
-    </div>
+
 
   </aside>
 
@@ -300,13 +389,29 @@
         </div>
     </div>
 
-    <!-- User Profile Icon -->
-    <div class="relative">
+    <!-- User Profile Icon & Dark Mode -->
+    <div class="flex items-center gap-2">
+        <!-- Dark Mode Toggle -->
+        <button @click="darkMode = !darkMode"
+                class="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+                :title="darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+            <!-- Sun Icon (for Dark Mode) -->
+            <svg x-show="darkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <!-- Moon Icon (for Light Mode) -->
+            <svg x-show="!darkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+
+        <div class="relative">
         <button @click="rightSidebarOpen = true" class="flex items-center focus:outline-none">
             <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
                  alt="Profile"
                  class="h-10 w-10 rounded-full border-2 border-white object-cover hover:border-bsu-red transition-colors">
         </button>
+    </div>
     </div>
   </header>
 

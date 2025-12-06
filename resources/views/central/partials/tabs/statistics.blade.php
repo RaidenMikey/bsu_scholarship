@@ -3,7 +3,8 @@
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
      x-cloak 
-     x-data="statisticsTab()">
+     x-data="statisticsTab()"
+     @change-stats-campus.window="filters.campus = $event.detail; applyFilters()">
     <div class="space-y-6">
         <!-- Header Section -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -25,57 +26,39 @@
         </div>
 
         <!-- Filter Controls -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Filter Controls</h3>
-                <div class="flex space-x-3">
-                <button @click="clearFilters()" 
-                        class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition duration-150 text-sm">
-                    Clear All Filters
-                </button>
-                    <button @click="applyFilters()" 
-                            class="px-4 py-2 bg-bsu-red text-white rounded-md hover:bg-bsu-redDark transition duration-150 text-sm">
-                        Apply Filters
-                </button>
-            </div>
-                </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Campus Filter -->
-                <div class="space-y-2">
-                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        Campus
-                    </label>
-                    <select x-model="filters.campus" 
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
-                        <option value="all">All Campuses</option>
-                        @if(isset($campuses))
-                            @foreach($campuses as $campus)
-                            <option value="{{ $campus->id }}">{{ $campus->name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-end">
+                
+                <!-- Time Period Filter -->
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Time Period</label>
+                    <div class="relative">
+                        <select x-model="filters.timePeriod" 
+                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
+                                style="border-width: 1px;">
+                            <option value="all">All Time</option>
+                            <option value="this_month">This Month</option>
+                            <option value="last_3_months">Last 3 Months</option>
+                            <option value="this_year">This Year</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Time Period Filter -->
-                <div class="space-y-2">
-                    <label class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <svg class="w-4 h-4 mr-2 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <!-- Reset Filters Icon -->
+                <div class="flex flex-col items-center">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Clear</label>
+                    <button @click="clearFilters()" 
+                            class="inline-flex items-center justify-center p-2 border border-red-500 rounded-full shadow-sm text-gray-500 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-400 dark:border-red-500 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition ease-in-out duration-150 h-[38px] w-[38px]"
+                            title="Reset Filters">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Time Period
-                    </label>
-                    <select x-model="filters.timePeriod" 
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-bsu-red focus:border-bsu-red dark:bg-gray-700 dark:text-white">
-                        <option value="all">All Time</option>
-                        <option value="this_month">This Month</option>
-                        <option value="last_3_months">Last 3 Months</option>
-                        <option value="this_year">This Year</option>
-                    </select>
+                    </button>
                 </div>
+
             </div>
         </div>
 
@@ -469,8 +452,8 @@
                 previousCampus: 'all', // Track previous campus for transition detection
                 filters: {
                     analysisType: 'application_status',
-                    campus: 'all',
-                    timePeriod: 'all'
+                    campus: '{{ request('campus', 'all') }}',
+                    timePeriod: '{{ request('timePeriod', 'all') }}'
                 },
                 
                 init() {
@@ -478,6 +461,18 @@
                     console.log('Analytics data:', this.analyticsData);
                     this.updateFilteredData();
                     
+                    // If filters are present in URL (and thus not 'all'), fetch the correct data immediately
+                    // because the server initial load might have returned default 'all' data.
+                    if (this.filters.campus !== 'all' || this.filters.timePeriod !== 'all') {
+                         this.applyFilters();
+                    }
+                    
+                    // Watch for timePeriod filter changes
+                    this.$watch('filters.timePeriod', () => {
+                        console.log('Time period filter changed, updating charts...');
+                        this.applyFilters();
+                    });
+
                     // Watch for campus filter changes to update charts
                     this.$watch('filters.campus', () => {
                         console.log('Campus filter changed, updating charts...');
@@ -615,6 +610,12 @@
                 applyFilters() {
                     console.log('Apply Filters button clicked!');
                     console.log('Current filters:', this.filters);
+                    
+                    // Update URL
+                    const url = new URL(window.location);
+                    url.searchParams.set('campus', this.filters.campus);
+                    url.searchParams.set('timePeriod', this.filters.timePeriod);
+                    window.history.pushState({}, '', url);
                     
                     // Show loading state
                     this.showLoadingState();
@@ -1266,7 +1267,16 @@
                         campus: 'all',
                         timePeriod: 'all'
                     };
-                    this.updateChart();
+                    $dispatch('change-stats-campus', 'all');
+                    // this.updateChart(); // Assuming updateChart exists or just call update logic. 
+                    // Based on snippet, watchers might handle it or just call createAllCharts explicitly if needed.
+                    // But wait, the watcher for filters.campus calls createMonthlyTrendChart.
+                    // Let's stick to the existing logic but add dispatch.
+                    if (this.updateChart) { 
+                        this.updateChart(); 
+                    } else {
+                         this.createAllCharts();
+                    }
                 },
                 
                 initializeCharts() {
@@ -1327,7 +1337,7 @@
                     try {
                         // Create chart
                         this.charts.filteredPie = new Chart(ctx, {
-                            type: 'pie',
+                            type: 'bar',
                             data: chartData,
                         options: {
                             responsive: true,
@@ -1336,22 +1346,21 @@
                                     duration: 300,
                                     easing: 'easeInOutQuart'
                                 },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                },
                             plugins: {
                                 legend: {
-                                        position: 'bottom',
-                                        labels: {
-                                            padding: 20,
-                                            usePointStyle: true
-                                        }
+                                        display: false
                                     },
                                     tooltip: {
                                         callbacks: {
                                             label: function(context) {
                                                 let label = context.label || '';
-                                                let value = context.parsed;
-                                                let total = context.dataset.data.reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0);
-                                                let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                                return label + ': ' + value + ' (' + percentage + '%)';
+                                                let value = context.parsed.y; // For bar charts, value is usually in y
+                                                return label + ': ' + value;
                                             }
                                         }
                                     }

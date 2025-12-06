@@ -139,6 +139,7 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::get('/reports/create', [ReportController::class, 'createReport'])->name('reports.create');
     Route::post('/reports', [ReportController::class, 'storeReport'])->name('reports.store');
     Route::get('/reports/{id}', [ReportController::class, 'showReport'])->name('reports.show');
+    Route::post('/reports/summary-submit', [ReportController::class, 'submitSummaryReport'])->name('reports.summary-submit');
     Route::get('/reports/{id}/edit', [ReportController::class, 'editReport'])->name('reports.edit');
     Route::put('/reports/{id}', [ReportController::class, 'updateReport'])->name('reports.update');
     Route::post('/reports/{id}/submit', [ReportController::class, 'submitReport'])->name('reports.submit');
@@ -149,6 +150,8 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::get('/student-summary', [ReportController::class, 'studentSummary'])->name('reports.student-summary');
     Route::get('/scholar-summary', [ReportController::class, 'scholarSummary'])->name('reports.scholar-summary');
     Route::get('/grant-summary', [ReportController::class, 'grantSummary'])->name('reports.grant-summary');
+    // Change Password
+    Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');
 });
 
 // --------------------------------------------------
@@ -184,6 +187,10 @@ Route::middleware(['web', 'checkUserExists:central', 'role:central'])
         // Staff Management
         Route::post('/staff/invite', [UserManagementController::class, 'inviteStaff'])->name('staff.invite');
         Route::post('/staff/{id}/deactivate', [UserManagementController::class, 'deactivateStaff'])->name('staff.deactivate');
+        
+        // Account Settings
+        Route::post('/update-name', [UserManagementController::class, 'updateName'])->name('update-name');
+        Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');
         
         // Reports Management
         Route::get('/reports/{id}', [ReportController::class, 'centralShowReport'])->name('reports.show');
