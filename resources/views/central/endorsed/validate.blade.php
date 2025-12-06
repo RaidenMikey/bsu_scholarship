@@ -1,21 +1,15 @@
 @php
   use Illuminate\Support\Facades\Session;
-  use App\Models\User;
-  if (!Session::has('user_id') || session('role') !== 'central') {
-    header('Location: ' . route('login'));
-    exit;
-  }
-  $user = User::find(session('user_id'));
 @endphp
 
 <!DOCTYPE html>
 <html lang="en"
     :class="{ 'dark': darkMode }"
-    x-data="{ darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true' }"
-    x-init="$watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val))">
+    x-data="{ darkMode: localStorage.getItem('darkMode_{{ session('user_id') }}') === 'true' }"
+    x-init="$watch('darkMode', val => localStorage.setItem('darkMode_{{ session('user_id') }}', val))">
 <head>
     <script>
-        if (localStorage.getItem('darkMode_{{ $user->id }}') === 'true') {
+        if (localStorage.getItem('darkMode_{{ session('user_id') }}') === 'true') {
             document.documentElement.classList.add('dark');
         }
     </script>
@@ -111,10 +105,7 @@
             <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Type</div>
             <div class="font-bold text-bsu-red mt-1">{{ ucfirst($scholarship->scholarship_type) }}</div>
           </div>
-          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Priority</div>
-            <div class="font-bold text-bsu-red mt-1">{{ ucfirst($scholarship->priority_level) }}</div>
-          </div>
+
           <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Grant Amount</div>
             <div class="font-bold text-bsu-red mt-1">{{ $scholarship->grant_amount ? '₱' . number_format((float) $scholarship->grant_amount, 2) : 'TBD' }}</div>

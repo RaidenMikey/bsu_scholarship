@@ -110,6 +110,10 @@ class CentralApplicationController extends Controller
             ->where('scholarship_id', $scholarship->id)
             ->get();
 
+
+        // DEBUG: Verify the user being passed
+        // dd('DEBUG: checking user', $user->toArray(), 'Is this the admin?', $user->name);
+        
         return view('central.endorsed.validate', compact('application', 'user', 'scholarship', 'submittedDocuments'));
     }
 
