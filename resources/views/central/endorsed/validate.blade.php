@@ -58,7 +58,7 @@
             </div>
             <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
               <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">GWA</div>
-              <div class="text-sm font-bold text-bsu-red mt-1">{{ $user->form->gwa ?? 'N/A' }}</div>
+              <div class="text-sm font-bold text-bsu-red mt-1">{{ $user->form->previous_gwa ?? 'N/A' }}</div>
             </div>
           </div>
         </div>
@@ -97,10 +97,10 @@
 
     <!-- Scholarship & Application -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <div class="md:col-span-2 bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6">
+      <div class="md:col-span-3 bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6">
         <div class="text-sm text-gray-600 uppercase tracking-wide font-semibold mb-2">Scholarship</div>
         <div class="text-xl font-bold text-bsu-red mb-4">{{ $scholarship->scholarship_name }}</div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
+        <div class="grid grid-cols-3 gap-4 text-sm">
           <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Type</div>
             <div class="font-bold text-bsu-red mt-1">{{ ucfirst($scholarship->scholarship_type) }}</div>
@@ -113,19 +113,6 @@
           <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Status</div>
             <div class="font-bold text-bsu-red mt-1">{{ ucfirst($application->status) }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-xl shadow-lg border-2 border-bsu-red p-6">
-        <div class="text-sm text-gray-600 uppercase tracking-wide font-semibold mb-3">Academic</div>
-        <div class="grid grid-cols-1 gap-4 text-sm">
-          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">GWA</div>
-            <div class="font-bold text-bsu-red mt-1 text-lg">{{ $user->form->gwa ?? 'N/A' }}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <div class="text-xs uppercase text-gray-600 font-semibold tracking-wide">Allowance</div>
-            <div class="font-bold text-bsu-red mt-1">{{ isset($user->form->monthly_allowance) ? '₱' . number_format((float) $user->form->monthly_allowance, 2) : 'N/A' }}</div>
           </div>
         </div>
       </div>

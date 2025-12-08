@@ -45,6 +45,31 @@ if (!$user) {
       'title' => 'Application Form for Student Scholarship / Financial Assistance'
     ])
 
+    <!-- Error Display -->
+    @if ($errors->any())
+      <div class="mb-6 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-md animate-pulse">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+              Please correct the following errors:
+            </h3>
+            <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+              <ul class="list-disc pl-5 space-y-1">
+                @foreach ($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    @endif
+
     <!-- Progress Indicator -->
     <div class="mb-8">
       <div class="flex items-center justify-between mb-4">
@@ -110,16 +135,16 @@ if (!$user) {
             <input type="number" name="age" id="age" value="{{ old('age', $existingApplication->age ?? '') }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white transition-colors" readonly title="Age will be automatically calculated when birthdate is entered">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[150px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex:</label>
-            <select name="sex" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex: <span class="text-red-500">*</span></label>
+            <select name="sex" required class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
               <option value="Male" {{ old('sex', $user->sex ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
               <option value="Female" {{ old('sex', $user->sex ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
             </select>
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Civil Status:</label>
-            <select name="civil_status" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Civil Status: <span class="text-red-500">*</span></label>
+            <select name="civil_status" required class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
               <option value="Single" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
               <option value="Married" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
@@ -167,29 +192,29 @@ if (!$user) {
         <!-- Row 4: Email Address and Contact Number -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address:</label>
-            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address: <span class="text-red-500">*</span></label>
+            <input type="email" name="email" required value="{{ old('email', $user->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number:</label>
-            <input type="text" name="contact_number" value="{{ old('contact_number', $user->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number: <span class="text-red-500">*</span></label>
+            <input type="text" name="contact_number" required value="{{ old('contact_number', $user->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 5: Permanent Home Address -->
         <div class="flex flex-wrap items-start gap-4">
-          <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap pt-1">Permanent Home Address:</label>
+          <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap pt-1">Permanent Home Address: <span class="text-red-500">*</span></label>
           <div class="flex flex-wrap gap-4 flex-1">
             <div class="flex-1 min-w-[200px]">
-              <input type="text" name="street_barangay" value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <input type="text" name="street_barangay" required value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Street / Barangay</label>
             </div>
             <div class="flex-1 min-w-[200px]">
-              <input type="text" name="town_city" value="{{ old('town_city', $existingApplication->town_city ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <input type="text" name="town_city" required value="{{ old('town_city', $existingApplication->town_city ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Town / City / Municipality</label>
             </div>
             <div class="w-32 min-w-[120px]">
-              <input type="text" name="province" value="{{ old('province', $existingApplication->province ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <input type="text" name="province" required value="{{ old('province', $existingApplication->province ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Province</label>
             </div>
           </div>
@@ -198,12 +223,12 @@ if (!$user) {
         <!-- Row 6: Zip Code and Citizenship -->
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Zip Code:</label>
-            <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Zip Code: <span class="text-red-500">*</span></label>
+            <input type="text" name="zip_code" required value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
           </div>
           <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Citizenship:</label>
-            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Citizenship: <span class="text-red-500">*</span></label>
+            <input type="text" name="citizenship" required value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
@@ -230,17 +255,17 @@ if (!$user) {
         <div class="space-y-5">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="md:col-span-1">
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">SR Code</label>
-            <input type="text" name="sr_code" 
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">SR Code <span class="text-red-500">*</span></label>
+            <input type="text" name="sr_code" required
               value="{{ old('sr_code', $user->sr_code ?? '') }}"
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
 
           <div class="md:col-span-3">
-            <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Educational Level</label>
+            <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Educational Level <span class="text-red-500">*</span></label>
             <div class="flex flex-wrap items-center justify-between w-full">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="education_level" value="Undergraduate" {{ old('education_level', $user->education_level ?? '') == 'Undergraduate' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <input type="radio" name="education_level" required value="Undergraduate" {{ old('education_level', $user->education_level ?? '') == 'Undergraduate' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Undergraduate</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
@@ -257,8 +282,8 @@ if (!$user) {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Program</label>
-            <select name="program" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Program <span class="text-red-500">*</span></label>
+            <select name="program" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select Program --</option>
                 @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
                     <option value="{{ $program }}" 
@@ -270,8 +295,8 @@ if (!$user) {
           </div>
 
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department</label>
-            <select name="college_department" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department <span class="text-red-500">*</span></label>
+            <select name="college_department" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select College/Department --</option>
                 <option value="CICS" {{ old('college_department', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
                 <option value="CTE" {{ old('college_department', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
@@ -283,8 +308,8 @@ if (!$user) {
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Grade/Year Level</label>
-            <select name="year_level" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Grade/Year Level <span class="text-red-500">*</span></label>
+            <select name="year_level" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select Grade/Year Level --</option>
                 <option value="1st Year" {{ old('year_level', $user->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
                 <option value="2nd Year" {{ old('year_level', $user->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
@@ -293,8 +318,8 @@ if (!$user) {
             </select>
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Campus</label>
-            <select name="campus_id" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Campus <span class="text-red-500">*</span></label>
+            <select name="campus_id" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select Campus --</option>
               @foreach($campuses as $campus)
                 <option value="{{ $campus->id }}" {{ old('campus_id', $user->campus_id) == $campus->id ? 'selected' : '' }}>
@@ -304,8 +329,8 @@ if (!$user) {
             </select>
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Previous GWA</label>
-            <input type="number" name="previous_gwa" step="0.01" min="1.00" max="5.00" 
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Previous GWA <span class="text-red-500">*</span></label>
+            <input type="number" name="previous_gwa" required step="0.01" min="1.00" max="5.00" 
                    placeholder="0.00"
                    value="{{ old('previous_gwa', $existingApplication->previous_gwa ?? '') }}"
                    class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
@@ -320,8 +345,8 @@ if (!$user) {
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Units Enrolled</label>
-            <input type="number" name="units_enrolled" min="1" max="30"
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Units Enrolled <span class="text-red-500">*</span></label>
+            <input type="number" name="units_enrolled" required min="1" max="30"
               value="{{ old('units_enrolled', $existingApplication->units_enrolled ?? '') }}"
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
@@ -343,24 +368,24 @@ if (!$user) {
             @endif
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Semester</label>
-            <input type="text" name="semester" placeholder="e.g., 1st Semester"
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Semester <span class="text-red-500">*</span></label>
+            <input type="text" name="semester" required placeholder="e.g., 1st Semester"
               value="{{ old('semester', $existingApplication->semester ?? '') }}"
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Academic Year</label>
-            <input type="text" name="academic_year" placeholder="e.g., 2025-2026"
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Academic Year <span class="text-red-500">*</span></label>
+            <input type="text" name="academic_year" required placeholder="e.g., 2025-2026"
               value="{{ old('academic_year', $existingApplication->academic_year ?? '') }}"
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <div>
-          <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Do you have existing scholarships?</label>
+          <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">Do you have existing scholarships? <span class="text-red-500">*</span></label>
           <div class="flex items-center gap-6 mt-1">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="has_existing_scholarship" value="1" onchange="toggleScholarshipDetails()"
+              <input type="radio" name="has_existing_scholarship" required value="1" onchange="toggleScholarshipDetails()"
                 {{ old('has_existing_scholarship', $existingApplication->has_existing_scholarship ?? '') == 1 ? 'checked' : '' }}
                 class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
               <span class="text-gray-700 dark:text-gray-300">Yes</span>
@@ -397,10 +422,10 @@ if (!$user) {
 
           <div class="space-y-3">
             <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father Status:</label>
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father Status: <span class="text-red-500">*</span></label>
               <div class="flex items-center gap-6 flex-1">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="father_status" value="living" {{ old('father_status', $existingApplication->father_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                  <input type="radio" name="father_status" required value="living" {{ old('father_status', $existingApplication->father_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                   <span class="text-gray-700 dark:text-gray-300">Living</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
@@ -411,8 +436,8 @@ if (!$user) {
             </div>
 
             <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Name:</label>
-              <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Name: <span class="text-red-500">*</span></label>
+              <input type="text" name="father_name" required value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
 
             <div class="flex items-center gap-4">
@@ -438,10 +463,10 @@ if (!$user) {
 
           <div class="space-y-3">
             <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother Status:</label>
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother Status: <span class="text-red-500">*</span></label>
               <div class="flex items-center gap-6 flex-1">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="mother_status" value="living" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                  <input type="radio" name="mother_status" required value="living" {{ old('mother_status', $existingApplication->mother_status ?? '') == 'living' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                   <span class="text-gray-700 dark:text-gray-300">Living</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
@@ -452,8 +477,8 @@ if (!$user) {
             </div>
 
             <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Name:</label>
-              <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Name: <span class="text-red-500">*</span></label>
+              <input type="text" name="mother_name" required value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
 
             <div class="flex items-center gap-4">
@@ -477,10 +502,10 @@ if (!$user) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Estimated Gross Annual Income Section -->
           <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
-            <label class="block font-medium mb-3 text-gray-700 dark:text-gray-300">Estimated gross annual income:</label>
+            <label class="block font-medium mb-3 text-gray-700 dark:text-gray-300">Estimated gross annual income: <span class="text-red-500">*</span></label>
             <div class="space-y-2">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="estimated_gross_annual_income" value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                <input type="radio" name="estimated_gross_annual_income" required value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Not over P 250,000.00</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
@@ -544,8 +569,8 @@ if (!$user) {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block font-medium mb-1 text-gray-700 dark:text-gray-300">Student Signature</label>
-              <input type="text" name="student_signature" placeholder="Type your full name as digital signature" value="{{ old('student_signature', $existingApplication->student_signature ?? '') }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+              <label class="block font-medium mb-1 text-gray-700 dark:text-gray-300">Student Signature <span class="text-red-500">*</span></label>
+              <input type="text" name="student_signature" required placeholder="Type your full name as digital signature" value="{{ old('student_signature', $existingApplication->student_signature ?? '') }}" class="w-full border-2 border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Type your full name as your digital signature</p>
             </div>
 
@@ -593,6 +618,76 @@ if (!$user) {
       <!-- Hidden input to trigger print after save (only for other submissions, not Complete button) -->
       <input type="hidden" form="mainForm" name="print_after_save" id="printAfterSave" value="1">
     </form>
+  </div>
+
+  <!-- Validation Error Modal -->
+  <div id="validationErrorModal" class="hidden fixed inset-0 z-[99999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-xs p-6">
+        <div class="flex flex-col items-center justify-center">
+          <!-- Icon -->
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+            <svg class="h-8 w-8 text-red-600 dark:text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+
+          <!-- Content -->
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" id="validationErrorTitle">
+            Validation Error
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6" id="validationErrorMessage">
+            Please check your input.
+          </p>
+
+          <!-- Button -->
+          <button type="button" 
+                  onclick="closeValidationErrorModal()" 
+                  class="w-full inline-flex justify-center rounded-xl border border-transparent bg-bsu-red px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+            Okay, I'll fix it
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Missing Information Modal -->
+  <div id="missingInfoModal" class="hidden fixed inset-0 z-[99999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4 text-center">
+      <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-xs p-6">
+        <div class="flex flex-col items-center justify-center">
+            <!-- Icon -->
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30 mb-4">
+              <svg class="h-8 w-8 text-yellow-600 dark:text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <!-- Content -->
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" id="missingInfoTitle">
+              Missing Information
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6" id="missingInfoMessage">
+              Please fill in all required fields to proceed.
+            </p>
+
+            <!-- Button -->
+            <button type="button" 
+                    onclick="closeMissingInfoModal()" 
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent bg-bsu-red px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+              Okay, I'll check
+            </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Unsaved Changes Modal -->
@@ -808,6 +903,30 @@ if (!$user) {
       }
     }
 
+    function showValidationErrorModal(message) {
+      document.getElementById('validationErrorMessage').textContent = message;
+      document.getElementById('validationErrorModal').classList.remove('hidden');
+    }
+
+    function closeValidationErrorModal() {
+      document.getElementById('validationErrorModal').classList.add('hidden');
+    }
+
+    function showMissingInfoModal(message) {
+      if (message) {
+        document.getElementById('missingInfoMessage').textContent = message;
+      }
+      document.getElementById('missingInfoModal').classList.remove('hidden');
+    }
+
+    function closeMissingInfoModal() {
+      document.getElementById('missingInfoModal').classList.add('hidden');
+    }
+
+    // Make functions globally accessible
+    window.closeValidationErrorModal = closeValidationErrorModal;
+    window.closeMissingInfoModal = closeMissingInfoModal;
+
     function validateCurrentStage() {
       const currentStageElement = document.querySelector(`.form-stage[data-stage="${currentStage}"]`);
       if (!currentStageElement) return true;
@@ -815,24 +934,77 @@ if (!$user) {
       // Get all required fields in current stage
       const requiredFields = currentStageElement.querySelectorAll('[required]');
       let isValid = true;
+      let firstInvalidField = null;
+      let missingFieldsCount = 0;
       
       requiredFields.forEach(field => {
-        if (!field.value || field.value.trim() === '') {
-          isValid = false;
-          field.classList.add('border-red-500', 'ring-2', 'ring-red-300');
-          field.addEventListener('input', function() {
-            this.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
-          }, { once: true });
+        // Handle radio buttons specially
+        if (field.type === 'radio') {
+          const name = field.name;
+          const checked = currentStageElement.querySelector(`input[name="${name}"]:checked`);
+          if (!checked) {
+            isValid = false;
+            missingFieldsCount++;
+            // Highlight parent container if possible, or key label
+             const container = field.closest('.space-y-2') || field.parentElement.parentElement;
+             if(container) {
+                 container.classList.add('p-2', 'border', 'border-red-300', 'rounded', 'bg-red-50', 'dark:bg-red-900/10');
+                 // Create a cleanup listener
+                 const cleanup = () => {
+                     container.classList.remove('p-2', 'border', 'border-red-300', 'rounded', 'bg-red-50', 'dark:bg-red-900/10');
+                 };
+                 const radios = currentStageElement.querySelectorAll(`input[name="${name}"]`);
+                 radios.forEach(r => r.addEventListener('change', cleanup, {once: true}));
+             }
+             if (!firstInvalidField) firstInvalidField = field;
+          }
+        } else {
+             if (!field.value || field.value.trim() === '') {
+                isValid = false;
+                missingFieldsCount++;
+                 field.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                 field.addEventListener('input', function() {
+                 this.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                 }, { once: true });
+                 if (!firstInvalidField) firstInvalidField = field;
+            }
         }
       });
+
+      // Special Validation for Zip Code (Stage 1)
+      if (isValid && currentStage === 1) {
+        const zipCodeInput = currentStageElement.querySelector('input[name="zip_code"]');
+        if (zipCodeInput && zipCodeInput.value.length > 4) {
+          isValid = false;
+          showValidationErrorModal('Zip Code must be exactly 4 digits.');
+          zipCodeInput.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+          zipCodeInput.addEventListener('input', function() {
+            this.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+          }, { once: true });
+          if (!firstInvalidField) firstInvalidField = zipCodeInput;
+        }
+      }
+
+      // Special Validation for Signature (Stage 5)
+      // Since signature is now auto-populated and read-only, strict validation against input is implicitly handled.
+      // We just check if it's not empty (which is covered by required attribute check above, roughly)
+      // But actually, since it's read-only, we should ensure the source fields (Stage 1) are valid.
+      // The general 'required' check on Stage 1 covers the name fields.
+      // So no special manual validation block is needed here anymore.
       
       if (!isValid) {
-        alert('Please fill in all required fields before proceeding.');
+        // Use custom modal for zip code error if it's the specific issue
+        const zipInvalid = currentStage === 1 && firstInvalidField && firstInvalidField.name === 'zip_code' && firstInvalidField.value.length > 4;
+        
+        if (!zipInvalid) {
+             // General missing required fields
+             showMissingInfoModal('Please fill in all required fields before proceeding.');
+        }
+        
         // Scroll to first invalid field
-        const firstInvalid = currentStageElement.querySelector('[required]:invalid, [required].border-red-500');
-        if (firstInvalid) {
-          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          firstInvalid.focus();
+        if (firstInvalidField) {
+          firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalidField.focus();
         }
       }
       
@@ -927,9 +1099,10 @@ if (!$user) {
       // Also handle browser back/forward and page unload
       window.addEventListener('beforeunload', function(e) {
         if (hasFormChanges()) {
+          const message = 'Changes you made may not be saved.';
           e.preventDefault();
-          e.returnValue = '';
-          return '';
+          e.returnValue = message;
+          return message;
         }
       });
 
@@ -1043,6 +1216,39 @@ if (!$user) {
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
       toggleScholarshipDetails();
+      
+      // Auto-populate signature
+      const firstNameInput = document.querySelector('input[name="first_name"]');
+      const middleNameInput = document.querySelector('input[name="middle_name"]');
+      const lastNameInput = document.querySelector('input[name="last_name"]');
+      const signatureInput = document.querySelector('input[name="student_signature"]');
+      
+      if (signatureInput) {
+          // Make read-only
+          signatureInput.readOnly = true;
+          signatureInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+
+          function updateSignature() {
+              const first = firstNameInput ? firstNameInput.value.trim() : '';
+              const middle = middleNameInput ? middleNameInput.value.trim() : '';
+              const last = lastNameInput ? lastNameInput.value.trim() : '';
+              
+              let middleInitial = '';
+              if (middle.length > 0) {
+                  middleInitial = middle.charAt(0).toUpperCase() + '.';
+              }
+              
+              const signature = `${first} ${middleInitial} ${last}`.replace(/\s+/g, ' ').trim();
+              signatureInput.value = signature;
+          }
+
+          if (firstNameInput) firstNameInput.addEventListener('input', updateSignature);
+          if (middleNameInput) middleNameInput.addEventListener('input', updateSignature);
+          if (lastNameInput) lastNameInput.addEventListener('input', updateSignature);
+          
+          // Initial update
+          updateSignature();
+      }
     });
   </script>
 </body>
