@@ -345,22 +345,13 @@ class UserManagementController extends Controller
             }
         });
 
-        // Get notifications for the student
-        $notifications = Notification::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
-
-        $unreadCounts = Notification::where('user_id', $userId)
-            ->where('is_read', false)
-            ->selectRaw('type, count(*) as count')
-            ->groupBy('type')
-            ->pluck('count', 'type');
-
-        $unreadCount = $unreadCounts->sum();
-        $unreadCountScholarships = $unreadCounts['scholarship_created'] ?? 0;
-        $unreadCountStatus = $unreadCounts['application_status'] ?? 0;
-        $unreadCountComments = $unreadCounts['sfao_comment'] ?? 0;
+        // Get notifications and unread counts
+        $notificationData = $this->getStudentNotificationData($userId);
+        $notifications = $notificationData['notifications'];
+        $unreadCount = $notificationData['unreadCount'];
+        $unreadCountScholarships = $notificationData['unreadCountScholarships'];
+        $unreadCountStatus = $notificationData['unreadCountStatus'];
+        $unreadCountComments = $notificationData['unreadCountComments'];
 
         // Get user's active scholarships (My Scholarships)
         $myScholarships = \App\Models\Scholar::where('user_id', $userId)
@@ -519,15 +510,13 @@ class UserManagementController extends Controller
             }
         });
 
-        // Get notifications for the student
-        $notifications = Notification::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
-
-        $unreadCount = Notification::where('user_id', $userId)
-            ->where('is_read', false)
-            ->count();
+        // Get notifications and unread counts
+        $notificationData = $this->getStudentNotificationData($userId);
+        $notifications = $notificationData['notifications'];
+        $unreadCount = $notificationData['unreadCount'];
+        $unreadCountScholarships = $notificationData['unreadCountScholarships'];
+        $unreadCountStatus = $notificationData['unreadCountStatus'];
+        $unreadCountComments = $notificationData['unreadCountComments'];
 
         // Get user's active scholarships (My Scholarships)
         $myScholarships = \App\Models\Scholar::where('user_id', $userId)
@@ -1252,13 +1241,18 @@ class UserManagementController extends Controller
 
         $user = User::find(session('user_id'));
 
-        if ($user->profile_picture && Storage::exists('public/profile_pictures/' . $user->profile_picture)) {
-            Storage::delete('public/profile_pictures/' . $user->profile_picture);
+        // Check if old profile picture exists and delete it
+        // We use 'profile_pictures/' prefix assuming root is the public container
+        if ($user->profile_picture && file_exists(public_path('storage/profile_pictures/' . $user->profile_picture))) {
+            unlink(public_path('storage/profile_pictures/' . $user->profile_picture));
         }
 
         $file = $request->file('profile_picture');
         $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('public/profile_pictures', $filename);
+        
+        // DIRECT MOVE: Bypasses config/filesystems.php entirely
+        // Uses the verified public_path() from AppServiceProvider
+        $file->move(public_path('storage/profile_pictures'), $filename);
 
         $user->profile_picture = $filename;
         $user->save();
@@ -1266,7 +1260,6 @@ class UserManagementController extends Controller
         return back()->with('success', 'Profile picture updated.');
     }
 
-    // =====================================================
     // STAFF MANAGEMENT METHODS (CENTRAL)
     // =====================================================
 
@@ -1623,5 +1616,30 @@ class UserManagementController extends Controller
         return response()->file($filePath, [
             'Content-Type' => Storage::disk('public')->mimeType($document->file_path),
         ]);
+    }
+
+    /**
+     * Get student notification data
+     */
+    private function getStudentNotificationData($userId)
+    {
+        $notifications = Notification::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        $unreadCounts = Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->selectRaw('type, count(*) as count')
+            ->groupBy('type')
+            ->pluck('count', 'type');
+
+        return [
+            'notifications' => $notifications,
+            'unreadCount' => $unreadCounts->sum(),
+            'unreadCountScholarships' => $unreadCounts['scholarship_created'] ?? 0,
+            'unreadCountStatus' => $unreadCounts['application_status'] ?? 0,
+            'unreadCountComments' => $unreadCounts['sfao_comment'] ?? 0,
+        ];
     }
 }

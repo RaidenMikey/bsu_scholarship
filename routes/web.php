@@ -17,7 +17,17 @@ use Illuminate\Http\Request;
 // PUBLIC ROUTES
 // --------------------------------------------------
 
-Route::get('/', fn() => view('home'));
+Route::get('/', function () {
+    if (session()->has('user_id')) {
+        return redirect(match (session('role')) {
+            'student' => route('student.dashboard'),
+            'sfao'    => route('sfao.dashboard'),
+            'central' => route('central.dashboard'),
+            default   => '/'
+        });
+    }
+    return view('home');
+});
 
 // --------------------------------------------------
 // AUTHENTICATION ROUTES
@@ -233,6 +243,7 @@ Route::post('/sfao/password-setup', [UserManagementController::class, 'setupSFAO
 
 Route::middleware(['web'])->group(function () {
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/{id}/mark-unread', [App\Http\Controllers\NotificationController::class, 'markAsUnread'])->name('notifications.mark-unread');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 });

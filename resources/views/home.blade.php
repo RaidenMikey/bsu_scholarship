@@ -102,7 +102,7 @@
 
         <!-- Apply Button -->
         <div class="mt-64 animate-fadeInUp delay-300">
-            <a href="#apply" 
+            <a href="{{ session()->has('user_id') ? (session('role') == 'student' ? route('student.dashboard') : (session('role') == 'sfao' ? route('sfao.dashboard') : (session('role') == 'central' ? route('central.dashboard') : route('register')))) : route('register') }}" 
                class="inline-block bg-red-600 text-white px-10 py-4 rounded-full shadow-xl 
                       hover:bg-red-700 hover:scale-110 transition transform duration-300">
                 Apply Now

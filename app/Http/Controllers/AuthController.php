@@ -163,6 +163,15 @@ class AuthController extends Controller
      */
     public function showRegister()
     {
+        if (session()->has('user_id')) {
+            return redirect(match (session('role')) {
+                'student' => route('student.dashboard'),
+                'sfao'    => route('sfao.dashboard'),
+                'central' => route('central.dashboard'),
+                default   => '/'
+            });
+        }
+
         $campuses = \App\Models\Campus::with('departments')->get();
         $scholarships = \App\Models\Scholarship::all();
         return view('auth.register', compact('campuses', 'scholarships'));
