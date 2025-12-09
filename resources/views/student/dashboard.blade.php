@@ -134,16 +134,16 @@
   <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300"
           :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
     <!-- Branding -->
-    <div class="flex items-center space-x-3">
-        <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-2">
+    <div class="flex items-center space-x-2 md:space-x-3">
+        <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-1 md:mr-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
-        <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-12 w-auto">
+        <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-10 md:h-12 w-auto">
         <div class="text-white">
-            <div class="text-base font-bold leading-tight">Batangas State University</div>
-            <div class="text-sm font-light">The National Engineering University</div>
+            <div class="text-sm md:text-base font-bold leading-tight">Batangas State University</div>
+            <div class="text-xs font-light hidden md:block">The National Engineering University</div>
         </div>
     </div>
 
@@ -317,11 +317,11 @@
             </a>
             
             <a href="{{ route('student.print-application', ['type' => 'sfao']) }}" 
-               class="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-lg shadow hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+               class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-lg shadow hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
               </svg>
-              <span>Print Application</span>
+              <span>Print Application Form</span>
             </a>
           </div>
         </div>

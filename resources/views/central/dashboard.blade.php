@@ -391,16 +391,16 @@
   <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300"
           :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
     <!-- Branding -->
-    <div class="flex items-center space-x-3">
-        <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-2">
+    <div class="flex items-center space-x-2 md:space-x-3">
+        <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-1 md:mr-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
-        <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-12 w-auto">
+        <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-10 md:h-12 w-auto">
         <div class="text-white">
-            <div class="text-base font-bold leading-tight">Batangas State University</div>
-            <div class="text-xs italic text-bsu-red">The National Engineering University</div>
+            <div class="text-sm md:text-base font-bold leading-tight">Batangas State University</div>
+            <div class="text-xs italic text-bsu-red hidden md:block">The National Engineering University</div>
         </div>
     </div>
 

@@ -352,7 +352,10 @@ class FormPrintController extends Controller
         } else {
             // Fallback: if PDF conversion fails, return DOCX with notification
             session()->flash('warning', 'PDF conversion unavailable. LibreOffice is not installed. Downloading DOCX instead. Please install LibreOffice to enable PDF conversion.');
-            return response()->download($docxPath, $filename)->deleteFileAfterSend(true);
+            return response()->download($docxPath, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ])->deleteFileAfterSend(true);
         }
     }
 
@@ -479,10 +482,14 @@ class FormPrintController extends Controller
         }
 
         // Try to find it in PATH
-        if (PHP_OS_FAMILY === 'Windows') {
-            $foundPath = shell_exec('where soffice 2>nul');
+        if (function_exists('shell_exec')) {
+            if (PHP_OS_FAMILY === 'Windows') {
+                $foundPath = shell_exec('where soffice 2>nul');
+            } else {
+                $foundPath = shell_exec('which libreoffice soffice 2>/dev/null');
+            }
         } else {
-            $foundPath = shell_exec('which libreoffice soffice 2>/dev/null');
+            $foundPath = null;
         }
         
         if ($foundPath) {
