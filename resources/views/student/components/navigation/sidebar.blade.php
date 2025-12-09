@@ -14,7 +14,7 @@
 
 
     <!-- Navigation - Scrollable -->
-    <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.3) transparent;">
+    <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
       <!-- Scholarships Header -->
       <div class="space-y-1">
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">

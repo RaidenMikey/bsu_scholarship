@@ -15,7 +15,7 @@ class CheckUserExists
 
         if (!$user) {
             session()->flush();
-            return redirect()->route('login')->with('session_expired', true);
+            return redirect()->route('login')->with('session_expired', 'Your session has expired. Please log in again.');
         }
 
         // Role check (if passed as parameter)

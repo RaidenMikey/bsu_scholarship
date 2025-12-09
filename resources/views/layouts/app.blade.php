@@ -2,7 +2,7 @@
 <html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ config('app.name', 'BSU Scholarship') }}</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -15,7 +15,7 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans">
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans antialiased">
     <div id="app">
         @yield('content')
     </div>

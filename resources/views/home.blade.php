@@ -35,17 +35,17 @@
 </head>
 <body class="font-sans antialiased bg-gray-100">
 
-   <!-- Navbar -->
+    <!-- Navbar -->
 <nav class="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md shadow-md z-50" x-data="{ open: false }">
     <div class="px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center space-x-3">
                 <a href="#home" class="flex items-center space-x-2">
                     <!-- Increased logo size -->
-                    <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-16 w-auto">
+                    <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-10 md:h-14 lg:h-16 w-auto">
                     <div class="text-gray-800">
-                        <div class="text-lg font-bold">Batangas State University</div>
-                        <div class="text-sm italic text-red-600">The National Engineering University</div>
+                        <div class="text-base md:text-lg font-bold leading-tight">Batangas State University</div>
+                        <div class="text-xs md:text-sm italic text-red-600 leading-tight">The National Engineering University</div>
                     </div>
                 </a>
             </div>
@@ -70,41 +70,48 @@
             </div>
         </div>
     </div>
-</nav>
 
 
         <!-- Mobile Menu -->
-        <div x-show="open" class="md:hidden px-4 pt-2 pb-4 bg-white space-y-2">
-            <a href="#home" class="block text-gray-800 hover:text-red-600 px-3 py-2">Home</a>
-            <a href="#about" class="block text-gray-800 hover:text-red-600 px-3 py-2">About</a>
-            <a href="#contact" class="block text-gray-800 hover:text-red-600 px-3 py-2">Contact</a>
+        <div x-show="open" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="md:hidden fixed top-16 left-0 w-full bg-white shadow-lg space-y-2 px-4 pt-4 pb-6 z-40 border-t border-gray-100">
+            <a href="#home" @click="open = false" class="block text-gray-800 hover:text-red-600 hover:bg-gray-50 px-3 py-2 rounded-lg transition">Home</a>
+            <a href="#about" @click="open = false" class="block text-gray-800 hover:text-red-600 hover:bg-gray-50 px-3 py-2 rounded-lg transition">About</a>
+            <a href="#contact" @click="open = false" class="block text-gray-800 hover:text-red-600 hover:bg-gray-50 px-3 py-2 rounded-lg transition">Contact</a>
             <a href="{{ url('/login') }}" 
-               class="block bg-red-600 text-white px-5 py-2 rounded-full text-center hover:bg-red-700 transition animate-pulseButton">
+               class="block bg-red-600 text-white px-5 py-2 rounded-full text-center hover:bg-red-700 transition mt-4 animate-pulseButton">
                 Login
             </a>
         </div>
     </nav>
 
+
 <!-- Home Section -->
-<section id="home" class="relative min-h-screen flex items-start justify-center text-center overflow-hidden pt-32 homepage-bg"
+<section id="home" class="relative min-h-screen flex items-start justify-center text-center overflow-hidden pt-32 homepage-bg">
 
     <!-- Gradient Overlay -->
     <div class="absolute inset-0 bg-gradient-to-r from-red-600/90 via-red-300/70 to-white/40"></div>
 
     <!-- Content -->
-    <div class="relative z-10 px-6 md:px-12 max-w-4xl">
-        <h1 class="font-extrabold text-white drop-shadow-2xl animate-fadeInDown italic"
-            style="font-size: 48px; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+    <div class="relative z-10 px-6 md:px-12 max-w-5xl mx-auto flex flex-col items-center">
+        <h1 class="font-extrabold text-white drop-shadow-2xl animate-fadeInDown italic text-3xl sm:text-4xl md:text-6xl tracking-wide leading-tight"
+            style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
             &ldquo;Your Journey to success begins with a 
-            <span class="text-red-500 text-5xl">Red Spartan</span> 
+            <span class="block mt-2 sm:inline sm:mt-0 text-red-500 text-4xl sm:text-5xl md:text-7xl">Red Spartan</span> 
             scholarship&rdquo;
         </h1>
 
         <!-- Apply Button -->
-        <div class="mt-64 animate-fadeInUp delay-300">
+        <div class="mt-12 sm:mt-24 md:mt-32 lg:mt-64 animate-fadeInUp delay-300">
             <a href="{{ session()->has('user_id') ? (session('role') == 'student' ? route('student.dashboard') : (session('role') == 'sfao' ? route('sfao.dashboard') : (session('role') == 'central' ? route('central.dashboard') : route('register')))) : route('register') }}" 
-               class="inline-block bg-red-600 text-white px-10 py-4 rounded-full shadow-xl 
-                      hover:bg-red-700 hover:scale-110 transition transform duration-300">
+               class="inline-block bg-red-600 text-white px-8 py-3 sm:px-10 sm:py-4 text-base sm:text-lg rounded-full shadow-xl 
+                      hover:bg-red-700 hover:scale-110 transition transform duration-300 focus:outline-none focus:ring-4 focus:ring-red-500/50">
                 Apply Now
             </a>
         </div>

@@ -186,7 +186,7 @@
     <!-- Profile Info - Removed from here -->
 
     <!-- Navigation - Scrollable -->
-    <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.3) transparent;">
+    <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
       <!-- Scholarships Header -->
       <div class="space-y-1">
         <div class="px-4 py-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
@@ -326,7 +326,22 @@
 
 
 
+      </div>
+    </nav>
   </aside>
+
+  <!-- Mobile Overlay Backdrop -->
+  <div x-show="sidebarOpen" 
+       x-transition:enter="transition-opacity ease-linear duration-300"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition-opacity ease-linear duration-300"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 bg-gray-900/50 z-40 md:hidden"
+       @click="sidebarOpen = false"
+       x-cloak>
+  </div>
 
   <!-- Logout Confirmation Modal -->
   <div x-show="showLogoutModal" 
@@ -374,7 +389,7 @@
 
   <!-- Main Header -->
   <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300"
-          :class="{ 'ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
+          :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
     <!-- Branding -->
     <div class="flex items-center space-x-3">
         <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-2">
@@ -466,7 +481,7 @@
 
   <!-- Main Content -->
   <main class="p-4 md:p-8 min-h-screen bg-white dark:bg-gray-900 transition-all duration-300"
-        :class="{ 'ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
+        :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
 
     <!-- Toasts -->
     @if (session('success'))
