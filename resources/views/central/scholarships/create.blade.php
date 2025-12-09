@@ -203,10 +203,10 @@
                                 </div>
 
                                 <template x-for="(cond, index) in conditions" :key="index">
-                                    <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 group">
+                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 group relative">
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
                                             <select x-model="cond.type" :name="'conditions['+index+'][type]'" 
-                                                    class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                    class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                                 <option value="gwa">Minimum GWA</option>
                                                 <option value="year_level">Year Level</option>
                                                 <option value="income">Maximum Income</option>
@@ -217,10 +217,10 @@
 
                                             <!-- Dynamic Inputs based on Type -->
                                             <template x-if="cond.type === 'gwa'">
-                                                <input type="number" step="0.01" x-model="cond.value" :name="'conditions['+index+'][value]'" placeholder="e.g. 2.50" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                <input type="number" step="0.01" x-model="cond.value" :name="'conditions['+index+'][value]'" placeholder="e.g. 2.50" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                             </template>
                                             <template x-if="cond.type === 'year_level'">
-                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                                     <option value="1st Year">1st Year</option>
                                                     <option value="2nd Year">2nd Year</option>
                                                     <option value="3rd Year">3rd Year</option>
@@ -228,16 +228,16 @@
                                                 </select>
                                             </template>
                                             <template x-if="cond.type === 'income'">
-                                                <input type="number" x-model="cond.value" :name="'conditions['+index+'][value]'" placeholder="Amount (₱)" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                <input type="number" x-model="cond.value" :name="'conditions['+index+'][value]'" placeholder="Amount (₱)" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                             </template>
                                             <template x-if="cond.type === 'disability'">
-                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                                     <option value="yes">Yes</option>
                                                     <option value="no">No</option>
                                                 </select>
                                             </template>
                                             <template x-if="cond.type === 'program'">
-                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                                     <option value="">Select Program</option>
                                                     <option value="BS Computer Science">BS Computer Science</option>
                                                     <option value="BS Information Technology">BS Information Technology</option>
@@ -245,14 +245,14 @@
                                                 </select>
                                             </template>
                                             <template x-if="cond.type === 'sex'">
-                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red">
+                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
                                                     <option value="male">Male</option>
                                                     <option value="female">Female</option>
                                                 </select>
                                             </template>
                                         </div>
-                                        <button type="button" @click="conditions.splice(index,1)" class="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        <button type="button" @click="conditions.splice(index,1)" class="sm:absolute sm:-right-2 sm:-top-2 p-1 bg-white rounded-full text-gray-400 hover:text-red-600 border border-gray-200 shadow-sm transition-colors self-end sm:self-auto">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
                                     </div>
                                 </template>

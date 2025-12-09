@@ -89,38 +89,38 @@ if (!$user) {
         
         <div class="space-y-5">
         <!-- Row 1: Last Name, First Name, Middle Name -->
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Last Name: <span class="text-red-500">*</span></label>
-            <input type="text" name="last_name" required value="{{ old('last_name', $user->last_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Last Name: <span class="text-red-500">*</span></label>
+            <input type="text" name="last_name" required value="{{ old('last_name', $user->last_name ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">First Name: <span class="text-red-500">*</span></label>
-            <input type="text" name="first_name" required value="{{ old('first_name', $user->first_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">First Name: <span class="text-red-500">*</span></label>
+            <input type="text" name="first_name" required value="{{ old('first_name', $user->first_name ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Middle Name:</label>
-            <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Middle Name:</label>
+            <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 2: Age, Sex, Civil Status -->
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-2">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Age:</label>
-            <input type="number" name="age" id="age" value="{{ old('age', $existingApplication->age ?? '') }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white transition-colors" readonly title="Age will be automatically calculated when birthdate is entered">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-1">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Age:</label>
+            <input type="number" name="age" id="age" value="{{ old('age', $existingApplication->age ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-gray-100 dark:bg-gray-600 dark:text-white transition-colors" readonly title="Age will be automatically calculated when birthdate is entered">
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[150px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sex:</label>
-            <select name="sex" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div class="md:col-span-1">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Sex:</label>
+            <select name="sex" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
               <option value="Male" {{ old('sex', $user->sex ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
               <option value="Female" {{ old('sex', $user->sex ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
             </select>
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Civil Status:</label>
-            <select name="civil_status" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div class="md:col-span-2">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Civil Status:</label>
+            <select name="civil_status" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <option value="">-- Select --</option>
               <option value="Single" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
               <option value="Married" {{ old('civil_status', $existingApplication->civil_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
@@ -132,9 +132,9 @@ if (!$user) {
         </div>
 
         <!-- Row 3: Birthdate (mm/dd/yyyy) and Birthplace -->
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthdate:</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Birthdate:</label>
             @php
               $birthdate = old('birthdate', optional($user)->birthdate?->format('Y-m-d') ?? '');
               $birthMonth = $birthdate ? date('m', strtotime($birthdate)) : '';
@@ -143,53 +143,53 @@ if (!$user) {
             @endphp
             <div class="flex items-start gap-1">
               <div>
-                <input type="number" id="birth_mm" name="birth_mm" min="1" max="12" placeholder="mm" value="{{ $birthMonth }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="2">
+                <input type="number" id="birth_mm" name="birth_mm" min="1" max="12" placeholder="mm" value="{{ $birthMonth }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="2">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">mm</label>
               </div>
               <span class="pt-1 text-gray-600 dark:text-gray-400">/</span>
               <div>
-                <input type="number" id="birth_dd" name="birth_dd" min="1" max="31" placeholder="dd" value="{{ $birthDay }}" class="w-12 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="2">
+                <input type="number" id="birth_dd" name="birth_dd" min="1" max="31" placeholder="dd" value="{{ $birthDay }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="2">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">dd</label>
               </div>
               <span class="pt-1 text-gray-600 dark:text-gray-400">/</span>
               <div>
-                <input type="number" id="birth_yyyy" name="birth_yyyy" min="1900" max="2010" placeholder="yyyy" value="{{ $birthYear }}" class="w-16 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="4">
+                <input type="number" id="birth_yyyy" name="birth_yyyy" min="1900" max="2010" placeholder="yyyy" value="{{ $birthYear }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-1 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" maxlength="4">
                 <label class="block text-xs text-gray-600 dark:text-gray-400 text-center mt-1">yyyy</label>
               </div>
               <input type="hidden" name="birthdate" id="birthdate" value="{{ $birthdate }}">
             </div>
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Birthplace:</label>
-            <input type="text" name="birthplace" value="{{ old('birthplace', $existingApplication->birthplace ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Birthplace:</label>
+            <input type="text" name="birthplace" value="{{ old('birthplace', $existingApplication->birthplace ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 4: Email Address and Contact Number -->
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Email Address:</label>
-            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Email Address:</label>
+            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Contact Number:</label>
-            <input type="text" name="contact_number" value="{{ old('contact_number', $user->contact_number ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Contact Number:</label>
+            <input type="text" name="contact_number" value="{{ old('contact_number', $user->contact_number ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 5: Permanent Home Address -->
-        <div class="flex flex-wrap items-start gap-4">
-          <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap pt-1">Permanent Home Address:</label>
-          <div class="flex flex-wrap gap-4 flex-1">
-            <div class="flex-1 min-w-[200px]">
+        <div class="space-y-2">
+          <label class="block font-medium text-gray-700 dark:text-gray-300">Permanent Home Address:</label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
               <input type="text" name="street_barangay" value="{{ old('street_barangay', $existingApplication->street_barangay ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Street / Barangay</label>
             </div>
-            <div class="flex-1 min-w-[200px]">
+            <div>
               <input type="text" name="town_city" value="{{ old('town_city', $existingApplication->town_city ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Town / City / Municipality</label>
             </div>
-            <div class="w-32 min-w-[120px]">
+            <div>
               <input type="text" name="province" value="{{ old('province', $existingApplication->province ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none text-center bg-white dark:bg-gray-700 dark:text-white transition-colors">
               <label class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Province</label>
             </div>
@@ -197,26 +197,26 @@ if (!$user) {
         </div>
 
         <!-- Row 6: Zip Code and Citizenship -->
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-2">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Zip Code:</label>
-            <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-20 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Zip Code:</label>
+            <input type="text" name="zip_code" maxlength="4" pattern="\d{4}" value="{{ old('zip_code', $existingApplication->zip_code ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 text-center focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors" title="ZIP Code must be 4 digits">
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Citizenship:</label>
-            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div class="md:col-span-2">
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Citizenship:</label>
+            <input type="text" name="citizenship" value="{{ old('citizenship', $existingApplication->citizenship ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
 
         <!-- Row 7: Type of Disability and Tribal Membership -->
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Type of Disability (if applicable):</label>
-            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Type of Disability (if applicable):</label>
+            <input type="text" name="disability" placeholder="If Applicable" value="{{ old('disability', $existingApplication->disability ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
-          <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-            <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Tribal Membership:</label>
-            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Tribal Membership:</label>
+            <input type="text" name="tribe" value="{{ old('tribe', $existingApplication->tribe ?? '') }}" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
         </div>
@@ -313,18 +313,18 @@ if (!$user) {
         <!-- Father Section -->
         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
           <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">Father's Information</h3>
-          <div class="space-y-3">
-            <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Name:</label>
-              <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+              <label class="font-medium text-gray-700 dark:text-gray-300">Father's Name:</label>
+              <input type="text" name="father_name" value="{{ old('father_name', $existingApplication->father_name ?? '') }}" class="col-span-1 md:col-span-2 w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
-            <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Address:</label>
-              <input type="text" name="father_address" value="{{ old('father_address', $existingApplication->father_address ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+              <label class="font-medium text-gray-700 dark:text-gray-300">Father's Address:</label>
+              <input type="text" name="father_address" value="{{ old('father_address', $existingApplication->father_address ?? '') }}" class="col-span-1 md:col-span-2 w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
-            <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Father's Occupation:</label>
-              <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+              <label class="font-medium text-gray-700 dark:text-gray-300">Father's Occupation:</label>
+              <input type="text" name="father_occupation" value="{{ old('father_occupation', $existingApplication->father_occupation ?? '') }}" class="col-span-1 md:col-span-2 w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
           </div>
         </div>
@@ -332,18 +332,18 @@ if (!$user) {
         <!-- Mother Section -->
         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
           <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">Mother's Information</h3>
-          <div class="space-y-3">
-            <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Name:</label>
-              <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+              <label class="font-medium text-gray-700 dark:text-gray-300">Mother's Name:</label>
+              <input type="text" name="mother_name" value="{{ old('mother_name', $existingApplication->mother_name ?? '') }}" class="col-span-1 md:col-span-2 w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
-            <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Address:</label>
-              <input type="text" name="mother_address" value="{{ old('mother_address', $existingApplication->mother_address ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+              <label class="font-medium text-gray-700 dark:text-gray-300">Mother's Address:</label>
+              <input type="text" name="mother_address" value="{{ old('mother_address', $existingApplication->mother_address ?? '') }}" class="col-span-1 md:col-span-2 w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
-            <div class="flex items-center gap-4">
-              <label class="font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[140px]">Mother's Occupation:</label>
-              <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="flex-1 border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+              <label class="font-medium text-gray-700 dark:text-gray-300">Mother's Occupation:</label>
+              <input type="text" name="mother_occupation" value="{{ old('mother_occupation', $existingApplication->mother_occupation ?? '') }}" class="col-span-1 md:col-span-2 w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
             </div>
           </div>
         </div>
@@ -353,13 +353,13 @@ if (!$user) {
           <!-- Estimated Gross Annual Income Section -->
           <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
             <label class="block font-medium mb-3 text-gray-700 dark:text-gray-300">Estimated gross annual income:</label>
-            <div class="space-y-2">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="estimated_gross_annual_income" value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+            <div class="space-y-3">
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="not_over_250000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'not_over_250000' ? 'checked' : '' }} class="mt-1 w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Not over P 250,000.00</span>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="estimated_gross_annual_income" value="over_250000_not_over_400000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_250000_not_over_400000' ? 'checked' : '' }} class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="radio" name="estimated_gross_annual_income" value="over_250000_not_over_400000" {{ old('estimated_gross_annual_income', $existingApplication->estimated_gross_annual_income ?? '') == 'over_250000_not_over_400000' ? 'checked' : '' }} class="mt-1 w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
                 <span class="text-gray-700 dark:text-gray-300">Over P 250,000 but not over P 400,000</span>
               </label>
               <!-- Add more options if needed -->
