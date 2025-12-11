@@ -5,7 +5,7 @@
     'fillPercentage' => 0
 ])
 
-<div x-data="{ open: false }" 
+<div x-data="{ open: false, showReleaseModal: false }" 
      class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8 cursor-pointer"
      @click="open = true"
      @if($scholarship->background_image)
@@ -421,15 +421,64 @@
                             <button @click.stop="open = false" class="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors">
                                 Close
                             </button>
-                            <form action="{{ route('sfao.scholarships.release-grant', $scholarship->id) }}" 
-                                  method="POST" 
-                                  onsubmit="return confirm('Are you sure you want to release grants? This will generate grant slips and send emails to all active scholars under this scholarship.');">
-                                @csrf
-                                <button type="submit" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                    Release Grant
-                                </button>
-                            </form>
+                            <button @click.stop="showReleaseModal = true" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                Release Grant
+                            </button>
+
+                            <!-- Release Grant Confirmation Modal -->
+                            <div x-show="showReleaseModal" 
+                                 x-cloak
+                                 class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0">
+                                
+                                <!-- Backdrop -->
+                                <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm" @click.stop="showReleaseModal = false"></div>
+
+                                <!-- Modal Card -->
+                                <div class="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all"
+                                     x-transition:enter="transition ease-out duration-300"
+                                     x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                     x-transition:leave="transition ease-in duration-200"
+                                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                     x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+                                     @click.stop> <!-- Stop clicks inside modal from closing it -->
+
+                                    <!-- Modal Content -->
+                                    <div class="p-6 text-center">
+                                        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Confirm Release Grants</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            Are you sure you want to release grants? This will generate grant slips and send emails to all active scholars under this scholarship.
+                                        </p>
+                                    </div>
+
+                                    <!-- Modal Actions -->
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 flex gap-3 justify-end border-t border-gray-100 dark:border-gray-700">
+                                        <button @click.stop="showReleaseModal = false" 
+                                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                            Cancel
+                                        </button>
+                                        <form action="{{ route('sfao.scholarships.release-grant', $scholarship->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" 
+                                                    class="px-4 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-lg shadow-green-600/30 transition-all transform hover:-translate-y-0.5">
+                                                Confirm Release
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @endif
 

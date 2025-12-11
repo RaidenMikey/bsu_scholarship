@@ -27,6 +27,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Grants</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Total Received</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -69,8 +70,23 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                                 {{ $scholar->grant_count ?? 0 }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ $scholar->total_grant_received ? '₱' . number_format((float)$scholar->total_grant_received, 0) : '₱0' }}
+                                <div class="text-xs text-gray-400 mt-1">Updated: {{ $scholar->updated_at->diffForHumans() }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                @if($scholar->scholarship->grant_type === 'one_time' && $scholar->grant_count > 0)
+                                    <button disabled class="text-gray-400 bg-gray-100 px-3 py-1 rounded-md cursor-not-allowed text-xs font-semibold">
+                                        Claimed
+                                    </button>
+                                @else
+                                    <form action="{{ route('sfao.scholars.mark-claimed', $scholar->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to mark this grant as claimed? This will update the scholar\'s grant history.');">
+                                        @csrf
+                                        <button type="submit" class="text-green-600 hover:text-green-900 bg-green-100 hover:bg-green-200 px-3 py-1 rounded-md transition-colors text-xs font-semibold">
+                                            Mark as Claimed
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

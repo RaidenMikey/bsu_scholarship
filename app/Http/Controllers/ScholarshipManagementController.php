@@ -14,6 +14,7 @@ use App\Services\NotificationService;
 use App\Models\Scholar;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use App\Mail\GrantSlipMail;
 
 /**
@@ -370,6 +371,97 @@ class ScholarshipManagementController extends Controller
         }
         
         return back()->with('success', "Grant released successfully. Sent notifications to {$count} scholars.");
+    }
+
+    /**
+     * Mark scholar's grant as claimed (SFAO)
+     */
+    public function markScholarAsClaimed($id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $scholar = Scholar::with(['user', 'scholarship', 'application'])->findOrFail($id);
+
+        // Verify SFAO manages this scholar's campus
+        $user = User::with('campus')->find(session('user_id'));
+        $sfaoCampus = $user->campus;
+        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
+
+        if (!$campusIds->contains($scholar->user->campus_id)) {
+            return back()->with('error', 'You do not have permission to manage this scholar.');
+        }
+
+        // Check for one-time grant restriction
+        if ($scholar->scholarship->grant_type === 'one_time' && $scholar->grant_count > 0) {
+            return back()->with('error', 'This is a one-time grant scholarship and has already been claimed.');
+        }
+
+        // Find the application to mark as claimed
+        // We look for 'approved' application associated with this scholar
+        // If the scholar was created from an application, we use that.
+        // Or we check if there's a more recent approved application (for renewals)
+        
+        $query = Application::where('user_id', $scholar->user_id)
+            ->where('scholarship_id', $scholar->scholarship_id)
+            ->latest();
+
+        // If it's a recurring scholarship, we can reuse 'claimed' applications for subsequent grants
+        // If it's a one-time scholarship, we strictly need an 'approved' application (not yet claimed)
+        if ($scholar->scholarship->grant_type === 'recurring') {
+            $query->whereIn('status', ['approved', 'claimed']);
+        } else {
+            $query->where('status', 'approved');
+        }
+            
+        $application = $query->first();
+
+        if (!$application) {
+            return back()->with('error', 'No valid application found to claim for this scholar.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Calculate new values
+            $grantAmount = (float) ($scholar->scholarship->grant_amount ?? 0);
+            $newGrantCount = $scholar->grant_count + 1;
+            $newTotalReceived = ((float) $scholar->total_grant_received) + $grantAmount;
+            
+            Log::info('Marking grant as claimed (SFAO):', [
+                'scholar_id' => $scholar->id,
+                'old_count' => $scholar->grant_count,
+                'new_count' => $newGrantCount,
+                'grant_amount' => $grantAmount,
+                'new_total' => $newTotalReceived
+            ]);
+
+            // Update Application
+            $application->status = 'claimed';
+            $application->grant_count = $newGrantCount;
+            $application->save();
+
+            // Update Scholar using DB Query Builder to bypass potential model issues
+            $affected = DB::table('scholars')->where('id', $scholar->id)->update([
+                'grant_count' => $newGrantCount,
+                'total_grant_received' => $newTotalReceived,
+                // 'grant_history' => removed as per user request
+                'type' => ($scholar->type === 'new' && $newGrantCount >= 1) ? 'old' : $scholar->type,
+                'updated_at' => now(),
+            ]);
+            
+            Log::info('Grant release update result:', ['affected_rows' => $affected]);
+
+            DB::commit();
+
+            return back()->with('success', "Grant marked as claimed. New Count: {$newGrantCount}, New Total: ₱" . number_format($newTotalReceived, 2));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to mark grant claimed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to mark grant as claimed: ' . $e->getMessage());
+        }
     }
 
     /**

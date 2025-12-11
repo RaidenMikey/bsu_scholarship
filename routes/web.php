@@ -145,6 +145,7 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::post('/scholarships/{id}/release-grant', [ScholarshipManagementController::class, 'releaseGrant'])->name('scholarships.release-grant');
     Route::get('/scholarships', [ScholarshipManagementController::class, 'sfaoIndex'])->name('scholarships.index');
     Route::get('/scholarships/{id}', [ScholarshipManagementController::class, 'sfaoShow'])->name('scholarships.show');
+    Route::post('/scholars/{id}/mark-claimed', [ScholarshipManagementController::class, 'markScholarAsClaimed'])->name('scholars.mark-claimed');
     
     // Reports Management
     Route::get('/reports/create', [ReportController::class, 'createReport'])->name('reports.create');

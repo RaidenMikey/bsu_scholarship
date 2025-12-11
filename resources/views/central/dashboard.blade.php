@@ -22,6 +22,7 @@
   x-data="{
     sidebarOpen: JSON.parse(localStorage.getItem('sidebarOpen')) || false,
     rightSidebarOpen: JSON.parse(localStorage.getItem('rightSidebarOpen')) || false,
+    isDesktop: window.innerWidth >= 768,
     tab: {{ json_encode(request()->query("tab")) }} || localStorage.getItem('activeTab') || 'all_scholarships',
     currentStatsCampus: 'all',
     darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
@@ -158,6 +159,7 @@
     }
   }" 
   @change-stats-campus.window="currentStatsCampus = $event.detail"
+  @resize.window="isDesktop = window.innerWidth >= 768"
   x-init="
     $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
     $watch('tab', val => localStorage.setItem('activeTab', val));
@@ -444,7 +446,8 @@
 
   <!-- Main Header -->
   <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300"
-          :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
+          :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }"
+          :style="isDesktop && rightSidebarOpen ? 'margin-right: 16rem;' : ''">
     <!-- Branding -->
     <div class="flex items-center space-x-2 md:space-x-3">
         <button @click="sidebarOpen = true" class="text-white hover:text-gray-300 focus:outline-none mr-1 md:mr-2">
@@ -536,7 +539,8 @@
 
   <!-- Main Content -->
   <main class="p-4 md:p-8 min-h-screen bg-white dark:bg-gray-900 transition-all duration-300"
-        :class="{ 'md:ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
+        :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }"
+        :style="isDesktop && rightSidebarOpen ? 'margin-right: 16rem;' : ''">
 
     <!-- Toasts -->
     @if (session('success'))

@@ -4,6 +4,20 @@
 @section('heading', 'Central Admin Access')
 @section('subheading', 'Sign in to your central admin account')
 
+@push('styles')
+<style>
+    body {
+        background-image: url("{{ asset('images/central_login.jpg') }}") !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+    }
+    /* Add a semi-transparent overlay to the body to ensure content readability if needed, 
+       but here we are targeting the body. If the card has a background, it handles the text contrast. */
+</style>
+@endpush
+
 @section('content')
 <form method="POST" action="{{ url('/central/login') }}" id="centralLoginForm" autocomplete="off" class="space-y-4">
   @csrf

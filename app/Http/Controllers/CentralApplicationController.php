@@ -168,7 +168,7 @@ class CentralApplicationController extends Controller
         // Create notification for student
         NotificationService::notifyApplicationStatusChange($application, 'approved');
 
-        return redirect()->route('central.dashboard', ['tab' => 'endorsed-applicants'])
+        return redirect()->route('central.dashboard', ['tab' => 'endorsed_applicants'])
             ->with('success', 'Application has been accepted successfully. Scholar record has been created.');
     }
 

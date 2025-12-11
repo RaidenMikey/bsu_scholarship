@@ -39,6 +39,7 @@
     <div x-show="tab === 'reports-student_summary'" class="mt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- All Campuses Card -->
+            @if(isset($monitoredCampuses) && $monitoredCampuses->count() > 1)
             <a href="{{ route('sfao.reports.student-summary', ['campus_id' => 'all']) }}" 
                class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                 <div class="p-6 flex items-center justify-between">
@@ -58,6 +59,7 @@
                     </svg>
                 </div>
             </a>
+            @endif
 
             <!-- Individual Campus Cards -->
             @if(isset($monitoredCampuses))
@@ -90,6 +92,7 @@
     <div x-show="tab === 'reports-scholar_summary'" class="mt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- All Campuses Card -->
+            @if(isset($monitoredCampuses) && $monitoredCampuses->count() > 1)
             <a href="{{ route('sfao.reports.scholar-summary', ['campus_id' => 'all']) }}" 
                class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                 <div class="p-6 flex items-center justify-between">
@@ -109,6 +112,7 @@
                     </svg>
                 </div>
             </a>
+            @endif
 
             <!-- Individual Campus Cards -->
             @if(isset($monitoredCampuses))
@@ -141,6 +145,7 @@
     <div x-show="tab === 'reports-grant_summary'" class="mt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- All Campuses Card -->
+            @if(isset($monitoredCampuses) && $monitoredCampuses->count() > 1)
             <a href="{{ route('sfao.reports.grant-summary', ['campus_id' => 'all']) }}" 
                class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                 <div class="p-6 flex items-center justify-between">
@@ -160,6 +165,7 @@
                     </svg>
                 </div>
             </a>
+            @endif
 
             <!-- Individual Campus Cards -->
             @if(isset($monitoredCampuses))
