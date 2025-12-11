@@ -89,7 +89,7 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     // Applications
     Route::get('/applications', [StudentApplicationController::class, 'index'])->name('applications');
     Route::post('/apply', [StudentApplicationController::class, 'apply'])->name('apply.post');
-    Route::post('/unapply', [StudentApplicationController::class, 'withdraw'])->name('unapply');
+    Route::post('/withdraw', [StudentApplicationController::class, 'withdraw'])->name('withdraw');
     
     // Document Uploads (Legacy - Redirect to new multi-stage application)
     Route::get('/upload-documents/{scholarship_id}', function($scholarship_id) {

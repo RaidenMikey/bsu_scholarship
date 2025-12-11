@@ -326,7 +326,19 @@
           Cancel
         </button>
         <a href="{{ url('/logout') }}"
-           onclick="localStorage.removeItem('sfaoTab');"
+           onclick="
+             localStorage.removeItem('sfaoTab');
+             localStorage.removeItem('sfaoStatsCampus');
+             localStorage.removeItem('sfaoApplicantsSortBy');
+             localStorage.removeItem('sfaoApplicantsSortOrder');
+             localStorage.removeItem('sfaoApplicantsCampus');
+             localStorage.removeItem('sfaoApplicantsStatus');
+             localStorage.removeItem('sfaoScholarsSortBy');
+             localStorage.removeItem('sfaoScholarsSortOrder');
+             localStorage.removeItem('sfaoScholarsCampus');
+             localStorage.removeItem('sfaoScholarsStatus');
+             localStorage.removeItem('sfaoScholarsType');
+           "
            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
           Logout
         </a>
@@ -426,7 +438,7 @@
 
   <!-- Main Content -->
   <main class="p-4 md:p-8 min-h-screen bg-white dark:bg-gray-900 transition-all duration-300"
-        :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
+        :class="{ 'md:ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
 
     <!-- Toasts -->
     @if (session('success'))

@@ -30,6 +30,12 @@ class StudentApplicationController extends Controller
         $user = User::with('appliedScholarships')->find(session('user_id'));
         $applications = $user->appliedScholarships;
 
+        // Map pivot status to scholarship status property for the view component
+        $applications->each(function($scholarship) {
+            $scholarship->status = $scholarship->pivot->status;
+            $scholarship->applied = true;
+        });
+
         return view('student.applications', compact('applications'));
     }
 
@@ -103,7 +109,7 @@ class StudentApplicationController extends Controller
             $document->delete();
         }
 
-        return back()->with('success', 'You have successfully un-applied, and your documents were removed.');
+        return back()->with('success', 'You have successfully withdrawn, and your documents were removed.');
     }
 }
 

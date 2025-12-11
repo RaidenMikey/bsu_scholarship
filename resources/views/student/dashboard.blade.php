@@ -23,31 +23,93 @@
   x-data="{
     sidebarOpen: false,
     rightSidebarOpen: false,
-    tab: localStorage.getItem('activeTab') || 'scholarships',
-    subTab: new URLSearchParams(window.location.search).get('type') || 'all',
+    tab: 'scholarships',
+    subTab: 'all',
     darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
     showLogoutModal: false,
     unreadCount: {{ $unreadCount ?? 0 }},
     unreadCountScholarships: {{ $unreadCountScholarships ?? 0 }},
     unreadCountStatus: {{ $unreadCountStatus ?? 0 }},
-    unreadCountComments: {{ $unreadCountComments ?? 0 }}
-  }"
-  x-init="
-    $watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
-    $watch('tab', val => localStorage.setItem('activeTab', val));
-    $watch('subTab', val => $dispatch('subtab-changed', val));
-  "
-  @notification-read.window="
-    if (unreadCount > 0) unreadCount--;
-    if ($event.detail && $event.detail.type) {
-        if ($event.detail.type === 'scholarship_created' && unreadCountScholarships > 0) {
-            unreadCountScholarships--;
-        } else if ($event.detail.type === 'application_status' && unreadCountStatus > 0) {
-            unreadCountStatus--;
-        } else if ($event.detail.type === 'sfao_comment' && unreadCountComments > 0) {
-            unreadCountComments--;
+    unreadCountComments: {{ $unreadCountComments ?? 0 }},
+    
+    tabMapping: {
+        'all_scholarships': { tab: 'scholarships', subTab: 'all' },
+        'private_scholarships': { tab: 'scholarships', subTab: 'private' },
+        'government_scholarships': { tab: 'scholarships', subTab: 'government' },
+        'my_scholarships': { tab: 'scholarships', subTab: 'my_scholarships' },
+        'sfao_form': { tab: 'scholarships', subTab: 'form' },
+        'tdp_form': { tab: 'scholarships', subTab: 'gvsreap_form' },
+        'applied_scholarships': { tab: 'applied-scholarships', subTab: 'all' },
+        'application_tracking': { tab: 'applied-scholarships', subTab: 'tracking' },
+        'all_notifications': { tab: 'notifications', subTab: 'all' },
+        'scholarship_notifications': { tab: 'notifications', subTab: 'scholarship_created' },
+        'status_updates': { tab: 'notifications', subTab: 'application_status' },
+        'comments': { tab: 'notifications', subTab: 'sfao_comment' }
+    },
+
+    init() {
+        // Dark Mode watcher
+        this.$watch('darkMode', val => localStorage.setItem('darkMode_{{ $user->id }}', val));
+
+        // Restore state from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTab = urlParams.get('tab');
+        
+        if (urlTab && this.tabMapping[urlTab]) {
+            this.tab = this.tabMapping[urlTab].tab;
+            this.subTab = this.tabMapping[urlTab].subTab;
+        } else {
+            // Fallback to localStorage or defaults
+            this.tab = localStorage.getItem('activeTab') || 'scholarships';
+            // Default subTabs for main tabs
+            if (this.tab === 'scholarships') this.subTab = 'all';
+            else if (this.tab === 'applied-scholarships') this.subTab = 'all';
+            else if (this.tab === 'notifications') this.subTab = 'all';
+        }
+
+        // Sync URL on state change
+        this.$watch('tab', () => this.updateUrl());
+        this.$watch('subTab', () => {
+             this.updateUrl();
+             this.$dispatch('subtab-changed', this.subTab);
+        });
+    },
+
+    updateUrl() {
+        // Save actibe tab to local storage
+        localStorage.setItem('activeTab', this.tab);
+
+        // Find matching URL key
+        let match = Object.keys(this.tabMapping).find(key => 
+            this.tabMapping[key].tab === this.tab && 
+            this.tabMapping[key].subTab === this.subTab
+        );
+
+        if (match) {
+            const url = new URL(window.location);
+            url.searchParams.set('tab', match);
+            url.searchParams.delete('type'); // Clean up deprecated param
+            window.history.pushState({}, '', url);
         }
     }
+  }"
+  x-init="init()"
+  @notification-changed.window="
+    const status = $event.detail.status;
+    const type = $event.detail.type;
+    
+    if (status === 'read') {
+        if (unreadCount > 0) unreadCount--;
+        if (type === 'scholarship_created' && unreadCountScholarships > 0) unreadCountScholarships--;
+        if (type === 'application_status' && unreadCountStatus > 0) unreadCountStatus--;
+        if (type === 'sfao_comment' && unreadCountComments > 0) unreadCountComments--;
+    } else if (status === 'unread') {
+        unreadCount++;
+        if (type === 'scholarship_created') unreadCountScholarships++;
+        if (type === 'application_status') unreadCountStatus++;
+        if (type === 'sfao_comment') unreadCountComments++;
+    }
+    console.log('Notification changed:', { status, type, unreadCount, unreadCountScholarships, unreadCountStatus, unreadCountComments });
   "
   @notifications-read-all.window="
     unreadCount = 0;
@@ -221,7 +283,7 @@
 
   <!-- Main Content -->
   <main class="p-4 md:p-8 min-h-screen bg-white dark:bg-gray-900 transition-all duration-300"
-          :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }">
+          :class="{ 'md:ml-64': sidebarOpen, 'mr-64': rightSidebarOpen }">
 
     <!-- Toasts for success and errors -->
     @if (session('success'))
@@ -255,84 +317,21 @@
          x-transition:enter-end="opacity-100 transform scale-100">
       <!-- Scholarships Content -->
       <!-- Scholarships Content -->
-      <div x-show="subTab !== 'form' && subTab !== 'gvsreap_form' && subTab !== 'my_scholarships'" 
+      <!-- Scholarships Content (Unified) -->
+      <div x-show="subTab !== 'form' && subTab !== 'gvsreap_form'" 
            x-transition:enter="transition ease-out duration-300"
            x-transition:enter-start="opacity-0 transform scale-95"
            x-transition:enter-end="opacity-100 transform scale-100">
         @include('student.partials.tabs.scholarships')
       </div>
-
-      <!-- My Scholarships Content -->
-      <div x-show="subTab === 'my_scholarships'" 
-           x-transition:enter="transition ease-out duration-300"
-           x-transition:enter-start="opacity-0 transform scale-95"
-           x-transition:enter-end="opacity-100 transform scale-100">
-        @include('student.partials.tabs.my-scholarships')
-      </div>
       
       <!-- Application Form Sub-tab -->
-      <div x-show="subTab === 'form'" 
+      <!-- Application Form Sub-tab (Unified) -->
+      <div x-show="subTab === 'form' || subTab === 'gvsreap_form'" 
            x-transition:enter="transition ease-out duration-300"
            x-transition:enter-start="opacity-0 transform scale-95"
            x-transition:enter-end="opacity-100 transform scale-100">
-        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-          <h1 class="text-3xl font-bold text-bsu-red dark:text-bsu-red border-b-2 border-bsu-red pb-2 mb-6">
-            <span class="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                SFAO Application Form
-            </span>
-          </h1>
-          
-          <!-- Application Status & Progress -->
-          @include('student.components.dashboard.application-status', ['form' => $form])
-
-          <!-- Application Data Summary Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <!-- Personal Data Card -->
-              @include('student.components.dashboard.personal-data-card', ['form' => $form])
-
-              <!-- Academic Data Card -->
-              @include('student.components.dashboard.academic-data-card', ['form' => $form])
-
-              <!-- Family Data Card -->
-              @include('student.components.dashboard.family-data-card', ['form' => $form])
-
-              <!-- Essay/Question Card -->
-              @include('student.components.dashboard.essay-card', ['form' => $form])
-
-              <!-- Certification Card -->
-              @include('student.components.dashboard.certification-card', ['form' => $form])
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ route('student.forms.application_form') }}" 
-               class="inline-flex items-center px-6 py-3 bg-bsu-red hover:bg-bsu-redDark text-white font-semibold rounded-lg shadow hover:shadow-lg transition">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-              <span>Proceed to Application Form</span>
-            </a>
-            
-            <a href="{{ route('student.print-application', ['type' => 'sfao']) }}" 
-               class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-lg shadow hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-              </svg>
-              <span>Print Application Form</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- TDP Application Form Sub-tab -->
-      <div x-show="subTab === 'gvsreap_form'" 
-           x-transition:enter="transition ease-out duration-300"
-           x-transition:enter-start="opacity-0 transform scale-95"
-           x-transition:enter-end="opacity-100 transform scale-100">
-        @include('student.partials.tabs.tdp-application-form')
+          @include('student.partials.tabs.application-form')
       </div>
     </div>
 
@@ -344,14 +343,7 @@
       @include('student.partials.tabs.applications')
     </div>
     
-    <!-- Application Tracking Tab -->
-    <!-- Application Tracking Tab -->
-    <div x-show="tab === 'application-tracking'" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform scale-95"
-         x-transition:enter-end="opacity-100 transform scale-100">
-      @include('student.partials.application_tracking')
-    </div>
+
     
     <!-- Notifications Tab -->
     <!-- Notifications Tab -->

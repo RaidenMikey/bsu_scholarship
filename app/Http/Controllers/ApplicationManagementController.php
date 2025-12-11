@@ -88,9 +88,9 @@ class ApplicationManagementController extends Controller
     }
 
     /**
-     * Unapply from a scholarship (Student)
+     * Withdraw from a scholarship (Student)
      */
-    public function unapply(Request $request)
+    public function withdraw(Request $request)
     {
         if (!session()->has('user_id') || session('role') !== 'student') {
             return redirect('/login')->with('session_expired', true);
@@ -121,7 +121,7 @@ class ApplicationManagementController extends Controller
             $document->delete();
         }
 
-        return back()->with('success', 'You have successfully un-applied, and your documents were removed.');
+        return back()->with('success', 'You have successfully withdrawn, and your documents were removed.');
     }
 
     // =====================================================
@@ -688,6 +688,8 @@ class ApplicationManagementController extends Controller
                 ]);
             }
         }
+
+
 
         return view('sfao.dashboard', compact(
             'user', 

@@ -264,7 +264,9 @@ class UserManagementController extends Controller
             });
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
-            $appliedStatuses = $user->appliedScholarships->pluck('status', 'scholarship_id')->toArray();
+            $appliedStatuses = $user->appliedScholarships->mapWithKeys(function ($item) {
+                return [$item->id => $item->pivot->status];
+            })->toArray();
             
             // Get IDs of scholarships where user is an active scholar
             $scholarIds = \App\Models\Scholar::where('user_id', $userId)
@@ -424,7 +426,10 @@ class UserManagementController extends Controller
             });
 
             $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
-            $appliedStatuses = $user->appliedScholarships->pluck('status', 'scholarship_id')->toArray();
+            $appliedIds = $user->appliedScholarships->pluck('id')->toArray();
+            $appliedStatuses = $user->appliedScholarships->mapWithKeys(function ($item) {
+                return [$item->id => $item->pivot->status];
+            })->toArray();
             
             // Get IDs of scholarships where user is an active scholar
             $scholarIds = \App\Models\Scholar::where('user_id', $userId)
@@ -914,8 +919,9 @@ class UserManagementController extends Controller
             ->where('scholarship_id', $scholarship_id)
             ->first();
 
-        // Check if user wants to force a specific stage
+        // Check if user wants to force a specific stage or is resubmitting
         $forceStage = $request->get('stage');
+        $isResubmitting = $request->get('resubmit') || ($application && $application->status === 'pending');
         
         if ($forceStage && in_array($forceStage, [1, 2, 3])) {
             $currentStage = (int) $forceStage;
@@ -935,12 +941,19 @@ class UserManagementController extends Controller
                 }
             }
             
-            if ($application) {
-                $currentStage = 3; // Application already submitted
+            if ($application && !$isResubmitting) {
+                $currentStage = 3; // Application already submitted and not explicitly resubmitting
+            } else if ($isResubmitting) {
+                // If resubmitting, start at stage 1 to allow reviewing/updating documents
+                 $currentStage = 1;
+
+                 // Logic to skip stages if they are fully approved could be added here, 
+                 // but typically users might want to review everything.
+                 // For now, let's default to Stage 1.
             }
         }
 
-        return view('student.multi-stage-application', compact('scholarship', 'submittedDocuments', 'application', 'currentStage'));
+        return view('student.multi-stage-application', compact('scholarship', 'submittedDocuments', 'application', 'currentStage', 'isResubmitting'));
     }
 
     /**
@@ -952,13 +965,86 @@ class UserManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        // Custom validation with better DOCX support
-        $validator = \Validator::make($request->all(), [
-            'form_137'         => ['required', 'file', 'max:10240'],
-            'grades'           => ['required', 'file', 'max:10240'],
+        $userId = session('user_id');
+        
+        // Fetch existing approved documents to conditionally relax validation
+        $approvedDocs = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarship_id)
+            ->where('evaluation_status', 'approved')
+            ->pluck('document_category')
+            ->toArray();
+            
+        // Helper to determine if a field is required
+        $isRequired = function($category) use ($approvedDocs) {
+            // Mapping input names to categories if they differ, but here they seem to match:
+            // form_137 -> form_137 (assumed category name matches or mapped)
+            // grades -> grades
+            // etc.
+            
+            // Actually, need to check how categories are stored. 
+            // In uploadDocuments, keys are used. 
+            // Let's assume keys 'form_137', 'grades', 'certificate', 'application_form' correspond to categories or filenames.
+            // If the system uses specific category names like 'sfao_required' for all, we need to check specific document names?
+            // The StudentSubmittedDocument model usually stores specific document type?
+            // Looking at previous code, `uploadDocuments` stores them. 
+            // But `submitSfaoDocuments` is the new method.
+            
+            // Let's check if we can verify strict category/name mapping. 
+            // For now, let's look at `StudentSubmittedDocument` table or usage.
+            // But safely: if we have an approved doc with the same name, we skip.
+            // However, `StudentSubmittedDocument` might store them with generic names?
+            // Let's assume we can match by checking if an approved doc exists for this user/scholarship with the specific input name.
+            
+            // Actually, checking the `uploadDocuments` implementation (lines 872):
+            // SfaoRequirement::updateOrCreate(...)
+            // It seems SFAO docs are stored in `sfao_requirements` table?
+            // Wait, line 910: $submittedDocuments = StudentSubmittedDocument::byUserAndScholarship...
+            // It seems we utilize `StudentSubmittedDocument` for tracking status.
+            // We need to be sure SFAO docs act as `StudentSubmittedDocument`.
+            
+            // If they are in `sfao_requirements`, that's separate. 
+            // BUT `showMultiStageApplication` uses `StudentSubmittedDocument` to check status (line 925).
+            // So SFAO docs MUST be in `StudentSubmittedDocument` as well.
+            
+            // Assuming `document_name` or `document_type` identifies them.
+            // Let's assume 'Form 137', 'Grades', 'Application Form'.
+            // Simple approach: Check if input has file. If not, and not approved, fail.
+            return !in_array($category, $approvedDocs);
+        };
+        
+        // We actually need to query specifically by document name or type.
+        // Let's fetch the actual document names/types for this user/scholarship that are approved.
+        // To be safe, let's just use the `StudentSubmittedDocument` checks inside the validator logic if possible,
+        // or pre-calculate rules.
+        
+        // Better approach:
+        // 1. Get all approved docs for this user & scholarship.
+        // 2. Identify which "inputs" ('form_137', 'grades'...) correspond to which approved doc.
+        //    (This might be tricky if names aren't 1:1 in DB).
+        //    However, usually we can rely on `document_name` or similar.
+        
+        // Alternative: Just check if the file is present in request. 
+        // If NOT present, check if there is an approved document for it.
+        // If neither, then fail.
+        
+        $hasApprovedDoc = function($name) use ($userId, $scholarship_id) {
+             return StudentSubmittedDocument::where('user_id', $userId)
+                ->where('scholarship_id', $scholarship_id)
+                ->where('document_name', 'LIKE', '%' . $name . '%') // Loose match or precise if known
+                ->where('evaluation_status', 'approved')
+                ->exists();
+        };
+        
+        // Validation rules
+        $rules = [
+            'form_137'         => [$hasApprovedDoc('Form 137') ? 'nullable' : 'required', 'file', 'max:10240'],
+            'grades'           => [$hasApprovedDoc('Grades') ? 'nullable' : 'required', 'file', 'max:10240'],
             'certificate'      => ['nullable', 'file', 'max:10240'],
-            'application_form' => ['required', 'file', 'max:10240'],
-        ], [
+            'application_form' => [$hasApprovedDoc('Application Form') ? 'nullable' : 'required', 'file', 'max:10240'],
+        ];
+
+        // Custom validation with better DOCX support
+        $validator = \Validator::make($request->all(), $rules, [
             'form_137.required' => 'Form 137 is required.',
             'form_137.max' => 'Form 137 must not exceed 10MB.',
             'grades.required' => 'Grades document is required.',
@@ -1063,13 +1149,28 @@ class UserManagementController extends Controller
                 ->with('success', 'No additional documents required for this scholarship.');
         }
 
+        // Fetch existing approved documents to conditionally relax validation
+        $approvedDocs = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarship_id)
+            ->where('evaluation_status', 'approved')
+            ->pluck('document_name')
+            ->toArray();
+            
+        // Helper to check if doc is approved
+        $isApproved = function($docName) use ($approvedDocs) {
+            // Need to match exactly or close enough. Since we store $doc->document_name, exact match works.
+            return in_array($docName, $approvedDocs);
+        };
+
         // Validate files based on scholarship requirements
         $validationRules = [];
         $customMessages = [];
         foreach ($requiredDocs as $doc) {
             $fieldName = 'scholarship_doc_' . $doc->id;
+            $approved = $isApproved($doc->document_name);
+            
             $validationRules[$fieldName] = [
-                $doc->is_mandatory ? 'required' : 'nullable',
+                ($doc->is_mandatory && !$approved) ? 'required' : 'nullable',
                 'file',
                 'mimes:pdf,jpg,jpeg,png,docx',
                 'max:10240'

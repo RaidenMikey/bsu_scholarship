@@ -277,7 +277,7 @@
                         </button>
                         
                         @if($application->status === 'pending')
-                            <form method="POST" action="{{ route('student.unapply') }}" class="inline">
+                            <form method="POST" action="{{ route('student.withdraw') }}" class="inline">
                                 @csrf
                                 <input type="hidden" name="scholarship_id" value="{{ $application->scholarship_id }}">
                                 <button type="submit" 

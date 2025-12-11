@@ -142,61 +142,73 @@
                 <form method="POST" action="{{ route('student.apply.sfao-documents', $scholarship->id) }}" enctype="multipart/form-data">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Form 137 -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Form 137 <span class="text-red-500">*</span>
-                            </label>
-                            <input type="file" name="form_137" id="form_137" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('form_137') border-red-500 @enderror"
-                                   accept=".pdf,.jpg,.jpeg,.png,.docx" required>
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                            @error('form_137')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        @php
+                            $getDoc = function($name) use ($submittedDocuments) {
+                                return $submittedDocuments->where('document_category', 'sfao_required')
+                                    ->filter(function($d) use ($name) { return str_contains($d->document_name, $name); })
+                                    ->first();
+                            };
+                            
+                            $docs = [
+                                'form_137' => ['name' => 'Form 137', 'required' => true],
+                                'grades' => ['name' => 'Grades', 'required' => true],
+                                'certificate' => ['name' => 'Certificate', 'required' => false],
+                                'application_form' => ['name' => 'Application Form', 'required' => true],
+                            ];
+                        @endphp
 
-                        <!-- Grades -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Grades <span class="text-red-500">*</span>
-                            </label>
-                            <input type="file" name="grades" id="grades" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('grades') border-red-500 @enderror"
-                                   accept=".pdf,.jpg,.jpeg,.png,.docx" required>
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                            @error('grades')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Certificate -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Certificate (Optional)
-                            </label>
-                            <input type="file" name="certificate" id="certificate" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('certificate') border-red-500 @enderror"
-                                   accept=".pdf,.jpg,.jpeg,.png,.docx">
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                            @error('certificate')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Application Form -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Application Form <span class="text-red-500">*</span>
-                            </label>
-                            <input type="file" name="application_form" id="application_form" 
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('application_form') border-red-500 @enderror"
-                                   accept=".pdf,.jpg,.jpeg,.png,.docx" required>
-                            <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                            @error('application_form')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        @foreach($docs as $key => $config)
+                            @php
+                                $doc = $getDoc($config['name']);
+                                $status = $doc ? $doc->evaluation_status : null;
+                                $isApproved = $status === 'approved';
+                                $isRejected = $status === 'rejected';
+                            @endphp
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {{ $config['name'] }} @if($config['required'] && !$isApproved)<span class="text-red-500">*</span>@endif
+                                    
+                                    @if($isApproved)
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            Approved
+                                        </span>
+                                    @elseif($isRejected)
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            Rejected
+                                        </span>
+                                    @elseif($status === 'pending')
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            Pending
+                                        </span>
+                                    @endif
+                                </label>
+                                
+                                @if($isApproved)
+                                    <div class="flex items-center p-3 text-sm text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        {{ $doc->original_filename }}
+                                    </div>
+                                @else
+                                    <input type="file" name="{{ $key }}" id="{{ $key }}" 
+                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error($key) border-red-500 @enderror"
+                                           accept=".pdf,.jpg,.jpeg,.png,.docx" {{ ($config['required'] && !$isApproved) ? 'required' : '' }}>
+                                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
+                                    @if($isRejected && $doc->remarks)
+                                        <p class="text-xs text-red-600 mt-1"><strong>Reason:</strong> {{ $doc->remarks }}</p>
+                                    @endif
+                                @endif
+                                
+                                @error($key)
+                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endforeach
                     </div>
 
                     <div class="mt-6 flex justify-end">
@@ -218,16 +230,58 @@
                         @csrf
                         <div class="space-y-6">
                             @foreach($scholarship->requiredDocuments as $doc)
+                                @php
+                                    // Use check helper if it was defined in scope or redefine local logic
+                                    // We need to match by document_name as stored in database
+                                    $submittedDoc = $submittedDocuments->where('document_category', 'scholarship_required')
+                                        ->where('document_name', $doc->document_name)
+                                        ->first();
+                                        
+                                    $status = $submittedDoc ? $submittedDoc->evaluation_status : null;
+                                    $isApproved = $status === 'approved';
+                                    $isRejected = $status === 'rejected';
+                                @endphp
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        {{ strip_tags($doc->document_name) }}@if($doc->is_mandatory)<span class="text-red-500">*</span>@endif
+                                        {{ strip_tags($doc->document_name) }}@if($doc->is_mandatory && !$isApproved)<span class="text-red-500">*</span>@endif
+
+                                        @if($isApproved)
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Approved
+                                            </span>
+                                        @elseif($isRejected)
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                Rejected
+                                            </span>
+                                        @elseif($status === 'pending')
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                Pending
+                                            </span>
+                                        @endif
                                     </label>
-                                    <input type="file" name="scholarship_doc_{{ $doc->id }}" 
-                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                           accept=".pdf,.jpg,.jpeg,.png,.docx" {{ $doc->is_mandatory ? 'required' : '' }}>
-                                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                                    @if($doc->description)
-                                        <p class="text-xs text-gray-600 mt-1">{{ $doc->description }}</p>
+                                    
+                                    @if($isApproved)
+                                        <div class="flex items-center p-3 text-sm text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                                            <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            {{ $submittedDoc->original_filename }}
+                                        </div>
+                                    @else
+                                        <input type="file" name="scholarship_doc_{{ $doc->id }}" 
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                               accept=".pdf,.jpg,.jpeg,.png,.docx" {{ ($doc->is_mandatory && !$isApproved) ? 'required' : '' }}>
+                                        <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
+                                        @if($doc->description)
+                                            <p class="text-xs text-gray-600 mt-1">{{ $doc->description }}</p>
+                                        @endif
+                                        @if($isRejected && $submittedDoc->remarks)
+                                            <p class="text-xs text-red-600 mt-1"><strong>Reason:</strong> {{ $submittedDoc->remarks }}</p>
+                                        @endif
                                     @endif
                                 </div>
                             @endforeach
