@@ -219,10 +219,10 @@
         </p>
         <p class="mt-1 text-yellow-700 text-sm">
           Please complete your application to view available scholarships.
-          <a href="{{ route('student.upload-documents', ['scholarship_id' => 1]) }}" 
-             class="underline text-bsu-red font-semibold hover:text-bsu-redDark">
-              Click here to upload
-          </a>
+          <button @click="tab = 'scholarships'; subTab = 'form'" 
+             class="underline text-bsu-red font-semibold hover:text-bsu-redDark bg-transparent border-0 p-0 cursor-pointer inline">
+              Click here to fill up your Application Form
+          </button>
         </p>
       </div>
     </div>
