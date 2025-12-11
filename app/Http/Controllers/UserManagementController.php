@@ -1680,8 +1680,11 @@ class UserManagementController extends Controller
             $encodedUrl = urlencode($fileUrl);
             
             // Check if we're on localhost
-            $isLocalhost = in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']) || 
-                          str_contains(request()->getHost(), '.local');
+            // If in production, force isLocalhost to false to allow viewers to try loading
+            $isLocalhost = !app()->isProduction() && (
+                in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']) || 
+                str_contains(request()->getHost(), '.local')
+            );
             
             // Try multiple viewer options
             $viewers = [];
