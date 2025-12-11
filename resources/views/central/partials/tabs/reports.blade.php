@@ -1,4 +1,4 @@
-<div x-show="tab === 'reports'" 
+<div x-show="tab === 'sfao_reports'" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
@@ -32,7 +32,7 @@
         <!-- Filters (SFAO Style) -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
             <form method="GET" class="flex flex-wrap gap-4 items-end">
-                <input type="hidden" name="tab" value="reports">
+                <input type="hidden" name="tab" value="sfao_reports">
                 <input type="hidden" name="status" :value="activeReportTab">
 
                 <!-- Report Type -->
@@ -92,7 +92,7 @@
                 <!-- Clear -->
                 <div class="flex flex-col items-center">
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Clear</label>
-                    <a href="{{ route('central.dashboard', ['tab' => 'reports']) }}" 
+                    <a href="{{ route('central.dashboard', ['tab' => 'sfao_reports']) }}" 
                        class="bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-red-500 dark:border-red-500 p-2 rounded-full hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red shadow-sm h-[38px] w-[38px] flex items-center justify-center" 
                        title="Reset Filters">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

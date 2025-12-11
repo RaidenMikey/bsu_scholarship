@@ -1,7 +1,7 @@
 <!-- central/partials/tabs/scholars.blade.php -->
 
 <div x-data="{ showModal: false, selectedScholar: null }" 
-     x-show="tab === 'scholars' || tab === 'scholars-new' || tab === 'scholars-old'" 
+     x-show="tab === 'all_scholars' || tab === 'new_scholars' || tab === 'old_scholars'" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
@@ -12,19 +12,19 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    <span x-show="tab === 'scholars'" class="flex items-center gap-2">
+                    <span x-show="tab === 'all_scholars'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
                         All Scholars
                     </span>
-                    <span x-show="tab === 'scholars-new'" class="flex items-center gap-2">
+                    <span x-show="tab === 'new_scholars'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
                         New Scholars
                     </span>
-                    <span x-show="tab === 'scholars-old'" class="flex items-center gap-2">
+                    <span x-show="tab === 'old_scholars'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
@@ -32,16 +32,16 @@
                     </span>
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
-                    <span x-show="tab === 'scholars'">Manage all accepted scholars across campuses</span>
-                    <span x-show="tab === 'scholars-new'">Scholars who have not yet received any grant</span>
-                    <span x-show="tab === 'scholars-old'">Continuing scholars with one or more grants</span>
+                    <span x-show="tab === 'all_scholars'">Manage all accepted scholars across campuses</span>
+                    <span x-show="tab === 'new_scholars'">Scholars who have not yet received any grant</span>
+                    <span x-show="tab === 'old_scholars'">Continuing scholars with one or more grants</span>
                 </p>
             </div>
         </div>
     </div>
 
     <!-- All Scholars Table -->
-    <div x-show="tab === 'scholars'">
+    <div x-show="tab === 'all_scholars'">
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 custom-scrollbar">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -69,12 +69,12 @@
             </table>
         </div>
         <div class="mt-4 flex justify-center">
-            {{ $scholarsAll->appends(['tab' => 'scholars'])->links('vendor.pagination.custom') }}
+            {{ $scholarsAll->appends(['tab' => 'all_scholars'])->links('vendor.pagination.custom') }}
         </div>
     </div>
 
     <!-- New Scholars Table -->
-    <div x-show="tab === 'scholars-new'">
+    <div x-show="tab === 'new_scholars'">
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 custom-scrollbar">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -102,12 +102,12 @@
             </table>
         </div>
         <div class="mt-4 flex justify-center">
-            {{ $scholarsNew->appends(['tab' => 'scholars-new'])->links('vendor.pagination.custom') }}
+            {{ $scholarsNew->appends(['tab' => 'new_scholars'])->links('vendor.pagination.custom') }}
         </div>
     </div>
 
     <!-- Old Scholars Table -->
-    <div x-show="tab === 'scholars-old'">
+    <div x-show="tab === 'old_scholars'">
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 custom-scrollbar">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -135,7 +135,7 @@
             </table>
         </div>
         <div class="mt-4 flex justify-center">
-            {{ $scholarsOld->appends(['tab' => 'scholars-old'])->links('vendor.pagination.custom') }}
+            {{ $scholarsOld->appends(['tab' => 'old_scholars'])->links('vendor.pagination.custom') }}
         </div>
     </div>
 

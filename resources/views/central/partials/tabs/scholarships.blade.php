@@ -1,4 +1,4 @@
-<div x-show="tab === 'scholarships' || tab === 'scholarships-private' || tab === 'scholarships-government'" 
+<div x-show="tab === 'all_scholarships' || tab === 'private_scholarships' || tab === 'government_scholarships'" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
@@ -11,7 +11,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    <span x-show="tab === 'scholarships'" class="flex items-center gap-2">
+                    <span x-show="tab === 'all_scholarships'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-900 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path d="M12 14l9-5-9-5-9 5 9 5z" />
                           <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
@@ -19,13 +19,13 @@
                         </svg>
                         All Scholarships
                     </span>
-                    <span x-show="tab === 'scholarships-private'" class="flex items-center gap-2">
+                    <span x-show="tab === 'private_scholarships'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
                         Private Scholarships
                     </span>
-                    <span x-show="tab === 'scholarships-government'" class="flex items-center gap-2">
+                    <span x-show="tab === 'government_scholarships'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
@@ -33,9 +33,9 @@
                     </span>
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
-                    <span x-show="tab === 'scholarships'">Manage all scholarship programs</span>
-                    <span x-show="tab === 'scholarships-private'">Private scholarship programs</span>
-                    <span x-show="tab === 'scholarships-government'">Government scholarship programs</span>
+                    <span x-show="tab === 'all_scholarships'">Manage all scholarship programs</span>
+                    <span x-show="tab === 'private_scholarships'">Private scholarship programs</span>
+                    <span x-show="tab === 'government_scholarships'">Government scholarship programs</span>
                 </p>
             </div>
         </div>
@@ -105,7 +105,7 @@
     <!-- Scholarships List -->
     <div>
         <!-- All Scholarships -->
-        <div x-show="tab === 'scholarships'">
+        <div x-show="tab === 'all_scholarships'">
             @forelse($scholarshipsAll as $scholarship)
                 @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
             @empty
@@ -119,7 +119,7 @@
         </div>
 
         <!-- Private Scholarships -->
-        <div x-show="tab === 'scholarships-private'">
+        <div x-show="tab === 'private_scholarships'">
             @forelse($scholarshipsPrivate as $scholarship)
                 @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
             @empty
@@ -139,7 +139,7 @@
         </div>
 
         <!-- Government Scholarships -->
-        <div x-show="tab === 'scholarships-government'">
+        <div x-show="tab === 'government_scholarships'">
             @forelse($scholarshipsGov as $scholarship)
                 @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
             @empty

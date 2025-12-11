@@ -943,13 +943,33 @@ class ApplicationManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
+        // Create user object
         $user = \App\Models\User::find(session('user_id'));
 
+        // Get all campuses for filter and resolving tab
+        $campuses = \App\Models\Campus::all();
+
         // Get filtering parameters
+        $tab = $request->get('tab', 'all_scholarships');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $statusFilter = $request->get('status_filter', 'all');
-        $campusFilter = $request->get('campus_filter', 'all');
+        
+        // Resolve campus filter
+        // Check both 'campus_filter' (Applications/Scholars) and 'campus' (Statistics)
+        $campusFilter = $request->get('campus_filter', $request->get('campus', 'all'));
+        
+        // Override campus filter if tab implies a specific campus statistics page
+        if (str_ends_with($tab, '_statistics') && $tab !== 'all_statistics') {
+            $campusSlug = str_replace('_statistics', '', $tab);
+            foreach ($campuses as $campus) {
+                if (strtolower(str_replace(' ', '_', $campus->name)) === $campusSlug) {
+                    $campusFilter = $campus->id;
+                    break;
+                }
+            }
+        }
+
         $scholarshipFilter = $request->get('scholarship_filter', 'all');
 
         // Build applications query with filtering
@@ -1109,10 +1129,10 @@ class ApplicationManagementController extends Controller
         ];
 
         // Generate comprehensive analytics data
-        $analytics = $this->generateAnalyticsData();
+        $analytics = $this->generateAnalyticsData(['campus' => $campusFilter]);
 
-        // Get all campuses for filter
-        $campuses = \App\Models\Campus::all();
+        // Get all campuses for filter (Moved to top)
+        // $campuses = \App\Models\Campus::all();
         
         // Get filter options for applications
         $campusOptions = $campuses->map(function($campus) {
@@ -1366,6 +1386,7 @@ class ApplicationManagementController extends Controller
         $applicationQuery = \App\Models\Application::query();
         $userQuery = \App\Models\User::query();
         $reportQuery = \App\Models\Report::query();
+        $scholarQuery = \App\Models\Scholar::query();
         
         // Apply time period filter
         if ($timePeriod !== 'all') {
@@ -1374,6 +1395,7 @@ class ApplicationManagementController extends Controller
                 $applicationQuery->whereBetween('created_at', $dateCondition);
                 $userQuery->whereBetween('created_at', $dateCondition);
                 $reportQuery->whereBetween('created_at', $dateCondition);
+                $scholarQuery->whereBetween('created_at', $dateCondition);
             }
         }
         
@@ -1385,6 +1407,9 @@ class ApplicationManagementController extends Controller
             });
             $userQuery->where('campus_id', $campusId);
             $reportQuery->where('campus_id', $campusId);
+            $scholarQuery->whereHas('user', function($query) use ($campusId) {
+                $query->where('campus_id', $campusId);
+            });
         }
         
         // Get basic report statistics
@@ -1416,13 +1441,17 @@ class ApplicationManagementController extends Controller
         $totalSfaoUsers = \App\Models\User::where('role', 'sfao')->count();
         $totalCentralUsers = \App\Models\User::where('role', 'central')->count();
 
-        // Get demographic statistics from users table
-        $maleStudents = \App\Models\User::where('role', 'student')
-            ->where('sex', 'male')
-            ->count();
-        $femaleStudents = \App\Models\User::where('role', 'student')
-            ->where('sex', 'female')
-            ->count();
+        // Get scholar statistics (New vs Old)
+        $newScholars = (clone $scholarQuery)->where('type', 'new')->count();
+        $oldScholars = (clone $scholarQuery)->where('type', 'old')->count();
+
+        // Get demographic statistics from scholars
+        $maleStudents = (clone $scholarQuery)->whereHas('user', function($q) {
+            $q->where('sex', 'male');
+        })->count();
+        $femaleStudents = (clone $scholarQuery)->whereHas('user', function($q) {
+            $q->where('sex', 'female');
+        })->count();
         $studentsWithApplications = \App\Models\User::where('role', 'student')
             ->whereHas('applications')
             ->count();
@@ -1457,8 +1486,20 @@ class ApplicationManagementController extends Controller
             $query->where('sex', 'female');
         })->where('status', 'pending')->count();
 
-        // Get year level distribution from users table
-        $yearLevelStats = \App\Models\User::where('role', 'student')
+        // Get year level distribution from scholars
+        $scholarUserQuery = \App\Models\User::whereHas('scholars');
+        
+        // Apply filters to scholar user query
+        if ($timePeriod !== 'all' && $dateCondition) {
+             $scholarUserQuery->whereHas('scholars', function($q) use ($dateCondition) {
+                 $q->whereBetween('created_at', $dateCondition);
+             });
+        }
+        if ($campusId !== 'all') {
+            $scholarUserQuery->where('campus_id', $campusId);
+        }
+
+        $yearLevelStats = (clone $scholarUserQuery)
             ->selectRaw('year_level, COUNT(*) as count')
             ->groupBy('year_level')
             ->get();
@@ -1501,8 +1542,8 @@ class ApplicationManagementController extends Controller
         $yearLevelLabels = array_keys($sortedYearLevels);
         $yearLevelCounts = array_values($sortedYearLevels);
 
-        // Get program distribution from users table
-        $programStats = \App\Models\User::where('role', 'student')
+        // Get program distribution from scholars
+        $programStats = (clone $scholarUserQuery)
             ->selectRaw('program, COUNT(*) as count')
             ->groupBy('program')
             ->orderBy('count', 'desc')
@@ -1586,6 +1627,13 @@ class ApplicationManagementController extends Controller
                 $query->where('campus_id', $campus->id);
             })->get();
 
+            // Get scholar stats for campus
+            $campusScholarsQuery = \App\Models\Scholar::whereHas('user', function($query) use ($campus) {
+                $query->where('campus_id', $campus->id);
+            });
+            $campusNewScholars = (clone $campusScholarsQuery)->where('type', 'new')->count();
+            $campusOldScholars = (clone $campusScholarsQuery)->where('type', 'old')->count();
+
             // Get total students for this campus
             $campusStudents = \App\Models\User::where('role', 'student')
                 ->where('campus_id', $campus->id)
@@ -1598,21 +1646,35 @@ class ApplicationManagementController extends Controller
                 ->count();
 
             // Get gender statistics for this campus
-            $campusMaleStudents = \App\Models\User::where('role', 'student')
-                ->where('campus_id', $campus->id)
-                ->where('sex', 'male')
-                ->count();
+            // Get gender statistics for this campus (Scholars only)
+            $campusMaleStudents = (clone $campusScholarsQuery)->whereHas('user', function($q) {
+                $q->where('sex', 'male');
+            })->count();
             
-            $campusFemaleStudents = \App\Models\User::where('role', 'student')
-                ->where('campus_id', $campus->id)
-                ->where('sex', 'female')
-                ->count();
+            $campusFemaleStudents = (clone $campusScholarsQuery)->whereHas('user', function($q) {
+                $q->where('sex', 'female');
+            })->count();
 
-            // Get year level statistics for this campus
-            $campusYearLevelStats = \App\Models\User::where('role', 'student')
-                ->where('campus_id', $campus->id)
+            // Get year level statistics for this campus (Scholars)
+            $campusYearLevelStats = (clone $campusScholarsQuery)->whereHas('user', function($q) use ($campus) {
+                   $q->where('campus_id', $campus->id); // Redundant if query has it, but safe
+                })->first(); // Wait, I need to join to get year_level or use whereHas logic.
+            
+            // Better approach for Campus Loop: Query Users who are Scholars in this Campus
+            $campusScholarUsers = \App\Models\User::where('campus_id', $campus->id)
+                ->whereHas('scholars');
+
+            $campusYearLevelStats = (clone $campusScholarUsers)
                 ->selectRaw('year_level, COUNT(*) as count')
                 ->groupBy('year_level')
+                ->get();
+
+            // Get program statistics for this campus (Scholars)
+            $campusProgramStats = (clone $campusScholarUsers)
+                ->selectRaw('program, COUNT(*) as count')
+                ->groupBy('program')
+                ->orderBy('count', 'desc')
+                ->limit(10)
                 ->get();
 
             // Normalize year level data for this campus
@@ -1682,14 +1744,34 @@ class ApplicationManagementController extends Controller
                 'students_without_applications' => $campusStudents - $campusStudentsWithApplications,
                 'approval_rate' => $campusApplications->count() > 0 ? 
                     round(($campusApplications->where('status', 'approved')->count() / $campusApplications->count()) * 100, 2) : 0,
+                // Scholar Stats
+                'new_scholars' => $campusNewScholars,
+                'old_scholars' => $campusOldScholars,
                 // Add gender statistics
                 'male_students' => $campusMaleStudents,
                 'female_students' => $campusFemaleStudents,
                 // Add year level statistics
                 'year_level_labels' => array_keys($campusSortedYearLevels),
+                'year_level_counts' => array_values($campusSortedYearLevels),
+                // Add program statistics
+                'program_labels' => $campusProgramStats->pluck('program')->toArray(),
+                'program_counts' => $campusProgramStats->pluck('count')->toArray(),
                 // Add campus-specific monthly trends
                 'monthly_trends' => $campusMonthlyTrends,
-                'year_level_counts' => array_values($campusSortedYearLevels)
+                // Scholarship Scholar Stats (New vs Old)
+                'scholarship_scholar_stats' => \App\Models\Scholarship::withCount([
+                    'scholars as new_scholars_count' => function($q) use ($campus) {
+                        $q->where('type', 'new')->whereHas('user', fn($u) => $u->where('campus_id', $campus->id));
+                    },
+                    'scholars as old_scholars_count' => function($q) use ($campus) {
+                        $q->where('type', 'old')->whereHas('user', fn($u) => $u->where('campus_id', $campus->id));
+                    }
+                ])->get()->filter(fn($s) => $s->new_scholars_count > 0 || $s->old_scholars_count > 0)
+                  ->map(fn($s) => [
+                      'name' => $s->scholarship_name, 
+                      'new' => $s->new_scholars_count, 
+                      'old' => $s->old_scholars_count
+                  ])->values()
             ];
         }
 
@@ -1770,6 +1852,25 @@ class ApplicationManagementController extends Controller
             'total_students' => $totalStudents,
             'total_sfao_users' => $totalSfaoUsers,
             'total_central_users' => $totalCentralUsers,
+            
+            // Scholar Status
+            'new_scholars' => $newScholars,
+            'old_scholars' => $oldScholars,
+            'scholarship_scholar_stats' => \App\Models\Scholarship::withCount([
+                'scholars as new_scholars_count' => function($q) use ($campusId) {
+                    $q->where('type', 'new');
+                    if ($campusId !== 'all') $q->whereHas('user', fn($u) => $u->where('campus_id', $campusId));
+                },
+                'scholars as old_scholars_count' => function($q) use ($campusId) {
+                    $q->where('type', 'old');
+                    if ($campusId !== 'all') $q->whereHas('user', fn($u) => $u->where('campus_id', $campusId));
+                }
+            ])->get()->filter(fn($s) => $s->new_scholars_count > 0 || $s->old_scholars_count > 0)
+              ->map(fn($s) => [
+                  'name' => $s->scholarship_name, 
+                  'new' => $s->new_scholars_count, 
+                  'old' => $s->old_scholars_count
+              ])->values(),
             
             // Demographic Statistics
             'male_students' => $maleStudents,
