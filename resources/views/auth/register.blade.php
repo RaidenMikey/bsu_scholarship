@@ -97,23 +97,15 @@
         </select>
       </div>
 
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">College / Department <span class="text-red-500">*</span></label>
-        <select name="college" required x-model="formData.college" :disabled="!formData.campus_id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed">
-          <option value="" disabled selected x-text="formData.campus_id ? 'Select College' : 'Select Campus First'"></option>
-          <template x-for="dept in availableDepartments" :key="dept.id">
-            <option :value="dept.name" x-text="dept.name"></option>
-          </template>
-        </select>
-      </div>
+
 
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program <span class="text-red-500">*</span></label>
-        <select name="program" required x-model="formData.program" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-          <option value="" disabled selected>Select Program</option>
-          @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
-            <option value="{{ $program }}">{{ $program }}</option>
-          @endforeach
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department <span class="text-red-500">*</span></label>
+        <select name="program" required x-model="formData.program" @change="formData.college = formData.program" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white" :disabled="!formData.campus_id">
+          <option value="" disabled selected>Select Department</option>
+          <template x-for="dept in availableDepartments" :key="dept.id">
+            <option :value="dept.short_name" x-text="dept.short_name"></option>
+          </template>
         </select>
       </div>
 
@@ -174,7 +166,7 @@
         <label class="inline-flex items-start text-sm text-gray-700 dark:text-gray-300">
           <input type="checkbox" name="terms" required x-model="formData.terms" class="mt-1 rounded text-red-600 focus:ring-red-500 dark:bg-gray-700">
           <span class="ml-2">
-            I agree to the <a href="#" class="text-red-600 hover:underline dark:text-red-400">Terms of Service</a> and <a href="#" class="text-red-600 hover:underline dark:text-red-400">Privacy Policy</a>
+            I agree to the <a href="#" @click.prevent="showToSModal = true" class="text-red-600 hover:underline dark:text-red-400">Terms of Service</a> and <a href="#" @click.prevent="showPrivacyModal = true" class="text-red-600 hover:underline dark:text-red-400">Privacy Policy</a>
           </span>
         </label>
       </div>
@@ -372,6 +364,261 @@
       </div>
     </div>
   </div>
+  <!-- TOS Modal -->
+  <div x-show="showToSModal" 
+       class="fixed inset-0 z-50 overflow-y-auto" 
+       aria-labelledby="modal-title" 
+       role="dialog" 
+       aria-modal="true"
+       style="display: none;">
+       
+    <!-- Backdrop -->
+    <div x-show="showToSModal" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0" 
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" 
+         aria-hidden="true"
+         @click="showToSModal = false"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div x-show="showToSModal" 
+           x-transition:enter="ease-out duration-300" 
+           x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave="ease-in duration-200" 
+           x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-2xl max-h-[80vh] flex flex-col">
+        
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-bsu-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Terms of Service (TOS)
+            </h3>
+            <button @click="showToSModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 py-4 overflow-y-auto custom-scrollbar prose dark:prose-invert max-w-none text-sm">
+            <p class="font-bold">Effective Date: [Insert Date]</p>
+            <p class="font-bold mb-4">Last Updated: [Insert Date]</p>
+
+            <h4 class="font-bold mt-4">1. Acceptance of Terms</h4>
+            <p>By creating an account or accessing the system ("Service"), you agree to comply with and be bound by these Terms of Service. If you do not agree, you must not use the Service.</p>
+
+            <h4 class="font-bold mt-4">2. Account Registration</h4>
+            <ul class="list-disc pl-5">
+                <li>You must provide accurate, complete, and up-to-date information.</li>
+                <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+                <li>You agree to notify the administrator immediately of any unauthorized access or security breach.</li>
+                <li>The system may suspend or terminate accounts found violating these Terms.</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">3. Acceptable Use</h4>
+            <p>You agree NOT to:</p>
+            <ul class="list-disc pl-5">
+                <li>Attempt to access, modify, or disrupt system operations.</li>
+                <li>Upload malicious content (viruses, malware, scripts).</li>
+                <li>Use the system for fraudulent or illegal activity.</li>
+                <li>Share login credentials with others.</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">4. System Availability</h4>
+            <p>We strive to keep the Service available at all times, but we do not guarantee uninterrupted, error-free operation. Scheduled or emergency maintenance may affect system availability.</p>
+
+            <h4 class="font-bold mt-4">5. User Responsibilities</h4>
+            <p>Users must:</p>
+            <ul class="list-disc pl-5">
+                <li>Provide true information when submitting forms.</li>
+                <li>Follow system policies, guidelines, and eligibility rules.</li>
+                <li>Use the system only for legitimate academic or administrative purposes.</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">6. Termination</h4>
+            <p>We may suspend or remove your account if:</p>
+            <ul class="list-disc pl-5">
+                <li>You violate these Terms.</li>
+                <li>You submit false or fraudulent information.</li>
+                <li>The system detects suspicious or harmful activity.</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">7. Limitation of Liability</h4>
+            <p>The Service is provided “as is.” We are not liable for:</p>
+            <ul class="list-disc pl-5">
+                <li>Data loss</li>
+                <li>Unauthorized access caused by user negligence</li>
+                <li>Downtime or technical failures</li>
+                <li>Damages arising from misuse of the system</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">8. Changes to the Terms</h4>
+            <p>We may update these Terms at any time. Continued use of the Service after changes means you accept the updated Terms.</p>
+
+            <h4 class="font-bold mt-4">9. Contact Information</h4>
+            <p>For questions, concerns, or reporting violations, contact:</p>
+            <p>[Insert Contact Email or Office Name]</p>
+            <p><a href="mailto:test.bsuscholarship@gmail.com" class="text-blue-600 hover:underline">test.bsuscholarship@gmail.com</a></p>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end">
+            <button type="button" 
+                    @click="showToSModal = false; formData.terms = true" 
+                    class="px-6 py-2 bg-bsu-red hover:bg-bsu-redDark text-white rounded-lg transition-colors font-medium text-sm shadow-sm">
+              I Accept
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div x-show="showPrivacyModal" 
+       class="fixed inset-0 z-50 overflow-y-auto" 
+       aria-labelledby="modal-title" 
+       role="dialog" 
+       aria-modal="true"
+       style="display: none;">
+       
+    <!-- Backdrop -->
+    <div x-show="showPrivacyModal" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0" 
+         x-transition:enter-end="opacity-100" 
+         x-transition:leave="ease-in duration-200" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0" 
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" 
+         aria-hidden="true"
+         @click="showPrivacyModal = false"></div>
+
+    <!-- Modal Panel -->
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div x-show="showPrivacyModal" 
+           x-transition:enter="ease-out duration-300" 
+           x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave="ease-in duration-200" 
+           x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+           x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+           class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full max-w-2xl max-h-[80vh] flex flex-col">
+        
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-bsu-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Privacy Policy
+            </h3>
+            <button @click="showPrivacyModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 py-4 overflow-y-auto custom-scrollbar prose dark:prose-invert max-w-none text-sm">
+            <p class="font-bold">Effective Date: [Insert Date]</p>
+            <p class="font-bold mb-4">Last Updated: [Insert Date]</p>
+
+            <h4 class="font-bold mt-4">1. Information We Collect</h4>
+            <p>We may collect the following types of information during account registration and system usage:</p>
+            <p class="font-semibold mt-2">Personal Information</p>
+            <ul class="list-disc pl-5">
+                <li>Full name</li>
+                <li>Email address</li>
+                <li>Contact number</li>
+                <li>Birthdate</li>
+                <li>Address</li>
+                <li>School/department/role</li>
+                <li>Other details required for scholarship, registration, or system services</li>
+            </ul>
+            <p class="font-semibold mt-2">Technical Information</p>
+            <ul class="list-disc pl-5">
+                <li>Login timestamps</li>
+                <li>IP address</li>
+                <li>Device and browser type</li>
+                <li>Usage logs for system security</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">2. How We Use Your Information</h4>
+            <p>Your data may be used for:</p>
+            <ul class="list-disc pl-5">
+                <li>Account creation and identity verification</li>
+                <li>Processing scholarship applications or forms</li>
+                <li>Monitoring eligibility and academic requirements</li>
+                <li>Improving system performance and security</li>
+                <li>Sending notifications, updates, or official communications</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">3. Data Sharing and Disclosure</h4>
+            <p>We do not sell or rent your information. We may share information only with:</p>
+            <ul class="list-disc pl-5">
+                <li>Authorized school administrators</li>
+                <li>Scholarship offices or related departments</li>
+                <li>Government agencies if legally required</li>
+                <li>IT personnel maintaining the system</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">4. Data Protection and Security</h4>
+            <p>We use reasonable security measures to protect your data, including:</p>
+            <ul class="list-disc pl-5">
+                <li>Encrypted connections (HTTPS)</li>
+                <li>Access controls and authentication</li>
+                <li>System monitoring and logging</li>
+                <li>Regular security updates</li>
+            </ul>
+            <p class="mt-2">However, no system is 100% secure. Users must protect their own passwords and accounts.</p>
+
+            <h4 class="font-bold mt-4">5. Data Retention</h4>
+            <p>We retain your information for as long as required for academic or administrative purposes, or as required by law. You may request deletion of your account when eligible.</p>
+
+            <h4 class="font-bold mt-4">6. User Rights</h4>
+            <p>You may request to:</p>
+            <ul class="list-disc pl-5">
+                <li>Access your personal information</li>
+                <li>Correct inaccurate information</li>
+                <li>Request deletion of your account (subject to policies)</li>
+                <li>Withdraw consent for certain data uses</li>
+            </ul>
+
+            <h4 class="font-bold mt-4">7. Cookies and Tracking</h4>
+            <p>The system may use cookies or similar technologies to enhance user experience and track basic site usage.</p>
+
+            <h4 class="font-bold mt-4">8. Updates to the Privacy Policy</h4>
+            <p>We may revise this Privacy Policy. Changes will be posted within the system, and continued use means you accept the updated policy.</p>
+
+            <h4 class="font-bold mt-4">9. Contact Information</h4>
+            <p>If you have privacy-related questions or concerns, contact:</p>
+            <p>[Insert Contact Email or Office]</p>
+            <p><a href="mailto:test.bsuscholarship@gmail.com" class="text-blue-600 hover:underline">test.bsuscholarship@gmail.com</a></p>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end">
+            <button type="button" 
+                    @click="showPrivacyModal = false; formData.terms = true" 
+                    class="px-6 py-2 bg-bsu-red hover:bg-bsu-redDark text-white rounded-lg transition-colors font-medium text-sm shadow-sm">
+              I Accept
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection
 
@@ -415,6 +662,8 @@
       showAgeErrorModal: false,
       showRequiredFieldsModal: false,
       showEmailErrorModal: false,
+      showToSModal: false,
+      showPrivacyModal: false,
       isSubmitting: false,
       
       nextStep() {

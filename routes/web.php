@@ -142,6 +142,7 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     // Scholarships Management
     Route::post('/scholarships/store', [ScholarshipManagementController::class, 'store'])->name('scholarships.store');
     Route::post('/scholarships/{id}/update', [ScholarshipManagementController::class, 'update'])->name('scholarships.update');
+    Route::post('/scholarships/{id}/release-grant', [ScholarshipManagementController::class, 'releaseGrant'])->name('scholarships.release-grant');
     Route::get('/scholarships', [ScholarshipManagementController::class, 'sfaoIndex'])->name('scholarships.index');
     Route::get('/scholarships/{id}', [ScholarshipManagementController::class, 'sfaoShow'])->name('scholarships.show');
     

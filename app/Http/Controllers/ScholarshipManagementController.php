@@ -11,6 +11,10 @@ use App\Models\User;
 use App\Models\ScholarshipRequiredCondition;
 use App\Models\ScholarshipRequiredDocument;
 use App\Services\NotificationService;
+use App\Models\Scholar;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\GrantSlipMail;
 
 /**
  * =====================================================
@@ -53,7 +57,8 @@ class ScholarshipManagementController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        return view('central.scholarships.create');
+        $departments = \App\Models\Department::orderBy('short_name')->pluck('short_name');
+        return view('central.scholarships.create', compact('departments'));
     }
 
     /**
@@ -163,7 +168,9 @@ class ScholarshipManagementController extends Controller
                 'accessed_by' => session('user_id')
             ]);
             
-            return view('central.scholarships.create', compact('scholarship'));
+            $departments = \App\Models\Department::orderBy('short_name')->pluck('short_name');
+            
+            return view('central.scholarships.create', compact('scholarship', 'departments'));
             
         } catch (\Exception $e) {
             Log::error('Error accessing scholarship edit form:', [
@@ -314,6 +321,56 @@ class ScholarshipManagementController extends Controller
     // =====================================================
     // SFAO SCHOLARSHIP MANAGEMENT
     // =====================================================
+
+    /**
+     * Release grant for scholarship (SFAO)
+     */
+    public function releaseGrant($id)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $scholarship = Scholarship::findOrFail($id);
+        
+        $user = User::with('campus')->find(session('user_id'));
+        $sfaoCampus = $user->campus;
+        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
+        
+        // Get active scholars under this scholarship belonging to SFAO's campuses
+        $scholars = Scholar::where('scholarship_id', $id)
+            ->where('status', 'active')
+            ->whereHas('user', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            })
+            ->with('user')
+            ->get();
+            
+        if ($scholars->isEmpty()) {
+            return back()->with('error', 'No active scholars found for this scholarship in your campus.');
+        }
+
+        $count = 0;
+        foreach ($scholars as $scholar) {
+            try {
+                // Generate PDF
+                $pdf = Pdf::loadView('pdf.grant-slip', [
+                    'scholar' => $scholar,
+                    'scholarship' => $scholarship
+                ])->output();
+                
+                // Send Email
+                if ($scholar->user && $scholar->user->email) {
+                    Mail::to($scholar->user->email)->send(new GrantSlipMail($scholar, $scholarship, $pdf));
+                    $count++;
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to release grant for scholar ' . $scholar->id . ': ' . $e->getMessage());
+            }
+        }
+        
+        return back()->with('success', "Grant released successfully. Sent notifications to {$count} scholars.");
+    }
 
     /**
      * List all scholarships with applicant counts (SFAO)

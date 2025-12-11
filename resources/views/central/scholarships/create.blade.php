@@ -207,12 +207,12 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
                                             <select x-model="cond.type" :name="'conditions['+index+'][type]'" 
                                                     class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
+
                                                 <option value="gwa">Minimum GWA</option>
                                                 <option value="year_level">Year Level</option>
                                                 <option value="income">Maximum Income</option>
                                                 <option value="disability">Disability</option>
-                                                <option value="program">Program</option>
-                                                <option value="sex">Gender</option>
+                                                <option value="department">Department</option>
                                             </select>
 
                                             <!-- Dynamic Inputs based on Type -->
@@ -236,18 +236,12 @@
                                                     <option value="no">No</option>
                                                 </select>
                                             </template>
-                                            <template x-if="cond.type === 'program'">
+                                            <template x-if="cond.type === 'department'">
                                                 <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
-                                                    <option value="">Select Program</option>
-                                                    <option value="BS Computer Science">BS Computer Science</option>
-                                                    <option value="BS Information Technology">BS Information Technology</option>
-                                                    <!-- Add other programs as needed -->
-                                                </select>
-                                            </template>
-                                            <template x-if="cond.type === 'sex'">
-                                                <select x-model="cond.value" :name="'conditions['+index+'][value]'" class="rounded-lg border-gray-300 text-sm focus:ring-bsu-red focus:border-bsu-red w-full">
-                                                    <option value="male">Male</option>
-                                                    <option value="female">Female</option>
+                                                    <option value="">Select Department</option>
+                                                    @foreach($departments as $department)
+                                                        <option value="{{ $department }}">{{ $department }}</option>
+                                                    @endforeach
                                                 </select>
                                             </template>
                                         </div>

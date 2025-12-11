@@ -6,6 +6,9 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\Scholarship;
 use App\Models\Application;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewScholarshipAnnouncement;
+use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
@@ -18,6 +21,7 @@ class NotificationService
         $students = User::where('role', 'student')->get();
         
         foreach ($students as $student) {
+            // Create Database Notification
             Notification::create([
                 'user_id' => $student->id,
                 'type' => 'scholarship_created',
@@ -29,6 +33,15 @@ class NotificationService
                     'deadline' => $scholarship->submission_deadline
                 ]
             ]);
+
+            // Send Email Notification
+            if ($student->email) {
+                try {
+                    Mail::to($student->email)->send(new NewScholarshipAnnouncement($scholarship));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send scholarship announcement email to ' . $student->email . ': ' . $e->getMessage());
+                }
+            }
         }
     }
 

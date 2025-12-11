@@ -129,7 +129,10 @@ class Scholarship extends Model
                 return $this->meetsDisabilityRequirement($condition->value, $formData->disability);
                 
             case 'program':
-                return $this->meetsProgramRequirement($condition->value, $formData->program);
+                return $this->meetsDepartmentRequirement($condition->value, $formData->program);
+
+            case 'department':
+                return $this->meetsDepartmentRequirement($condition->value, $formData->college_department ?? $formData->college ?? $formData->program);
                 
             case 'campus':
                 return $this->meetsCampusRequirement($condition->value, $formData->campus);
@@ -193,14 +196,22 @@ class Scholarship extends Model
         return $requiredDisability === $studentDisability; // Exact match
     }
 
-    // Program requirement matching
-    public function meetsProgramRequirement($requiredProgram, $studentProgram)
+    // Department/Program requirement matching
+    public function meetsDepartmentRequirement($requiredDepartment, $studentDepartment)
     {
-        if ($requiredProgram === null || $studentProgram === null) {
+        if ($requiredDepartment === null || $studentDepartment === null) {
             return true;
         }
         
-        return strtolower($requiredProgram) === strtolower($studentProgram);
+        return strtolower($requiredDepartment) === strtolower($studentDepartment);
+    }
+
+    /**
+     * @deprecated Use meetsDepartmentRequirement instead
+     */
+    public function meetsProgramRequirement($requiredProgram, $studentProgram)
+    {
+        return $this->meetsDepartmentRequirement($requiredProgram, $studentProgram);
     }
 
     // Campus requirement matching
@@ -261,7 +272,8 @@ class Scholarship extends Model
             'year_level' => 'Year Level',
             'income' => 'Monthly Income',
             'disability' => 'Disability Status',
-            'program' => 'Program',
+            'program' => 'Department', // Map legacy program to Department label
+            'department' => 'Department',
             'campus' => 'Campus',
             'age' => 'Age',
             'sex' => 'Gender'
@@ -284,6 +296,8 @@ class Scholarship extends Model
                 return $formData->disability ?? 'None';
             case 'program':
                 return $formData->program ?? 'Not specified';
+            case 'department':
+                return $formData->college_department ?? $formData->college ?? 'Not specified';
             case 'campus':
                 return $formData->campus ?? 'Not specified';
             case 'age':

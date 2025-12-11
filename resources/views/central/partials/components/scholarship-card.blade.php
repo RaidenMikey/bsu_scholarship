@@ -421,6 +421,15 @@
                             <button @click.stop="open = false" class="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors">
                                 Close
                             </button>
+                            <form action="{{ route('sfao.scholarships.release-grant', $scholarship->id) }}" 
+                                  method="POST" 
+                                  onsubmit="return confirm('Are you sure you want to release grants? This will generate grant slips and send emails to all active scholars under this scholarship.');">
+                                @csrf
+                                <button type="submit" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                    Release Grant
+                                </button>
+                            </form>
                         </div>
                     @endif
 
