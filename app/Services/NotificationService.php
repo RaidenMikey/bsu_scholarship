@@ -9,6 +9,8 @@ use App\Models\Application;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NewScholarshipAnnouncement;
 use Illuminate\Support\Facades\Log;
+use App\Mail\ApplicationCommentMail;
+use App\Mail\ApplicationStatusUpdateMail;
 
 class NotificationService
 {
@@ -60,6 +62,18 @@ class NotificationService
                 'commenter_role' => 'sfao'
             ]
         ]);
+
+        // Send Email Notification
+        if ($student->email) {
+            try {
+                $application = Application::find($applicationId);
+                if ($application) {
+                    Mail::to($student->email)->send(new ApplicationCommentMail($application, $comment));
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send application comment email to ' . $student->email . ': ' . $e->getMessage());
+            }
+        }
     }
 
     /**
@@ -89,6 +103,16 @@ class NotificationService
                 'scholarship_name' => $application->scholarship->scholarship_name ?? 'Unknown Scholarship'
             ]
         ]);
+
+        // Send Email Notification
+        $user = User::find($application->user_id);
+        if ($user && $user->email) {
+            try {
+                Mail::to($user->email)->send(new ApplicationStatusUpdateMail($application, $status, $message));
+            } catch (\Exception $e) {
+                Log::error('Failed to send application status update email to ' . $user->email . ': ' . $e->getMessage());
+            }
+        }
     }
 
     /**
