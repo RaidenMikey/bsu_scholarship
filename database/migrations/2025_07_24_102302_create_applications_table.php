@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('grant_count')->default(0);
 
             // Application lifecycle
-            $table->enum('status', ['not_applied', 'in_progress', 'pending', 'approved', 'rejected'])->default('not_applied');
+            $table->enum('status', ['in_progress', 'pending', 'approved', 'rejected', 'claimed'])->default('pending');
             
             // SFAO evaluation remarks
             $table->text('remarks')->nullable();

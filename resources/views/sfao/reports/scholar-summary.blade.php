@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.focused')
+@section('page-title', 'Scholar Summary Report')
+@section('navbar-title', 'Scholar Summary Report | ' . (request('campus_id') == 'all' ? 'All Campuses' : ($monitoredCampuses->where('id', request('campus_id'))->first()->name ?? 'Unknown Campus')))
+@section('back-url', route('sfao.dashboard', ['tab' => 'reports-scholar_summary']))
+@section('back-text', 'Back to Reports')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
     <!-- Report Actions -->
-    <div class="mb-6 flex justify-between items-center no-print">
-        <a href="{{ route('sfao.dashboard', ['tab' => 'reports-scholar_summary']) }}" class="text-gray-600 hover:text-bsu-red font-medium flex items-center transition-colors duration-200">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Back to Reports
-        </a>
+    <div class="mb-6 flex justify-end items-center no-print">
         <button onclick="window.print()" class="bg-bsu-red text-white px-4 py-2 rounded-md hover:bg-bsu-redDark flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -19,45 +17,8 @@
     </div>
 
     <!-- Report Content -->
-    @if(session('success'))
-    <!-- Success Modal -->
-    <div class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
+    @include('sfao.components.modals.success-report-submission')
 
-        <!-- Modal Panel -->
-        <div class="flex min-h-screen items-center justify-center p-4 text-center">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-xs p-6">
-                
-                <div class="flex flex-col items-center justify-center">
-                    <!-- Icon -->
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
-                        <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-
-                    <!-- Content -->
-                    <h3 class="text-xl font-bold text-gray-900 mb-2" id="modal-title">
-                        Submission Successful
-                    </h3>
-                    <div class="mt-2">
-                        <p class="text-sm text-gray-500 text-center mb-6">
-                            {{ session('success') }}
-                        </p>
-                    </div>
-
-                    <!-- Button -->
-                    <button type="button" 
-                            onclick="this.closest('.fixed').remove()" 
-                            class="w-full inline-flex justify-center rounded-xl border border-transparent bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
     <div class="bg-white shadow-lg rounded-lg overflow-hidden print:shadow-none">
         <!-- Report Header -->
         <div class="px-8 py-6 border-b border-gray-200 text-center">
@@ -218,8 +179,7 @@
                 <p class="mt-1">Prepared by: {{ $user->name }} (SFAO Admin)</p>
             </div>
         </div>
-    </div>
-</div>
+
 
 <style>
     @media print {

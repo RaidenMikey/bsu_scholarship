@@ -20,6 +20,7 @@ class CheckUserExists
 
         // Role check (if passed as parameter)
         if ($role && $user->role !== $role) {
+            session()->flush();
             return redirect()->route('login')->with('unauthorized', true);
         }
 

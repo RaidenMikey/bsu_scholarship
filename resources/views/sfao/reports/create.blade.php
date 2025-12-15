@@ -49,7 +49,7 @@
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="max-w-4xl mx-auto py-8 px-4">
             <!-- Header -->
-            @include('sfao.partials.page-header', [
+            @include('sfao.partials.common.page-header', [
                 'title' => 'Create New Report',
                 'subtitle' => 'Generate a comprehensive report for Central Administration'
             ])

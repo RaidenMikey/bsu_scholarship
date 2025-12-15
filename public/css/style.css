@@ -104,3 +104,26 @@
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.6);
 }
+
+/* Landing Page Animations and Styles */
+@keyframes fadeInDown {
+    0% { opacity: 0; transform: translateY(-30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseButton {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+.animate-fadeInDown { animation: fadeInDown 1s ease-out forwards; }
+.animate-fadeInUp { animation: fadeInUp 1.2s ease-out forwards; }
+.animate-pulseButton { animation: pulseButton 2s infinite; }
+
+.homepage-bg {
+    background-image: url('../images/homepage.bg.jpg');
+    background-size: cover;
+    background-position: center;
+}

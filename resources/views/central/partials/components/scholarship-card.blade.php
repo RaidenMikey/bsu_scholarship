@@ -2,12 +2,13 @@
     'scholarship',
     'role' => 'central', // 'central', 'student', 'sfao'
     'hasActiveApplication' => false,
-    'fillPercentage' => 0
+    'fillPercentage' => 0,
+    'disableModal' => false
 ])
 
-<div x-data="{ open: false, showReleaseModal: false }" 
+<div x-data="{ open: false, showReleaseModal: false, disableModal: @json($disableModal) }" 
      class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8 cursor-pointer"
-     @click="open = true"
+     @click="if(!disableModal) open = true"
      @if($scholarship->background_image)
      style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
      @endif>
@@ -118,8 +119,8 @@
             </div>
         </div>
 
-        <!-- Fabulous Modal Content -->
-        <div x-show="open" 
+        <!-- Fabulous Modal Content (Generic Student/Central View) -->
+        <div x-show="open && !disableModal" 
              x-cloak
              class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
              x-transition:enter="transition ease-out duration-300"

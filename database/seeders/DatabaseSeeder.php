@@ -22,11 +22,9 @@ class DatabaseSeeder extends Seeder
             CampusSeeder::class,
             DepartmentSeeder::class, // Add DepartmentSeeder
             CampusDepartmentSeeder::class, // Add CampusDepartmentSeeder
-            UsersTableSeeder::class,
-            ScholarshipsTableSeeder::class,
             FormsTableSeeder::class,
             NotificationSeeder::class,
-            ApplicationsAndScholarsSeeder::class,
+            MainSeeder::class, // Replaces Users, App, Scholars
         ]);
         
         // Re-enable foreign key checks

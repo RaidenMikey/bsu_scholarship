@@ -14,6 +14,7 @@ class Application extends Model
         'scholarship_id',
         'grant_count',
         'status',
+        'remarks',
     ];
 
     /**

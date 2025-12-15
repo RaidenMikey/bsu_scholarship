@@ -1,23 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{ config('app.name', 'BSU Scholarship') }}</title>
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Scholarship Portal | Batangas State University')</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/Batangas_State_Logo.png') }}">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-
-    <!-- Tailwind & Alpine.js -->
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://unpkg.com/alpinejs" defer></script>
-
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
+    
+    @stack('styles')
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 dark:text-white min-h-screen font-sans antialiased">
+<body class="font-sans antialiased bg-gray-100">
+
     <div id="app">
         @yield('content')
     </div>
+
+    @stack('scripts')
 </body>
 </html>

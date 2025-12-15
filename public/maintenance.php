@@ -4,53 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Maintenance | Batangas State University</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bsu-red: #d90000;
+            --bsu-dark: #1f2937;
+            --bg-gray: #f9fafb;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--bsu-dark);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            text-align: center;
             padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             background-color: white;
-            padding: 3rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+            padding: 3.5rem 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 550px;
             width: 100%;
-            border-top: 6px solid #d90000; /* BSU Red Approximate */
+            text-align: center;
+            border-bottom: 6px solid var(--bsu-red);
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--bsu-red), #ff4d4d);
         }
         .logo {
-            width: 100px;
+            width: 90px;
             height: auto;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
         }
         h1 {
-            color: #111827;
-            font-size: 1.875rem;
+            color: var(--bsu-dark);
+            font-size: 2rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            margin-top: 0;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
         }
         p {
-            color: #6b7280;
-            font-size: 1.125rem;
+            color: #4b5563;
+            font-size: 1.05rem;
             line-height: 1.6;
             margin-bottom: 2rem;
         }
+        .illustration {
+            width: 100%;
+            max-width: 250px;
+            margin: 0 auto 2rem;
+            display: block;
+        }
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #d90000;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid var(--bsu-red);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
@@ -59,30 +85,48 @@
             100% { transform: rotate(360deg); }
         }
         .footer {
-            margin-top: 2rem;
-            font-size: 0.875rem;
+            margin-top: 2.5rem;
+            font-size: 0.85rem;
             color: #9ca3af;
+            font-weight: 300;
+        }
+        .highlight {
+            color: var(--bsu-red);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Optional: Replace with actual SVG illustration -->
+        <svg class="illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+            <rect width="400" height="300" fill="none"/>
+            <circle cx="200" cy="140" r="60" fill="#FEE2E2" opacity="0.5"/>
+            <path d="M160 140 H240 M200 100 V180" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
+            <path d="M170 190 L200 220 L230 190" stroke="#F87171" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M180 80 L220 80 L200 50 Z" fill="#EF4444"/>
+            <rect x="150" y="220" width="100" height="10" rx="5" fill="#E5E7EB"/>
+            <circle cx="200" cy="140" r="50" stroke="#DC2626" stroke-width="4"/>
+            <path d="M185 140 L200 155 L225 125" stroke="#DC2626" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+
         <img src="images/Batangas_State_Logo.png" alt="BSU Logo" class="logo" onerror="this.style.display='none'">
         
-        <h1>Under Maintenance</h1>
+        <h1>System <span class="highlight">Maintenance</span></h1>
         
         <p>
-            We are currently updating our system to serve you better. 
-            The website is temporarily unavailable while we perform these upgrades.
+            We are currently upgrading our database required to maintain the accuracy of your records.
+            <br>
+            <strong>Your data is safe.</strong>
             <br><br>
-            Please check back shortly.
+            Please check back shortly. We apologize for the inconvenience.
         </p>
 
         <div class="spinner"></div>
     </div>
 
     <div class="footer">
-        &copy; <?php echo date('Y'); ?> Batangas State University. The National Engineering University.
+        &copy; <?php echo date('Y'); ?> Batangas State University.<br>The National Engineering University.
     </div>
 </body>
 </html>

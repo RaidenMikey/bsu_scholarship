@@ -1,15 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserManagementController;
-use App\Http\Controllers\ApplicationManagementController;
-use App\Http\Controllers\ScholarshipManagementController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\ScholarshipController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\FormPrintController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentApplicationController;
-use App\Http\Controllers\SFAOEvaluationController;
 use App\Http\Controllers\CentralApplicationController;
 use Illuminate\Http\Request;
 
@@ -35,7 +35,7 @@ Route::get('/', function () {
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/logout', [AuthController::class, 'logout']);
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Password Reset Routes
 Route::get('password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
@@ -62,11 +62,11 @@ Route::post('/email/resend', [AuthController::class, 'resendVerificationByEmail'
 // --------------------------------------------------
 
 // Profile Picture Upload
-Route::post('/upload-profile-picture/{role}', [UserManagementController::class, 'uploadProfilePicture'])
+Route::post('/upload-profile-picture/{role}', [UserController::class, 'uploadProfilePicture'])
     ->whereIn('role', ['student', 'sfao', 'central']);
 
 // Document Viewer (for DOCX files)
-Route::get('/document/view/{id}', [UserManagementController::class, 'viewDocument'])->name('document.view');
+Route::get('/document/view/{id}', [UserController::class, 'viewDocument'])->name('document.view');
 
 // --------------------------------------------------
 // STUDENT ROUTES
@@ -75,34 +75,34 @@ Route::get('/document/view/{id}', [UserManagementController::class, 'viewDocumen
 Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')->name('student.')->group(function () {
     
     // Dashboard
-    Route::get('/', [UserManagementController::class, 'studentDashboard'])->name('dashboard');
+    Route::get('/', [UserController::class, 'studentDashboard'])->name('dashboard');
     
     // Scholarships
-    Route::get('/scholarships', [UserManagementController::class, 'scholarships'])->name('scholarships');
+    Route::get('/scholarships', [UserController::class, 'scholarships'])->name('scholarships');
     
     // Application Form
-    Route::get('/sfao-form', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form');
-    Route::get('/tdp-form', [UserManagementController::class, 'showTdpApplicationForm'])->name('forms.tdp_application_form');
-    Route::get('/form/{scholarship_id}', [UserManagementController::class, 'showApplicationForm'])->name('forms.application_form.scholarship');
+    Route::get('/sfao-form', [UserController::class, 'showApplicationForm'])->name('forms.application_form');
+    Route::get('/tdp-form', [UserController::class, 'showTdpApplicationForm'])->name('forms.tdp_application_form');
+    Route::get('/form/{scholarship_id}', [UserController::class, 'showApplicationForm'])->name('forms.application_form.scholarship');
     Route::post('/submit-application', [FormController::class, 'submit'])->name('submit');
     
     // Applications
-    Route::get('/applications', [StudentApplicationController::class, 'index'])->name('applications');
-    Route::post('/apply', [StudentApplicationController::class, 'apply'])->name('apply.post');
-    Route::post('/withdraw', [StudentApplicationController::class, 'withdraw'])->name('withdraw');
+    Route::get('/applications', [ApplicationController::class, 'studentApplications'])->name('applications');
+    Route::post('/apply', [ApplicationController::class, 'apply'])->name('apply.post');
+    Route::post('/withdraw', [ApplicationController::class, 'withdraw'])->name('withdraw');
     
     // Document Uploads (Legacy - Redirect to new multi-stage application)
     Route::get('/upload-documents/{scholarship_id}', function($scholarship_id) {
         return redirect()->route('student.apply', ['scholarship_id' => $scholarship_id]);
     })->name('upload-documents');
-    Route::post('/upload-documents/{scholarship_id}', [UserManagementController::class, 'uploadDocuments'])->name('upload-documents.submit');
+    Route::post('/upload-documents/{scholarship_id}', [UserController::class, 'uploadDocuments'])->name('upload-documents.submit');
     
     // Multi-Stage Application
-    Route::get('/apply/{scholarship_id}', [UserManagementController::class, 'showMultiStageApplication'])->name('apply');
-    Route::post('/apply/{scholarship_id}/sfao-documents', [UserManagementController::class, 'submitSfaoDocuments'])->name('apply.sfao-documents');
-    Route::post('/apply/{scholarship_id}/scholarship-documents', [UserManagementController::class, 'submitScholarshipDocuments'])->name('apply.scholarship-documents');
-    Route::post('/apply/{scholarship_id}/final-submission', [UserManagementController::class, 'submitFinalApplication'])->name('apply.final-submission');
-    Route::get('/apply/{scholarship_id}/progress', [UserManagementController::class, 'getApplicationProgress'])->name('apply.progress');
+    Route::get('/apply/{scholarship_id}', [UserController::class, 'showMultiStageApplication'])->name('apply');
+    Route::post('/apply/{scholarship_id}/sfao-documents', [UserController::class, 'submitSfaoDocuments'])->name('apply.sfao-documents');
+    Route::post('/apply/{scholarship_id}/scholarship-documents', [UserController::class, 'submitScholarshipDocuments'])->name('apply.scholarship-documents');
+    Route::post('/apply/{scholarship_id}/final-submission', [UserController::class, 'submitFinalApplication'])->name('apply.final-submission');
+    Route::get('/apply/{scholarship_id}/progress', [UserController::class, 'getApplicationProgress'])->name('apply.progress');
     
     // Print Application
     Route::get('/print-application', [FormPrintController::class, 'printApplication'])->name('print-application');
@@ -110,7 +110,7 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     Route::get('/download-file', [FormPrintController::class, 'downloadFile'])->name('download-file');
 
     // Change Password
-    Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');
+    Route::post('/change-password', [UserController::class, 'changePassword'])->name('change-password');
 });
 
 // --------------------------------------------------
@@ -120,34 +120,40 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
 Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')->name('sfao.')->group(function () {
 
     // Dashboard
-    Route::get('/', [ApplicationManagementController::class, 'sfaoDashboard'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Applicants
-    Route::get('/applicants/{user_id}/documents', [ApplicationManagementController::class, 'viewDocuments'])->name('viewDocuments');
+    Route::get('/applicants/{user_id}/documents', [ApplicationController::class, 'viewDocuments'])->name('viewDocuments');
     
-    // Document Evaluation System (4-Stage Process)
-    Route::get('/evaluation/{user_id}', [SFAOEvaluationController::class, 'showEvaluation'])->name('evaluation.show');
-    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents', [SFAOEvaluationController::class, 'evaluateSfaoDocuments'])->name('evaluation.sfao-documents');
-    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents/evaluate', [SFAOEvaluationController::class, 'submitSfaoEvaluation'])->name('evaluation.sfao-submit');
-    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents', [SFAOEvaluationController::class, 'evaluateScholarshipDocuments'])->name('evaluation.scholarship-documents');
-    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents/evaluate', [SFAOEvaluationController::class, 'submitScholarshipEvaluation'])->name('evaluation.scholarship-submit');
-    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/final', [SFAOEvaluationController::class, 'finalEvaluation'])->name('evaluation.final');
-    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/final/submit', [SFAOEvaluationController::class, 'submitFinalEvaluation'])->name('evaluation.final-submit');
+    // Document Evaluation System
+    Route::get('/evaluation/{user_id}', [ApplicationController::class, 'showEvaluation'])->name('evaluation.show');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents', [ApplicationController::class, 'evaluateSfaoDocuments'])->name('evaluation.sfao-documents');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/sfao-documents/evaluate', [ApplicationController::class, 'submitSfaoEvaluation'])->name('evaluation.sfao-submit');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents', [ApplicationController::class, 'evaluateScholarshipDocuments'])->name('evaluation.scholarship-documents');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/scholarship-documents/evaluate', [ApplicationController::class, 'submitScholarshipEvaluation'])->name('evaluation.scholarship-submit');
+    Route::get('/evaluation/{user_id}/scholarship/{scholarship_id}/final', [ApplicationController::class, 'finalEvaluation'])->name('evaluation.final');
+    Route::post('/evaluation/{user_id}/scholarship/{scholarship_id}/final/submit', [ApplicationController::class, 'submitFinalEvaluation'])->name('evaluation.final-submit');
     
     // Application Management
-    Route::post('/applications/{id}/approve', [ApplicationManagementController::class, 'sfaoApproveApplication'])->name('applications.approve');
-    Route::post('/applications/{id}/reject', [ApplicationManagementController::class, 'sfaoRejectApplication'])->name('applications.reject');
-    Route::post('/applications/{id}/claim', [ApplicationManagementController::class, 'sfaoClaimGrant'])->name('applications.claim');
+    Route::post('/applications/{id}/approve', [ApplicationController::class, 'sfaoApproveApplication'])->name('applications.approve');
+    Route::post('/applications/{id}/reject', [ApplicationController::class, 'sfaoRejectApplication'])->name('applications.reject');
+    // Applicant Management
+    Route::get('/applicants/list', [ApplicationController::class, 'sfaoApplicantsList'])->name('applicants.list');
+    Route::get('/applicants', [ApplicationController::class, 'sfaoApplicants'])->name('applicants');
+    Route::get('/applicant/{user_id}/documents', [ApplicationController::class, 'viewDocuments'])->name('applicant.documents');
+
+    Route::post('/applications/{id}/claim', [ApplicationController::class, 'sfaoClaimGrant'])->name('applications.claim');
 
     // Scholarships Management
-    Route::post('/scholarships/store', [ScholarshipManagementController::class, 'store'])->name('scholarships.store');
-    Route::post('/scholarships/{id}/update', [ScholarshipManagementController::class, 'update'])->name('scholarships.update');
-    Route::post('/scholarships/{id}/release-grant', [ScholarshipManagementController::class, 'releaseGrant'])->name('scholarships.release-grant');
-    Route::get('/scholarships', [ScholarshipManagementController::class, 'sfaoIndex'])->name('scholarships.index');
-    Route::get('/scholarships/{id}', [ScholarshipManagementController::class, 'sfaoShow'])->name('scholarships.show');
-    Route::post('/scholars/{id}/mark-claimed', [ScholarshipManagementController::class, 'markScholarAsClaimed'])->name('scholars.mark-claimed');
+    Route::post('/scholarships/store', [ScholarshipController::class, 'store'])->name('scholarships.store');
+    Route::post('/scholarships/{id}/update', [ScholarshipController::class, 'update'])->name('scholarships.update');
     
-    // Reports Management
+    Route::post('/scholarships/{id}/release-grant', [ScholarshipController::class, 'releaseGrant'])->name('scholarships.release-grant');
+    Route::get('/scholarships', [ScholarshipController::class, 'sfaoIndex'])->name('scholarships.index');
+    Route::get('/scholarships/{id}', [ScholarshipController::class, 'show'])->name('scholarships.show');
+    Route::post('/scholars/{id}/mark-claimed', [ScholarshipController::class, 'markScholarAsClaimed'])->name('scholars.mark-claimed');
+    
+    // Reports Management (Keep original for now as it wasn't split yet)
     Route::get('/reports/create', [ReportController::class, 'createReport'])->name('reports.create');
     Route::post('/reports', [ReportController::class, 'storeReport'])->name('reports.store');
     Route::get('/reports/{id}', [ReportController::class, 'showReport'])->name('reports.show');
@@ -162,6 +168,7 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::get('/student-summary', [ReportController::class, 'studentSummary'])->name('reports.student-summary');
     Route::get('/scholar-summary', [ReportController::class, 'scholarSummary'])->name('reports.scholar-summary');
     Route::get('/grant-summary', [ReportController::class, 'grantSummary'])->name('reports.grant-summary');
+    
     // Change Password
     Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');
 });
@@ -176,33 +183,33 @@ Route::middleware(['web', 'checkUserExists:central', 'role:central'])
     ->group(function () {
 
         // Dashboard
-        Route::get('/', [ApplicationManagementController::class, 'centralDashboard'])->name('dashboard');
+        Route::get('/', [ApplicationController::class, 'centralDashboard'])->name('dashboard');
         
         // Analytics
-        Route::post('/analytics/filtered', [ApplicationManagementController::class, 'getFilteredAnalytics'])->name('analytics.filtered');
+        Route::post('/analytics/filtered', [ApplicationController::class, 'getFilteredAnalytics'])->name('analytics.filtered');
 
         // Scholarships
         Route::prefix('scholarships')->name('scholarships.')->group(function () {
-            Route::get('/create', [ScholarshipManagementController::class, 'create'])->name('create');
-            Route::post('/store', [ScholarshipManagementController::class, 'store'])->name('store');
-            Route::get('/{id}/edit', [ScholarshipManagementController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [ScholarshipManagementController::class, 'update'])->name('update');
-            Route::delete('/{id}', [ScholarshipManagementController::class, 'destroy'])->name('destroy');
+            Route::get('/create', [ScholarshipController::class, 'create'])->name('create');
+            Route::post('/store', [ScholarshipController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [ScholarshipController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [ScholarshipController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ScholarshipController::class, 'destroy'])->name('destroy');
         });
 
         
         // Application Management
-        Route::post('/applications/{id}/approve', [CentralApplicationController::class, 'approve'])->name('applications.approve');
-        Route::post('/applications/{id}/reject', [CentralApplicationController::class, 'reject'])->name('applications.reject');
-        Route::post('/applications/{id}/claim', [CentralApplicationController::class, 'claimGrant'])->name('applications.claim');
+        Route::post('/applications/{id}/approve', [ApplicationController::class, 'centralApproveApplication'])->name('applications.approve');
+        Route::post('/applications/{id}/reject', [ApplicationController::class, 'centralRejectApplication'])->name('applications.reject');
+        Route::post('/applications/{id}/claim', [ApplicationController::class, 'centralClaimGrant'])->name('applications.claim');
         
         // Staff Management
-        Route::post('/staff/invite', [UserManagementController::class, 'inviteStaff'])->name('staff.invite');
-        Route::post('/staff/{id}/deactivate', [UserManagementController::class, 'deactivateStaff'])->name('staff.deactivate');
+        Route::post('/staff/invite', [UserController::class, 'inviteStaff'])->name('staff.invite');
+        Route::post('/staff/{id}/deactivate', [UserController::class, 'deactivateStaff'])->name('staff.deactivate');
         
         // Account Settings
-        Route::post('/update-name', [UserManagementController::class, 'updateName'])->name('update-name');
-        Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');
+        Route::post('/update-name', [UserController::class, 'updateName'])->name('update-name');
+        Route::post('/change-password', [UserController::class, 'changePassword'])->name('change-password');
         
         // Reports Management
         Route::get('/reports/{id}', [ReportController::class, 'centralShowReport'])->name('reports.show');
@@ -222,12 +229,12 @@ Route::middleware(['web', 'checkUserExists:central', 'role:central'])
         });
 
         // Endorsed Applicants Validation
-        Route::get('/endorsed-applications/{application}/validate', [CentralApplicationController::class, 'showEndorsedValidation'])->name('endorsed.validate');
-        Route::post('/endorsed-applications/{application}/accept', [CentralApplicationController::class, 'acceptEndorsed'])->name('endorsed.accept');
-        Route::post('/endorsed-applications/{application}/reject', [CentralApplicationController::class, 'rejectEndorsed'])->name('endorsed.reject');
+        Route::get('/endorsed-applications/{application}/validate', [ApplicationController::class, 'showEndorsedValidation'])->name('endorsed.validate');
+        Route::post('/endorsed-applications/{application}/accept', [ApplicationController::class, 'acceptEndorsed'])->name('endorsed.accept');
+        Route::post('/endorsed-applications/{application}/reject', [ApplicationController::class, 'rejectEndorsed'])->name('endorsed.reject');
         
         // Rejected Applicants
-        Route::get('/rejected-applicants', [CentralApplicationController::class, 'viewRejectedApplicants'])->name('rejected-applicants');
+        Route::get('/rejected-applicants', [ApplicationController::class, 'viewRejectedApplicants'])->name('rejected-applicants');
     });
 
 
