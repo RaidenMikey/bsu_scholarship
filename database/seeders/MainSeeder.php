@@ -124,21 +124,14 @@ class MainSeeder extends Seeder
                 for ($i = 0; $i < $countForThisCampus; $i++) {
                     
                     // ACADEMIC YEAR LOGIC
-                    // We want to simulate data for: 
-                    // AY 2025-2026 (Current)
-                    // AY 2024-2025 (Previous)
-                    // AY 2023-2024 (Legacy)
-                    
-                    $ayYearStart = $faker->randomElement([2023, 2024]); // Removed 2025 to avoid future dates (2025-2026)
+                    $ayYearStart = $faker->randomElement([2023, 2024]);
                     $ayYearEnd = $ayYearStart + 1;
                     
-                    // Strict Range: August 1st of YearStart to May 31st of YearEnd
                     $startDate = Carbon::create($ayYearStart, 8, 1, 0, 0, 0);
                     $endDate = Carbon::create($ayYearEnd, 5, 31, 23, 59, 59);
                     
-                    // Random CreatedAt within this range
                     $createdAt = Carbon::createFromTimestamp(mt_rand($startDate->timestamp, $endDate->timestamp));
-                    $updatedAt = $createdAt->copy(); // Assume updated same time for simplicity
+                    $updatedAt = $createdAt->copy(); 
 
                     // Format: SR-00001
                     $srCode = sprintf("SR-%05d", $studentCounter);
@@ -153,13 +146,9 @@ class MainSeeder extends Seeder
                     $randomDept = $validDepartments->random();
                     $deptShortName = $randomDept->short_name;
                     
-                    // Select Random Program from DB
-                    // Query programs for this department (college)
-                    // Using Full Name as requested
                     $availablePrograms = \App\Models\Program::where('college', $deptShortName)->pluck('name')->toArray();
                     
                     if (empty($availablePrograms)) {
-                         // Fallback
                          $availablePrograms = ["Bachelor of {$deptShortName}"];
                     }
                     $program = $faker->randomElement($availablePrograms);
@@ -173,7 +162,7 @@ class MainSeeder extends Seeder
                         'password' => $password,
                         'role' => 'student',
                         'campus_id' => $campus->id,
-                        'email_verified_at' => $createdAt, // Verified at creation
+                        'email_verified_at' => $createdAt,
                         'sr_code' => $srCode,
                         'birthdate' => $now->copy()->subYears($faker->numberBetween(18, 24))->format('Y-m-d'),
                         'sex' => $gender,
@@ -223,24 +212,25 @@ class MainSeeder extends Seeder
                         'updated_at' => $updatedAt,
                     ]);
 
-                    // Assign STATUS (Random)
-                    // 0.00 - 0.15: Not Applied
-                    // 0.15 - 0.30: In Progress
-                    // 0.30 - 0.45: Pending
-                    // 0.45 - 0.55: Rejected
-                    // 0.55 - 0.75: Approved (SFAO Endorsed ONLY - Not yet a Scholar)
-                    // 0.75 - 1.00: Scholar (Central Accepted - Has Scholar Record)
+                    // Assign STATUS (Adjusted Probabilities to favor Applicants)
+                    // 0.00 - 0.10: Not Applied (10%)
+                    // 0.10 - 0.35: In Progress (25%) # Applicant
+                    // 0.35 - 0.65: Pending (30%)     # Applicant
+                    // 0.65 - 0.75: Rejected (10%)    # Applicant (Rejected)
+                    // 0.75 - 0.85: Approved (10%)    # Applicant (SFAO Endorsed)
+                    // 0.85 - 1.00: Scholar (15%)     # Scholar
                     
                     $statusRoll = $faker->randomFloat(2, 0, 1);
                     
-                    if ($statusRoll < 0.15) {
-                        continue; // Not Applied
+                    // Not Applied
+                    if ($statusRoll < 0.10) {
+                        continue; 
                     }
 
                     $scholarship = $scholarships->random();
 
                     // In Progress
-                    if ($statusRoll < 0.30) {
+                    if ($statusRoll < 0.35) {
                         Application::create([
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
@@ -253,7 +243,7 @@ class MainSeeder extends Seeder
                     }
 
                     // Pending
-                    if ($statusRoll < 0.45) {
+                    if ($statusRoll < 0.65) {
                         Application::create([
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
@@ -266,7 +256,7 @@ class MainSeeder extends Seeder
                     }
 
                     // Rejected
-                    if ($statusRoll < 0.55) {
+                    if ($statusRoll < 0.75) {
                          $app = Application::create([
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
@@ -277,13 +267,17 @@ class MainSeeder extends Seeder
                             'updated_at' => $updatedAt,
                         ]);
                         
+                        // Find a central admin to blame
+                        $centralAdmin = User::where('role', 'central')->first();
+                        $rejectedById = $centralAdmin ? $centralAdmin->id : 1;
+
                         RejectedApplicant::create([
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
                             'application_id' => $app->id,
-                            'rejected_by' => 'sfao',
-                            'rejected_by_user_id' => 1,
-                            'rejected_at' => $createdAt, // Rejected same day
+                            'rejected_by' => 'central',
+                            'rejected_by_user_id' => $rejectedById,
+                            'rejected_at' => $createdAt, 
                             'remarks' => 'Did not meet requirements.',
                             'created_at' => $createdAt,
                             'updated_at' => $updatedAt,
@@ -292,12 +286,12 @@ class MainSeeder extends Seeder
                     }
 
                     // Approved (Endorsed Only)
-                    if ($statusRoll < 0.75) {
+                    if ($statusRoll < 0.85) {
                         Application::create([
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
                             'status' => 'approved',
-                            'remarks' => $faker->randomElement(['Completes all requirements', 'SFAO Verified', 'Endorsed for approval', 'Good standing', 'Documents valid']),
+                            'remarks' => 'SFAO Endorsed - Awaiting Scholar Selection',
                             'grant_count' => 0,
                             'created_at' => $createdAt,
                             'updated_at' => $updatedAt, 
@@ -315,8 +309,8 @@ class MainSeeder extends Seeder
                         'user_id' => $student->id,
                         'scholarship_id' => $scholarship->id,
                         'status' => 'approved',
-                        'remarks' => $faker->randomElement(['Scholarship Awarded', 'Qualified for Grant', 'Excellent academic performance', 'Requirements complete']),
-                        'grant_count' => 1, // Current application is always count 1 or just the latest
+                        'remarks' => 'Scholarship Awarded',
+                        'grant_count' => 1, 
                         'created_at' => $createdAt,
                         'updated_at' => $updatedAt,
                     ]);
@@ -328,11 +322,11 @@ class MainSeeder extends Seeder
                         'scholarship_id' => $scholarship->id,
                         'application_id' => $app->id,
                         'status' => $scholarStatus,
-                        'scholarship_start_date' => $scholarType === 'new' ? $createdAt : $createdAt->copy()->subYear(), // If old, started earlier
+                        'scholarship_start_date' => $scholarType === 'new' ? $createdAt : $createdAt->copy()->subYear(),
                         'scholarship_end_date' => $scholarStatus === 'completed' ? $createdAt->copy()->addMonths(5) : null,
                         'type' => $scholarType,
                         'grant_count' => $grantCount,
-                        'total_grant_received' => $grantCount * 5000.00, // Mock amount
+                        'total_grant_received' => $grantCount * 5000.00,
                         'created_at' => $createdAt,
                         'updated_at' => $updatedAt,
                     ]);

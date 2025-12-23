@@ -9,7 +9,8 @@
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ $subtitle }}</p>
         @endisset
     </div>
-    <a href="{{ route('student.dashboard') }}" 
+    {{-- Back to Dashboard button removed as per user request --}}
+    {{-- <a href="{{ route('student.dashboard') }}" 
        id="backToDashboardLink"
        class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg border-2 border-bsu-red whitespace-nowrap
               bg-white text-bsu-red">
@@ -17,6 +18,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
         Back to Dashboard
-    </a>
+    </a> --}}
 </div>
 

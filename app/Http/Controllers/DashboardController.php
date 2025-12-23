@@ -482,8 +482,696 @@ class DashboardController extends Controller
      */
     private function centralDashboard(Request $request)
     {
-        // TODO: Migrated from CentralController
-        return view('central.analytics.index');
+        if (!session()->has('user_id') || session('role') !== 'central') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        // Create user object
+        $user = \App\Models\User::find(session('user_id'));
+
+        // Get all campuses for filter and resolving tab
+        $campuses = \App\Models\Campus::all();
+
+        // Get filtering parameters
+        $tab = $request->get('tabs', $request->get('tab', 'all_scholarships'));
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $statusFilter = $request->get('status_filter', 'all');
+        
+        // Resolve campus filter
+        // Check both 'campus_filter' (Applications/Scholars) and 'campus' (Statistics)
+        $campusFilter = $request->get('campus_filter', $request->get('campus', 'all'));
+        
+        // Override campus filter if tab implies a specific campus statistics page
+        if (str_ends_with($tab, '_statistics') && $tab !== 'all_statistics') {
+            $campusSlug = str_replace('_statistics', '', $tab);
+            foreach ($campuses as $campus) {
+                if (strtolower(str_replace(' ', '_', $campus->name)) === $campusSlug) {
+                    $campusFilter = $campus->id;
+                    break;
+                }
+            }
+        }
+
+        $scholarshipFilter = $request->get('scholarship_filter', 'all');
+
+        // Build applications query with filtering
+        $applicationsQuery = Application::with(['user', 'scholarship', 'user.campus'])
+            ->whereHas('user', function($query) {
+                $query->where('role', 'student');
+            });
+
+        // Apply status filter
+        if ($statusFilter !== 'all') {
+            $applicationsQuery->where('status', $statusFilter);
+        }
+        // If 'all' is selected, don't apply any status filter to show all statuses
+
+        // Apply campus filter
+        if ($campusFilter !== 'all') {
+            $applicationsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply scholarship filter
+        if ($scholarshipFilter !== 'all') {
+            $applicationsQuery->where('scholarship_id', $scholarshipFilter);
+        }
+
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'name':
+                $applicationsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $applicationsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.email', $sortOrder);
+                break;
+            case 'scholarship':
+                $applicationsQuery->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'status':
+                $applicationsQuery->orderBy('applications.status', $sortOrder);
+                break;
+            default:
+                $applicationsQuery->orderBy('applications.created_at', $sortOrder);
+        }
+
+        $applications = $applicationsQuery->get();
+
+        // Build scholarships query
+        $scholarshipsQuery = Scholarship::with(['conditions', 'requiredDocuments']);
+        
+        // Apply sorting to base query
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        // Clone query for different tabs
+        $queryAll = clone $scholarshipsQuery;
+        $queryPrivate = clone $scholarshipsQuery;
+        $queryGov = clone $scholarshipsQuery;
+
+        // Apply sorting
+        $queryAll = $this->sortScholarships($queryAll->get(), $sortBy, $sortOrder);
+        $queryPrivate = $this->sortScholarships($queryPrivate->where('scholarship_type', 'private')->get(), $sortBy, $sortOrder);
+        $queryGov = $this->sortScholarships($queryGov->where('scholarship_type', 'government')->get(), $sortBy, $sortOrder);
+
+        // Pagination Logic for Scholarships
+        $perPage = 5;
+
+        // All Scholarships Paginator
+        $pageAll = $request->get('page_all', 1);
+        $scholarshipsAll = new LengthAwarePaginator(
+            $queryAll->forPage($pageAll, $perPage),
+            $queryAll->count(),
+            $perPage,
+            $pageAll,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_all']
+        );
+
+        // Private Scholarships Paginator
+        $pagePrivate = $request->get('page_private', 1);
+        $scholarshipsPrivate = new LengthAwarePaginator(
+            $queryPrivate->forPage($pagePrivate, $perPage),
+            $queryPrivate->count(),
+            $perPage,
+            $pagePrivate,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_private']
+        );
+
+        // Government Scholarships Paginator
+        $pageGov = $request->get('page_gov', 1);
+        $scholarshipsGov = new LengthAwarePaginator(
+            $queryGov->forPage($pageGov, $perPage),
+            $queryGov->count(),
+            $perPage,
+            $pageGov,
+            ['path' => $request->url(), 'query' => $request->query(), 'pageName' => 'page_gov']
+        );
+        
+        // Get all reports with relationships for full functionality
+        $query = \App\Models\Report::with(['sfaoUser', 'campus', 'reviewer']);
+
+        // Apply filters if provided
+
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('report_type', $request->type);
+        }
+
+        // Apply campus filter
+        if ($request->filled('campus') && $request->campus !== 'all') {
+            $query->where('campus_id', $request->campus);
+        }
+
+        // Apply Academic Year Filter
+        $academicYearFilter = $request->get('academic_year', 'all');
+        if ($academicYearFilter !== 'all') {
+            // Parse "2023-2024" -> Start: 2023-08-01, End: 2024-07-31
+            $years = explode('-', $academicYearFilter);
+            if (count($years) === 2) {
+                $startYear = (int)$years[0];
+                $endYear = (int)$years[1];
+                $startDate = \Carbon\Carbon::createFromDate($startYear, 8, 1)->startOfDay();
+                $endDate = \Carbon\Carbon::createFromDate($endYear, 7, 31)->endOfDay();
+                
+                // Filter by report_period_start if possible, or created_at fallback
+                // Assuming report_period_start is the most accurate reflection of the report's coverage
+                $query->whereBetween('report_period_start', [$startDate, $endDate]);
+            }
+        }
+
+        // Apply sorting
+        $sortBy = $request->get('sort', 'created_at');
+        $sortOrder = $request->get('order', 'desc');
+
+        switch ($sortBy) {
+            case 'submitted_at':
+                $query->orderBy('submitted_at', $sortOrder);
+                break;
+            case 'title':
+                $query->orderBy('title', $sortOrder);
+                break;
+            case 'campus':
+                $query->join('campuses', 'reports.campus_id', '=', 'campuses.id')
+                     ->orderBy('campuses.name', $sortOrder);
+                break;
+            default:
+                $query->orderBy('created_at', $sortOrder);
+        }
+
+        // Clone query for different tabs (filters remain applied to base query)
+        $querySubmitted = clone $query;
+        $queryReviewed = clone $query;
+        $queryApproved = clone $query;
+        $queryRejected = clone $query;
+
+        // Paginate results (10 per page)
+        $reportsParams = ['status', 'type', 'campus', 'sort', 'order', 'academic_year']; // Params to append
+        
+        $reportsSubmitted = $querySubmitted->where('status', 'submitted')->paginate(10, ['*'], 'page_submitted')->appends($request->only($reportsParams));
+        $reportsReviewed = $queryReviewed->where('status', 'reviewed')->paginate(10, ['*'], 'page_reviewed')->appends($request->only($reportsParams));
+        $reportsApproved = $queryApproved->where('status', 'approved')->paginate(10, ['*'], 'page_approved')->appends($request->only($reportsParams));
+        $reportsRejected = $queryRejected->where('status', 'rejected')->paginate(10, ['*'], 'page_rejected')->appends($request->only($reportsParams));
+
+        // ...
+
+        // Generate Academic Year Options
+        // Find the oldest report to determine start range
+        $oldestReport = \App\Models\Report::orderBy('report_period_start', 'asc')->first();
+        $startYear = $oldestReport && $oldestReport->report_period_start ? $oldestReport->report_period_start->year : now()->year;
+        // If the report is from say Jan 2024, that falls in 2023-2024. If Aug 2024, 2024-2025.
+        // Simplified: Start from the year of the oldest report.
+        
+        $currentYear = now()->year;
+        $academicYearOptions = [];
+        // Generate range from startYear down to currentYear+1
+        // We go up to currentYear + 1 to cover the "next" academic year if we are in Aug-Dec
+        for ($y = $currentYear + 1; $y >= $startYear; $y--) {
+            // Academic Year: Y-1 to Y
+            $prev = $y - 1;
+            $label = "{$prev}-{$y}";
+            $academicYearOptions[] = $label;
+        }
+        $academicYearOptions = array_unique($academicYearOptions);
+
+        $totalReports = \App\Models\Report::count();
+
+        // Get report statistics for dashboard counts
+        $reportStats = [
+            'total_reports' => $totalReports,
+            'submitted_reports' => \App\Models\Report::where('status', 'submitted')->count(),
+            'reviewed_reports' => \App\Models\Report::where('status', 'reviewed')->count(),
+            'approved_reports' => \App\Models\Report::where('status', 'approved')->count(),
+            'pending_reports' => \App\Models\Report::where('status', 'submitted')->count(),
+        ];
+
+        // Generate comprehensive analytics data
+        $analytics = $this->generateAnalyticsData(['campus' => $campusFilter]);
+
+        // Get all campuses for filter (Moved to top)
+        // $campuses = \App\Models\Campus::all();
+        
+        // Get filter options for applications
+        $campusOptions = $campuses->map(function($campus) {
+            return [
+                'id' => $campus->id,
+                'name' => $campus->name
+            ];
+        })->toArray();
+        
+        $scholarshipOptions = \App\Models\Scholarship::all()->map(function($scholarship) {
+            return [
+                'id' => $scholarship->id,
+                'name' => $scholarship->scholarship_name
+            ];
+        })->toArray();
+        
+        $statusOptions = [
+            ['value' => 'in_progress', 'label' => 'In Progress'],
+            ['value' => 'approved', 'label' => 'Approved'],
+            ['value' => 'rejected', 'label' => 'Rejected'],
+            ['value' => 'pending', 'label' => 'Pending'],
+            ['value' => 'claimed', 'label' => 'Claimed'],
+            ['value' => 'all', 'label' => 'All Status']
+        ];
+        
+
+
+        // Scholars Query - Base
+        // Get scholars data for the scholars tab (students who have scholar records)
+        $scholarsQuery = \App\Models\Scholar::with(['user', 'scholarship', 'user.campus']);
+
+        // Apply filters (shared filters like campus, status, etc.)
+        // Apply campus filter for scholars
+        if ($campusFilter !== 'all') {
+            $scholarsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply scholarship filter for scholars
+        if ($scholarshipFilter !== 'all') {
+            $scholarsQuery->where('scholarship_id', $scholarshipFilter);
+        }
+
+        // Apply sorting
+        switch ($sortBy) {
+            case 'name':
+                $scholarsQuery->join('users', 'scholars.user_id', '=', 'users.id')
+                    ->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $scholarsQuery->join('users', 'scholars.user_id', '=', 'users.id')
+                    ->orderBy('users.email', $sortOrder);
+                break;
+            case 'scholarship':
+                $scholarsQuery->join('scholarships', 'scholars.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'status':
+                $scholarsQuery->orderBy('scholars.status', $sortOrder);
+                break;
+            case 'type':
+                $scholarsQuery->orderBy('scholars.type', $sortOrder);
+                break;
+            default:
+                $scholarsQuery->orderBy('scholars.created_at', $sortOrder);
+        }
+
+        // Prepare Queries for Tabs
+        $queryScholarsAll = clone $scholarsQuery;
+        $queryScholarsNew = clone $scholarsQuery;
+        $queryScholarsOld = clone $scholarsQuery;
+
+        // Apply specific filters
+        // All Scholars tab might still respect the global status filter if set
+        if ($statusFilter !== 'all') {
+             $queryScholarsAll->where('status', $statusFilter);
+             $queryScholarsNew->where('status', $statusFilter);
+             $queryScholarsOld->where('status', $statusFilter);
+        }
+
+        $queryScholarsNew->where('type', 'new');
+        $queryScholarsOld->where('type', 'old');
+
+        // Paginate
+        $scholarsAll = $queryScholarsAll->paginate(10, ['*'], 'page_scholars_all')->withQueryString();
+        $scholarsNew = $queryScholarsNew->paginate(10, ['*'], 'page_scholars_new')->withQueryString();
+        $scholarsOld = $queryScholarsOld->paginate(10, ['*'], 'page_scholars_old')->withQueryString();
+
+        // Deprecate single $scholars
+        $scholars = $scholarsAll;
+
+        // Get qualified applicants (approved by SFAO but not yet selected as scholars)
+        $qualifiedApplicantsQuery = User::with(['applications.scholarship', 'campus'])
+            ->where('role', 'student')
+            ->whereHas('applications', function($query) {
+                $query->where('status', 'approved');
+            })
+            ->whereDoesntHave('scholars'); // Not already a scholar
+
+        // Apply campus filter for qualified applicants
+        if ($campusFilter !== 'all') {
+            $qualifiedApplicantsQuery->where('campus_id', $campusFilter);
+        }
+
+        // Apply scholarship filter for qualified applicants
+        if ($scholarshipFilter !== 'all') {
+            $qualifiedApplicantsQuery->whereHas('applications', function($query) use ($scholarshipFilter) {
+                $query->where('scholarship_id', $scholarshipFilter);
+            });
+        }
+
+        // Apply sorting for qualified applicants
+        switch ($sortBy) {
+            case 'name':
+                $qualifiedApplicantsQuery->orderBy('first_name', $sortOrder);
+                break;
+            case 'campus':
+                $qualifiedApplicantsQuery->join('campuses', 'users.campus_id', '=', 'campuses.id')
+                    ->orderBy('campuses.name', $sortOrder);
+                break;
+            case 'scholarship':
+                $qualifiedApplicantsQuery->join('applications', 'users.id', '=', 'applications.user_id')
+                    ->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'date_approved':
+                $qualifiedApplicantsQuery->join('applications', 'users.id', '=', 'applications.user_id')
+                    ->orderBy('applications.updated_at', $sortOrder);
+                break;
+            default:
+                $qualifiedApplicantsQuery->orderBy('users.created_at', $sortOrder);
+        }
+
+        $qualifiedApplicants = $qualifiedApplicantsQuery->get();
+
+        // Ensure qualifiedApplicants is always a collection
+        if (!$qualifiedApplicants) {
+            $qualifiedApplicants = collect();
+        }
+
+        // Get endorsed applicants (approved by SFAO and ready for scholar selection)
+        $endorsedApplicantsQuery = Application::with(['user', 'scholarship', 'user.campus'])
+            ->where('status', 'approved')
+            ->whereDoesntHave('user.scholars'); // Not already a scholar
+
+        // Apply campus filter for endorsed applicants
+        if ($campusFilter !== 'all') {
+            $endorsedApplicantsQuery->whereHas('user', function($query) use ($campusFilter) {
+                $query->where('campus_id', $campusFilter);
+            });
+        }
+
+        // Apply scholarship filter for endorsed applicants
+        if ($scholarshipFilter !== 'all') {
+            $endorsedApplicantsQuery->where('scholarship_id', $scholarshipFilter);
+        }
+
+        // Apply sorting for endorsed applicants
+        switch ($sortBy) {
+            case 'name':
+                $endorsedApplicantsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.name', $sortOrder);
+                break;
+            case 'email':
+                $endorsedApplicantsQuery->join('users', 'applications.user_id', '=', 'users.id')
+                    ->orderBy('users.email', $sortOrder);
+                break;
+            case 'scholarship':
+                $endorsedApplicantsQuery->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+                    ->orderBy('scholarships.scholarship_name', $sortOrder);
+                break;
+            case 'status':
+                $endorsedApplicantsQuery->orderBy('applications.status', $sortOrder);
+                break;
+            default:
+                $endorsedApplicantsQuery->orderBy('applications.created_at', $sortOrder);
+        }
+
+        $endorsedApplicants = $endorsedApplicantsQuery->get();
+
+        // Ensure endorsedApplicants is always a collection
+        if (!$endorsedApplicants) {
+            $endorsedApplicants = collect();
+        }
+
+        // Get rejected applicants (rejected by Central Admin)
+        $rejectedApplicants = \App\Models\RejectedApplicant::with(['user', 'scholarship', 'rejectedByUser'])
+            ->where('rejected_by', 'central')
+            ->orderBy('rejected_at', 'desc')
+            ->get();
+
+        return view('central.analytics.index', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reportStats', 'analytics', 'reportsSubmitted', 'reportsReviewed', 'reportsApproved', 'reportsRejected', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'scholarsAll', 'scholarsNew', 'scholarsOld', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports', 'academicYearOptions', 'academicYearFilter'));
+    }
+
+    private function sortScholarships($scholarships, $sortBy, $sortOrder)
+    {
+        return $scholarships->sortBy(function($scholarship) use ($sortBy) {
+            switch ($sortBy) {
+                case 'name':
+                    return $scholarship->scholarship_name;
+                case 'type':
+                    return $scholarship->scholarship_type;
+                case 'amount':
+                    return $scholarship->grant_amount;
+                case 'deadline':
+                    return $scholarship->deadline;
+                case 'active':
+                    return $scholarship->is_active;
+                default:
+                    return $scholarship->created_at;
+            }
+        }, SORT_REGULAR, $sortOrder === 'desc');
+    }
+
+    /**
+     * Generate comprehensive analytics data for the statistics dashboard
+     */
+    private function generateAnalyticsData($filters = [])
+    {
+        // Extract filter values
+        $timePeriod = $filters['timePeriod'] ?? 'all';
+        $campusId = $filters['campus'] ?? 'all';
+        
+        // Build base query conditions
+        $applicationQuery = \App\Models\Application::query();
+        $userQuery = \App\Models\User::query();
+        $reportQuery = \App\Models\Report::query();
+        $scholarQuery = \App\Models\Scholar::query();
+        
+        // Apply time period filter
+        if ($timePeriod !== 'all') {
+            $dateCondition = $this->getDateCondition($timePeriod);
+            if ($dateCondition) {
+                $applicationQuery->whereBetween('created_at', $dateCondition);
+                $userQuery->whereBetween('created_at', $dateCondition);
+                $reportQuery->whereBetween('created_at', $dateCondition);
+                $scholarQuery->whereBetween('created_at', $dateCondition);
+            }
+        }
+        
+        
+        // Apply campus filter
+        if ($campusId !== 'all') {
+            $applicationQuery->whereHas('user', function($query) use ($campusId) {
+                $query->where('campus_id', $campusId);
+            });
+            $userQuery->where('campus_id', $campusId);
+            $reportQuery->where('campus_id', $campusId);
+            $scholarQuery->whereHas('user', function($query) use ($campusId) {
+                $query->where('campus_id', $campusId);
+            });
+        }
+        
+        // Get basic report statistics
+        $totalReports = $reportQuery->count();
+        $submittedReports = $reportQuery->where('status', 'submitted')->count();
+        $approvedReports = $reportQuery->where('status', 'approved')->count();
+        $rejectedReports = $reportQuery->where('status', 'rejected')->count();
+        $draftReports = $reportQuery->where('status', 'draft')->count();
+        $pendingReviews = $reportQuery->where('status', 'submitted')->count();
+
+        // Get comprehensive application statistics
+        $totalApplications = $applicationQuery->count();
+        $approvedApplications = (clone $applicationQuery)->where('status', 'approved')->count();
+        $rejectedApplications = (clone $applicationQuery)->where('status', 'rejected')->count();
+        $pendingApplications = (clone $applicationQuery)->where('status', 'pending')->count();
+        $claimedApplications = (clone $applicationQuery)->where('status', 'claimed')->count();
+
+        // Get scholarship statistics
+        $totalScholarships = \App\Models\Scholarship::count();
+        $activeScholarships = \App\Models\Scholarship::where('is_active', true)->count();
+        $acceptingApplicationsScholarships = \App\Models\Scholarship::acceptingApplications()->count();
+        $oneTimeScholarships = \App\Models\Scholarship::where('grant_type', 'one_time')->count();
+        $recurringScholarships = \App\Models\Scholarship::where('grant_type', 'recurring')->count();
+        
+        // Get scholar statistics
+        $totalScholars = $scholarQuery->count();
+        $activeScholars = (clone $scholarQuery)->where('status', 'active')->count();
+        $graduatedScholars = (clone $scholarQuery)->where('status', 'graduated')->count();
+        $droppedScholars = (clone $scholarQuery)->where('status', 'dropped')->count();
+
+        // Get user statistics
+        $totalStudents = $userQuery->where('role', 'student')->count();
+        $registeredToday = (clone $userQuery)->whereDate('created_at', today())->count();
+
+        // Campus Distribution
+        $campusDistribution = \App\Models\Campus::withCount(['users' => function($query) use ($timePeriod) {
+            $query->where('role', 'student');
+            if ($timePeriod !== 'all') {
+                $dateCondition = $this->getDateCondition($timePeriod);
+                if ($dateCondition) $query->whereBetween('created_at', $dateCondition);
+            }
+        }])->get()->map(function($campus) {
+             return [
+                 'name' => $campus->name,
+                 'count' => $campus->users_count
+             ];
+        });
+
+        // Application Status Trends (Monthly for current year)
+        $monthlyApplications = \App\Models\Application::selectRaw('MONTH(created_at) as month, count(*) as count')
+            ->whereYear('created_at', date('Y'))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+            
+        $months = [];
+        $applicationTrends = [];
+        for ($i=1; $i<=12; $i++) {
+            $months[] = date('M', mktime(0, 0, 0, $i, 1));
+            $applicationTrends[] = $monthlyApplications[$i] ?? 0;
+        }
+
+        // ...
+        
+        // Calculate Detailed Campus Stats First
+        $campusStats = \App\Models\Campus::all()->map(function($campus) use ($timePeriod) {
+            $dateCondition = $timePeriod !== 'all' ? $this->getDateCondition($timePeriod) : null;
+            
+            $studentQuery = $campus->users()->where('role', 'student');
+            if($dateCondition) $studentQuery->whereBetween('created_at', $dateCondition);
+            $totalStudents = $studentQuery->count();
+
+            $maleStudents = (clone $studentQuery)->where('sex', 'Male')->count();
+            $femaleStudents = (clone $studentQuery)->where('sex', 'Female')->count();
+
+            $scholarQuery = \App\Models\Scholar::whereHas('user', function($q) use ($campus) {
+                $q->where('campus_id', $campus->id);
+            });
+            if($dateCondition) $scholarQuery->whereBetween('created_at', $dateCondition);
+            
+            $newScholars = (clone $scholarQuery)->where('type', 'new')->count();
+            $oldScholars = (clone $scholarQuery)->where('type', 'old')->count();
+            
+             $scholarshipScholarStats = $campus->scholars()
+                ->with('scholarship')
+                ->get()
+                ->groupBy('scholarship_id')
+                ->map(function ($scholars) {
+                    $scholarship = $scholars->first()->scholarship;
+                    return [
+                        'name' => $scholarship->scholarship_name ?? 'Unknown',
+                        'total' => $scholars->count(),
+                        'new' => $scholars->where('type', 'new')->count(),
+                        'old' => $scholars->where('type', 'old')->count()
+                    ];
+                })->values();
+
+            return [
+                'campus_id' => $campus->id,
+                'campus_name' => $campus->name,
+                'total_students' => $totalStudents,
+                'male_students' => $maleStudents,
+                'female_students' => $femaleStudents,
+                'new_scholars' => $newScholars,
+                'old_scholars' => $oldScholars,
+                'scholarship_scholar_stats' => $scholarshipScholarStats
+            ];
+        })->values();
+
+        // Aggregate Global Stats from Campus Stats
+        $globalMaleStudents = $campusStats->sum('male_students');
+        $globalFemaleStudents = $campusStats->sum('female_students');
+        $globalNewScholars = $campusStats->sum('new_scholars');
+        $globalOldScholars = $campusStats->sum('old_scholars');
+        
+        // Aggregate Scholarship Stats across all campuses
+        $globalScholarshipStats = collect();
+        foreach ($campusStats as $stat) {
+            foreach ($stat['scholarship_scholar_stats'] as $sStat) {
+                if (!$globalScholarshipStats->has($sStat['name'])) {
+                    $globalScholarshipStats->put($sStat['name'], [
+                        'name' => $sStat['name'], 
+                        'total' => 0, 
+                        'new' => 0, 
+                        'old' => 0
+                    ]);
+                }
+                $current = $globalScholarshipStats->get($sStat['name']);
+                $current['total'] += $sStat['total'];
+                $current['new'] += $sStat['new'];
+                $current['old'] += $sStat['old'];
+                $globalScholarshipStats->put($sStat['name'], $current);
+            }
+        }
+
+        return [
+            'reports' => [
+                'total' => $totalReports,
+                'submitted' => $submittedReports,
+                'approved' => $approvedReports,
+                'rejected' => $rejectedReports,
+                'draft' => $draftReports,
+                'pending_review' => $pendingReviews
+            ],
+            'applications' => [
+                'total' => $totalApplications,
+                'approved' => $approvedApplications,
+                'rejected' => $rejectedApplications,
+                'pending' => $pendingApplications,
+                'claimed' => $claimedApplications,
+                'monthly_trends' => [
+                    'labels' => $months,
+                    'data' => $applicationTrends
+                ]
+            ],
+            'scholarships' => [
+                'total' => $totalScholarships,
+                'active' => $activeScholarships,
+                'accepting' => $acceptingApplicationsScholarships,
+                'one_time' => $oneTimeScholarships,
+                'recurring' => $recurringScholarships
+            ],
+            'scholars' => [
+                'total' => $totalScholars,
+                'active' => $activeScholars,
+                'graduated' => $graduatedScholars,
+                'dropped' => $droppedScholars
+            ],
+            'users' => [
+                'total_students' => $totalStudents,
+                'registered_today' => $registeredToday,
+                'campus_distribution' => $campusDistribution
+            ],
+            'campus_names' => $campusStats->pluck('campus_name')->toArray(),
+            'campus_application_stats' => $campusStats->toArray(),
+            
+            /* Global Flattened Stats for "All" View */
+            'total_students' => $totalStudents, // from userQuery
+            'male_students' => $globalMaleStudents,
+            'female_students' => $globalFemaleStudents,
+            'new_scholars' => $globalNewScholars,
+            'old_scholars' => $globalOldScholars,
+            'scholarship_scholar_stats' => $globalScholarshipStats->values()->toArray(),
+        ];
+    }
+
+    private function getDateCondition($period)
+    {
+        switch ($period) {
+            case 'today':
+                return [now()->startOfDay(), now()->endOfDay()];
+            case 'week':
+                return [now()->startOfWeek(), now()->endOfWeek()];
+            case 'month':
+                return [now()->startOfMonth(), now()->endOfMonth()];
+            case 'year':
+                return [now()->startOfYear(), now()->endOfYear()];
+            case 'last_7_days':
+                return [now()->subDays(7)->startOfDay(), now()->endOfDay()];
+            case 'last_30_days':
+                return [now()->subDays(30)->startOfDay(), now()->endOfDay()];
+            default:
+                return null;
+        }
     }
 
     /**

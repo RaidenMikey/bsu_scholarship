@@ -162,7 +162,9 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     Route::post('/submit-application', [FormController::class, 'submit'])->name('submit');
     
     // Applications
-    Route::get('/applications', [ApplicationController::class, 'studentApplications'])->name('applications');
+    Route::get('/applications', function() {
+        return redirect()->route('student.dashboard', ['tab' => 'applied_scholarships']);
+    })->name('applications');
     Route::post('/apply', [ApplicationController::class, 'apply'])->name('apply.post');
     Route::post('/withdraw', [ApplicationController::class, 'withdraw'])->name('withdraw');
     
@@ -269,8 +271,8 @@ Route::middleware(['web', 'checkUserExists:central', 'role:central'])
     ->name('central.')
     ->group(function () {
 
-        // Dashboard
-        Route::get('/', [ApplicationController::class, 'centralDashboard'])->name('dashboard');
+    // Dashboard (Unified)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         
         // Analytics
         Route::post('/analytics/filtered', [ApplicationController::class, 'getFilteredAnalytics'])->name('analytics.filtered');
