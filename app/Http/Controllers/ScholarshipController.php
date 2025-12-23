@@ -59,7 +59,8 @@ class ScholarshipController extends Controller
         }
 
         $departments = \App\Models\Department::orderBy('short_name')->pluck('short_name');
-        return view('central.scholarships.create', compact('departments'));
+        $campuses = \App\Models\Campus::orderBy('name')->get();
+        return view('central.scholarships.create', compact('departments', 'campuses'));
     }
 
     /**
@@ -172,8 +173,9 @@ class ScholarshipController extends Controller
             ]);
             
             $departments = \App\Models\Department::orderBy('short_name')->pluck('short_name');
+            $campuses = \App\Models\Campus::orderBy('name')->get();
             
-            return view('central.scholarships.create', compact('scholarship', 'departments'));
+            return view('central.scholarships.create', compact('scholarship', 'departments', 'campuses'));
             
         } catch (\Exception $e) {
             Log::error('Error accessing scholarship edit form:', [
@@ -235,6 +237,7 @@ class ScholarshipController extends Controller
             'description'      => $request->description,
             'submission_deadline' => $request->submission_deadline,
             'application_start_date' => $request->application_start_date,
+            'campus_id'        => $request->campus_id ?: null,
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
             'renewal_allowed'  => $renewalAllowed,

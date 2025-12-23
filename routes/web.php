@@ -57,6 +57,20 @@ Route::get('/dev/migrate-fresh-seed', function() {
     }
 });
 
+// TEMPORARY: View Logs
+Route::get('/dev/logs', function() {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) return "No log file found.";
+    
+    $content = file_get_contents($path);
+    // Get last 20000 chars roughly
+    if (strlen($content) > 20000) {
+        $content = substr($content, -20000);
+    }
+    
+    return "<h1>Last Log Entries</h1><pre>" . htmlspecialchars($content) . "</pre>";
+});
+
 // --------------------------------------------------
 // PUBLIC ROUTES
 // --------------------------------------------------

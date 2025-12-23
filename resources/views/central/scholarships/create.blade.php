@@ -158,17 +158,19 @@
                             <select id="campus_id" name="campus_id" required
                                     class="w-full rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-green-600 dark:focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:focus:ring-green-500/20 transition-all duration-200 px-4 py-3">
                                 <option value="">All Campuses</option>
-                                <option value="1" {{ old('campus_id', $scholarship->campus_id ?? '') == '1' ? 'selected' : '' }}>Main Campus</option>
-                                <option value="2" {{ old('campus_id', $scholarship->campus_id ?? '') == '2' ? 'selected' : '' }}>Alangilan Campus</option>
-                                <option value="3" {{ old('campus_id', $scholarship->campus_id ?? '') == '3' ? 'selected' : '' }}>Pablo Borbon Campus</option>
-                                <option value="4" {{ old('campus_id', $scholarship->campus_id ?? '') == '4' ? 'selected' : '' }}>Lipa Campus</option>
-                                <option value="5" {{ old('campus_id', $scholarship->campus_id ?? '') == '5' ? 'selected' : '' }}>Nasugbu Campus</option>
-                                <option value="6" {{ old('campus_id', $scholarship->campus_id ?? '') == '6' ? 'selected' : '' }}>Balayan Campus</option>
-                                <option value="7" {{ old('campus_id', $scholarship->campus_id ?? '') == '7' ? 'selected' : '' }}>Mabini Campus</option>
-                                <option value="8" {{ old('campus_id', $scholarship->campus_id ?? '') == '8' ? 'selected' : '' }}>Lemery Campus</option>
-                                <option value="9" {{ old('campus_id', $scholarship->campus_id ?? '') == '9' ? 'selected' : '' }}>San Juan Campus</option>
-                                <option value="10" {{ old('campus_id', $scholarship->campus_id ?? '') == '10' ? 'selected' : '' }}>Rosario Campus</option>
-                                <option value="11" {{ old('campus_id', $scholarship->campus_id ?? '') == '11' ? 'selected' : '' }}>Lobo Campus</option>
+                                @if(isset($campuses) && count($campuses) > 0)
+                                    @foreach($campuses as $campus)
+                                        <option value="{{ $campus->id }}" {{ old('campus_id', $scholarship->campus_id ?? '') == $campus->id ? 'selected' : '' }}>
+                                            {{ $campus->name }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    {{-- Fallback if no campuses passed or empty --}}
+                                    <option value="1" {{ old('campus_id', $scholarship->campus_id ?? '') == '1' ? 'selected' : '' }}>Main Campus</option>
+                                    <option value="2" {{ old('campus_id', $scholarship->campus_id ?? '') == '2' ? 'selected' : '' }}>Alangilan Campus</option>
+                                    <option value="3" {{ old('campus_id', $scholarship->campus_id ?? '') == '3' ? 'selected' : '' }}>Pablo Borbon Campus</option>
+                                    <option value="5" {{ old('campus_id', $scholarship->campus_id ?? '') == '5' ? 'selected' : '' }}>Nasugbu Campus</option>
+                                @endif
                             </select>
                             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Select a specific campus or leave as "All Campuses" to make this scholarship available university-wide.</p>
                         </div>

@@ -89,12 +89,13 @@ class NotificationService
                 ]
             ]);
 
-            // Send Email Notification
+            // Send Email Notification (DRY RUN MODE)
             if ($student->email) {
                 try {
-                    Mail::to($student->email)->send(new NewScholarshipAnnouncement($scholarship));
+                    Log::info("DRY RUN: Targeted for email: " . $student->email . " [Campus: " . $student->campus_id . "]");
+                    // Mail::to($student->email)->send(new NewScholarshipAnnouncement($scholarship));
                 } catch (\Exception $e) {
-                    Log::error('Failed to send scholarship announcement email to ' . $student->email . ': ' . $e->getMessage());
+                    Log::error('Failed to log email target: ' . $e->getMessage());
                 }
             }
         }
