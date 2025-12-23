@@ -2656,4 +2656,37 @@ class ApplicationController extends Controller
 
         return view('central.partials.tabs.rejected-applicants', compact('rejectedApplicants'));
     }
+    /**
+     * Submit Scholarship Specific documents evaluation - Stage 3
+     */
+    public function submitScholarshipEvaluation(Request $request, $userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $request->validate([
+            'evaluations' => 'required|array',
+            'evaluations.*.document_id' => 'required|exists:student_submitted_documents,id',
+            'evaluations.*.status' => 'required|in:approved,pending,rejected',
+        ]);
+
+        $evaluatorId = session('user_id');
+        $evaluatedAt = now();
+
+        foreach ($request->evaluations as $evaluation) {
+            StudentSubmittedDocument::where('id', $evaluation['document_id'])
+                ->where('user_id', $userId)
+                ->where('scholarship_id', $scholarshipId)
+                ->update([
+                    'evaluation_status' => $evaluation['status'],
+                    'evaluated_by' => $evaluatorId,
+                    'evaluated_at' => $evaluatedAt,
+                ]);
+        }
+
+        return redirect()->route('sfao.evaluation.final', ['user_id' => $userId, 'scholarship_id' => $scholarshipId])
+            ->with('success', 'Scholarship documents evaluation completed. Proceeding to final review.');
+    }
+
 }

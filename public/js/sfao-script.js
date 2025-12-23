@@ -511,25 +511,34 @@ window.sfaoStatisticsTab = function (config = {}) {
             return `Scholarship Status (${name} - Departments)`;
         },
 
-        createAllCharts() {
+        createAllCharts(retryCount = 0) {
 
             if (typeof Chart === 'undefined') {
+                if (retryCount > 20) {
+                    console.warn('Chart.js failed to load after multiple retries.');
+                    return;
+                }
                 console.error('Chart.js not loaded yet. Retrying in 500ms...');
-                setTimeout(() => this.createAllCharts(), 500);
+                setTimeout(() => this.createAllCharts(retryCount + 1), 500);
                 return;
             }
             const ctx = document.getElementById('sfaoDepartmentChart');
             if (!ctx) {
+                if (retryCount > 10) return; // Stop silently if element doesn't exist (maybe different tab)
                 console.error('Canvas sfaoDepartmentChart not found in DOM');
                 // Retry in case DOM insertion is slow or x-show transition is still running logic
-                setTimeout(() => this.createAllCharts(), 500);
+                setTimeout(() => this.createAllCharts(retryCount + 1), 500);
                 return;
             }
 
             // CHECK if canvas is visible or has dimensions
             if (ctx.clientWidth === 0 || ctx.clientHeight === 0) {
-                console.warn('Canvas found but has 0 dimensions (hidden?). Retrying in 200ms...');
-                setTimeout(() => this.createAllCharts(), 200);
+                if (retryCount > 10) {
+                    console.warn('Canvas found but remains hidden (0 dimensions). Stopping retries.');
+                    return;
+                }
+                // console.warn('Canvas found but has 0 dimensions (hidden?). Retrying in 200ms...');
+                setTimeout(() => this.createAllCharts(retryCount + 1), 200);
                 return;
             }
 

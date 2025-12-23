@@ -36,10 +36,16 @@ class GrantSlipMail extends Mailable implements ShouldQueue
      */
     public function build()
     {
-        return $this->markdown('emails.grant-slip')
-                    ->subject('Grant Release Notification - ' . $this->scholarship->scholarship_name)
-                    ->attachData($this->pdf, 'Grant_Slip_' . $this->scholarship->scholarship_name . '.pdf', [
-                        'mime' => 'application/pdf',
-                    ]);
+        $mail = $this->markdown('emails.grant-slip')
+                    ->subject('Grant Release Notification - ' . $this->scholarship->scholarship_name);
+        
+        // Only attach PDF if it exists
+        if ($this->pdf) {
+            $mail->attachData($this->pdf, 'Grant_Slip_' . $this->scholarship->scholarship_name . '.pdf', [
+                'mime' => 'application/pdf',
+            ]);
+        }
+        
+        return $mail;
     }
 }

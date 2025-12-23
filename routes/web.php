@@ -71,6 +71,14 @@ Route::get('/dev/logs', function() {
     return "<h1>Last Log Entries</h1><pre>" . htmlspecialchars($content) . "</pre>";
 });
 
+// TEMPORARY: Scholar Debug
+Route::get('/dev/scholar-debug', function() {
+    if (!session()->has('user_id') || session('role') !== 'sfao') {
+        return redirect('/login');
+    }
+    return view('dev.scholar-debug');
+});
+
 // --------------------------------------------------
 // PUBLIC ROUTES
 // --------------------------------------------------

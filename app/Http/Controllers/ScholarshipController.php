@@ -337,19 +337,42 @@ class ScholarshipController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $request->validate([
-            'release_date' => 'required|date',
-            'location' => 'required|string',
-            'instructions' => 'required|string',
-        ]);
+        // Direct Release - No input form
+        // $request->validate([
+        //     'release_date' => 'required|date',
+        //     'location' => 'required|string',
+        //     'instructions' => 'required|string',
+        // ]);
 
         $scholarship = Scholarship::findOrFail($id);
-        $details = $request->only(['release_date', 'location', 'instructions']);
+        
+        // Set defaults for PDF generation
+        $details = [
+            'release_date' => now()->toDateString(),
+            'location' => 'SFAO Office / Check Portal',
+            'instructions' => 'Please present this slip or your ID to the scholarship office.'
+        ];
         
         $user = User::with('campus')->find(session('user_id'));
         $sfaoCampus = $user->campus;
         $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
         
+        Log::info("SFAO Grant Release Debug", [
+            'sfao_user_id' => $user->id,
+            'sfao_campus' => $sfaoCampus->name ?? 'None',
+            'managed_campus_ids' => $campusIds->toArray(),
+            'target_scholarship_id' => $id
+        ]);
+
+        // Debug: Count ALL scholars for this scholarship
+        $totalScholars = \App\Models\Scholar::where('scholarship_id', $id)->count();
+        $activeScholars = \App\Models\Scholar::where('scholarship_id', $id)->where('status', 'active')->count();
+
+        Log::info("Scholar Counts", [
+            'total_in_scholarship' => $totalScholars,
+            'active_in_scholarship' => $activeScholars
+        ]);
+
         // Get active scholars under this scholarship belonging to SFAO's campuses
         $scholars = \App\Models\Scholar::where('scholarship_id', $id)
             ->where('status', 'active')
@@ -358,25 +381,31 @@ class ScholarshipController extends Controller
             })
             ->with('user')
             ->get();
+
+        Log::info("Scholars targeted (after campus filter)", ['count' => $scholars->count()]);
             
         if ($scholars->isEmpty()) {
-            return back()->with('error', 'No active scholars found for this scholarship in your campus.');
+            return back()->with('error', "No active scholars found in your campus. Total in Scholarship: $totalScholars (Active: $activeScholars). Check Logs.");
         }
 
         $count = 0;
         foreach ($scholars as $scholar) {
             try {
-                // Generate PDF
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.grant-slip', [
-                    'scholar' => $scholar,
-                    'scholarship' => $scholarship,
-                    'details' => $details
-                ])->output();
+                // Skip PDF generation (causes "Cannot resolve public path" error on some servers)
+                // Send email without PDF attachment
+                $pdf = null; // Placeholder for compatibility
                 
                 // Send Email
                 if ($scholar->user && $scholar->user->email) {
                     Mail::to($scholar->user->email)->send(new \App\Mail\GrantSlipMail($scholar, $scholarship, $pdf, $details));
+                    Log::info("Grant Slip Email sent to: " . $scholar->user->email . " [Scholar ID: " . $scholar->id . "]");
                     $count++;
+                } else {
+                    Log::warning("Skipping scholar {$scholar->id}: User or Email missing.", [
+                       'user_id' => $scholar->user_id,
+                       'has_user' => (bool)$scholar->user,
+                       'email' => $scholar->user->email ?? 'N/A'
+                   ]);
                 }
             } catch (\Exception $e) {
                 Log::error('Failed to release grant for scholar ' . $scholar->id . ': ' . $e->getMessage());

@@ -22,7 +22,7 @@
                 ])
             </div>
             @include('sfao.components.modals.scholarship-details', ['scholarship' => $scholarship])
-            @include('sfao.components.modals.release-grant', ['scholarship' => $scholarship])
+
         </div>
     @endforeach
 
