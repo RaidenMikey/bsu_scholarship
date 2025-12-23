@@ -1,5 +1,6 @@
 @php
   use Illuminate\Support\Facades\Session;
+  use Illuminate\Support\Str;
   use App\Models\User;
 
   // Redirect to login if session has ended or role mismatch (Handled by middleware usually, but keeping safe)
@@ -31,7 +32,9 @@
     <div x-data='sfaoDashboardState({ 
         defaultStatsCampus: @json($defaultStatsCampus), 
         userId: @json($user->id), 
-        activeTab: @json($activeTab ?? "statistics") 
+        userRole: @json(session("role")),
+        campusList: @json($allCampuses->map(fn($c) => ["id" => $c->id, "name" => $c->name, "slug" => Str::slug($c->name)])),
+        activeTab: @json($activeTab ?? "analytics") 
     })'>
 
         <!-- Toasts -->
@@ -57,7 +60,7 @@
       title="SFAO Dashboard" 
       :user="$user" 
       :settings="true" 
-      :settings-click="'$dispatch(\'switch-tab\', \'account_settings\')'"
+      :settings-click="'$dispatch(\'switch-tab\', \'account\')'"
       :logout="true" 
   />
 @endsection

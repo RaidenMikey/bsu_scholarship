@@ -13,6 +13,7 @@ class GrantSlipMail extends Mailable implements ShouldQueue
 
     public $scholar;
     public $scholarship;
+    public $details;
     protected $pdf;
 
     /**
@@ -20,11 +21,12 @@ class GrantSlipMail extends Mailable implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($scholar, $scholarship, $pdf)
+    public function __construct($scholar, $scholarship, $pdf, $details)
     {
         $this->scholar = $scholar;
         $this->scholarship = $scholarship;
         $this->pdf = $pdf;
+        $this->details = $details;
     }
 
     /**

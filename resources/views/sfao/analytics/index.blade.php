@@ -1,4 +1,4 @@
-<div x-show="tab === 'statistics'" 
+<div x-show="tab === 'analytics'" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0 transform scale-95"
      x-transition:enter-end="opacity-100 transform scale-100"
@@ -7,30 +7,21 @@
      @tab-changed.window="handleTabChange($event.detail)">
     <div class="space-y-6">
         <!-- Header Section -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white" x-text="getStatisticsHeader()">All Statistics</h2>
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Insights into scholarship applications and student performance for {{ $sfaoCampus->name }} and its extensions.
-                </p>
-            </div>
-        </div>
+        <!-- Header Section Removed -->
 
         <!-- Filter Controls -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
             <div class="flex flex-wrap gap-4 items-end">
                 
-                <!-- Scholarship Filter (Replaces Global Department Filter) -->
+                <!-- Student Type Filter (Global) -->
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Scholarship</label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Student Type</label>
                     <div class="relative">
-                        <select x-model="filters.scholarship" 
+                        <select x-model="viewMode" @change="updateCharts()" 
                                 class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
                                 style="border-width: 1px;">
-                            <option value="all">All Scholarships</option>
-                            <template x-for="scholarship in analyticsData.available_scholarships" :key="scholarship.id">
-                                <option :value="scholarship.id" x-text="scholarship.scholarship_name"></option>
-                            </template>
+                            <option value="applicants">Applicants</option>
+                            <option value="scholars">Scholars</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
                              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -38,59 +29,11 @@
                     </div>
                 </div>
 
-                <!-- Time Period Filter -->
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Time Period</label>
-                    <div class="relative">
-                        <select x-model="filters.timePeriod" 
-                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
-                                style="border-width: 1px;">
-                            <option value="all">All Time</option>
-                            <option value="this_month">This Month</option>
-                            <option value="last_3_months">Last 3 Months</option>
-                            <option value="this_year">This Year</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
-                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <!-- Reset Filters Icon -->
-                <div class="flex flex-col items-center">
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Clear</label>
-                    <button @click="clearFilters()" 
-                            class="inline-flex items-center justify-center p-2 border border-red-500 rounded-full shadow-sm text-gray-500 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-400 dark:border-red-500 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition ease-in-out duration-150 h-[38px] w-[38px]"
-                            title="Reset Filters">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Analytics Charts Section -->
-        
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
-            <!-- Header Section (Centered) -->
-            <div class="text-center mb-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Scholarship Status</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Application status distribution by department and programs.</p>
-            </div>
-
-            <!-- Dedicated Local Filters (Full Width, Evenly Sized, Horizontal) -->
-            <div class="flex flex-wrap w-full gap-4 items-end mb-6">
-                
-                <!-- Department Filter -->
+                <!-- Department Filter (Global) -->
                 <div class="flex-1 min-w-[200px]">
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Department</label>
                     <div class="relative">
                         <select x-model="localFilters.department" 
-                                @change="updateProgramList()"
                                 class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
                                 style="border-width: 1px;">
                             <option value="all">All</option>
@@ -104,13 +47,13 @@
                     </div>
                 </div>
 
-                <!-- Program Filter -->
+                <!-- Program Filter (Global) -->
                 <div class="flex-1 min-w-[200px]">
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Program</label>
                     <div class="relative">
-                        <select x-model="localFilters.program" 
-                                :disabled="localFilters.department === 'all'"
-                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    <select x-model="localFilters.program" 
+                                :key="localFilters.department"
+                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
                                 style="border-width: 1px;">
                             <option value="all">All</option>
                             <template x-for="prog in availablePrograms" :key="prog">
@@ -123,15 +66,17 @@
                     </div>
                 </div>
 
-                <!-- Student Type Filter -->
+                <!-- Time Period Filter -->
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Student Type</label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Academic Year</label>
                     <div class="relative">
-                        <select x-model="viewMode" @change="createDepartmentChart()" 
+                        <select x-model="filters.timePeriod" 
                                 class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
                                 style="border-width: 1px;">
-                            <option value="applicants">Applicants</option>
-                            <option value="scholars">Scholars</option>
+                            <option value="all">All Time</option>
+                            <template x-for="ay in academicYearOptions" :key="ay">
+                                <option :value="ay" x-text="ay"></option>
+                            </template>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
                              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -139,18 +84,130 @@
                     </div>
                 </div>
 
-                <!-- Clear Button -->
-                <div class="flex-none flex flex-col items-center">
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Clear</label>
-                    <button @click="clearLocalFilters()" 
-                            class="inline-flex items-center justify-center p-2 border border-red-500 rounded-full shadow-sm text-gray-500 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-400 dark:border-red-500 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red transition ease-in-out duration-150 h-[38px] w-[38px]"
-                            title="Reset Local Filters">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
+
+
+                <!-- Reset Filters Icon -->
+
+
+            </div>
+            
+            <!-- Global Legend Buttons (Row 2) -->
+            <div class="mt-4 flex flex-wrap justify-between gap-4 w-full">
+                 <!-- Applicants Mode Legend -->
+                <template x-if="viewMode === 'applicants'">
+                    <div class="flex flex-wrap justify-between w-full gap-2">
+                        <!-- Approved -->
+                         <button @click="chartLegend.approved = !chartLegend.approved"
+                                :class="chartLegend.approved ? 'bg-green-500 text-white ring-2 ring-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200'"
+                                class="flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center justify-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full mr-2 bg-white" x-show="chartLegend.approved"></span>
+                                Approved
+                        </button>
+                        <!-- Rejected -->
+                        <button @click="chartLegend.rejected = !chartLegend.rejected"
+                                :class="chartLegend.rejected ? 'bg-red-500 text-white ring-2 ring-red-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200'"
+                                class="flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center justify-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full mr-2 bg-white" x-show="chartLegend.rejected"></span>
+                                Rejected
+                        </button>
+                        <!-- Pending -->
+                         <button @click="chartLegend.pending = !chartLegend.pending"
+                                :class="chartLegend.pending ? 'bg-yellow-500 text-white ring-2 ring-yellow-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200'"
+                                class="flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center justify-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full mr-2 bg-white" x-show="chartLegend.pending"></span>
+                                Pending
+                        </button>
+                        <!-- In Progress -->
+                        <button @click="chartLegend.inProgress = !chartLegend.inProgress"
+                                :class="chartLegend.inProgress ? 'bg-blue-500 text-white ring-2 ring-blue-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200'"
+                                class="flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center justify-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full mr-2 bg-white" x-show="chartLegend.inProgress"></span>
+                                In Progress
+                        </button>
+                    </div>
+                </template>
+
+                 <!-- Scholars Mode Legend -->
+                 <template x-if="viewMode === 'scholars'">
+                    <div class="flex flex-wrap justify-between w-full gap-2">
+                        <!-- Old Scholars -->
+                        <button @click="chartLegend.oldScholars = !chartLegend.oldScholars"
+                                :class="chartLegend.oldScholars ? 'bg-green-500 text-white ring-2 ring-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200'"
+                                class="flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center justify-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full mr-2 bg-white" x-show="chartLegend.oldScholars"></span>
+                                Old Scholars
+                        </button>
+                        <!-- New Scholars -->
+                        <button @click="chartLegend.newScholars = !chartLegend.newScholars"
+                                :class="chartLegend.newScholars ? 'bg-blue-500 text-white ring-2 ring-blue-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200'"
+                                class="flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center justify-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full mr-2 bg-white" x-show="chartLegend.newScholars"></span>
+                                New Scholars
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Analytics Charts Section -->
+        
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mt-6">
+            <!-- Header Section (Centered) -->
+            <div class="text-center mb-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white" x-text="getChartTitle()">Scholarship Status</h3>
+            </div>
+
+
+            <!-- Filters Section within Card -->
+            <div class="flex flex-wrap items-end gap-4 mb-6 justify-center">
+                 <!-- Scholarship Filter (Local) -->
+                 <div class="flex-1 min-w-[300px] max-w-lg">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Scholarship</label>
+                    <div class="relative">
+                        <select x-model="filters.scholarship" 
+                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
+                                style="border-width: 1px;">
+                            <option value="all">All Scholarships</option>
+                            <template x-for="scholarship in analyticsData.available_scholarships" :key="scholarship.id">
+                                <option :value="String(scholarship.id)" x-text="scholarship.scholarship_name"></option>
+                            </template>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
                 </div>
 
+
+            </div>
+
+            <!-- Dynamic Summary Counts -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                 <!-- Total -->
+                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center border border-gray-100 dark:border-gray-600">
+                     <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Total</p>
+                     <p class="text-xl font-bold text-gray-900 dark:text-white" x-text="filteredData.counts?.total || 0"></p>
+                 </div>
+                 <!-- Approved -->
+                 <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center border border-green-100 dark:border-green-800">
+                     <p class="text-xs font-semibold text-green-600 dark:text-green-400 uppercase">Approved</p>
+                     <p class="text-xl font-bold text-green-700 dark:text-green-300" x-text="filteredData.counts?.approved || 0"></p>
+                 </div>
+                 <!-- Rejected -->
+                 <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 text-center border border-red-100 dark:border-red-800">
+                     <p class="text-xs font-semibold text-red-600 dark:text-red-400 uppercase">Rejected</p>
+                     <p class="text-xl font-bold text-red-700 dark:text-red-300" x-text="filteredData.counts?.rejected || 0"></p>
+                 </div>
+                 <!-- Active / Pending -->
+                 <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 text-center border border-yellow-100 dark:border-yellow-800">
+                     <p class="text-xs font-semibold text-yellow-600 dark:text-yellow-400 uppercase">Pending/In Progress</p>
+                     <p class="text-xl font-bold text-yellow-700 dark:text-yellow-300" x-text="filteredData.counts?.active || 0"></p>
+                 </div>
+                 <!-- Rate -->
+                 <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center border border-blue-100 dark:border-blue-800">
+                     <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">Approval Rate</p>
+                     <p class="text-xl font-bold text-blue-700 dark:text-blue-300" x-text="(filteredData.counts?.approvalRate || '0.0') + '%'"></p>
+                 </div>
             </div>
             <!-- Gender Distribution Bar (Moved here) -->
             <div class="h-auto w-full mb-6">
@@ -180,176 +237,71 @@
 
             <!-- Chart Container -->
             <div class="relative h-96 w-full mb-6">
-                <canvas id="sfaoDepartmentChart"></canvas>
+                <div x-show="chartStatus.department" class="h-full w-full">
+                    <canvas id="sfaoDepartmentChart"></canvas>
+                </div>
+                <!-- No Data Message -->
+                <div x-show="!chartStatus.department" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="text-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white" 
+                            x-text="viewMode === 'applicants' ? 'No Applicants Found' : 'No Scholars Found'">
+                        </h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your filters.</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Custom Legend Container -->
-            <div class="flex flex-wrap justify-center gap-6">
-                <!-- Applicants Mode Legend -->
-                <template x-if="viewMode === 'applicants'">
-                    <div class="contents">
-                        <!-- Approved -->
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" x-model="chartLegend.approved" class="form-checkbox h-4 w-4 text-green-500 rounded border-gray-300 focus:ring-green-500">
-                            <span class="ml-2 flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                                Approved
-                            </span>
-                        </label>
-                        <!-- Rejected -->
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" x-model="chartLegend.rejected" class="form-checkbox h-4 w-4 text-red-500 rounded border-gray-300 focus:ring-red-500">
-                            <span class="ml-2 flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                                Rejected
-                            </span>
-                        </label>
-                        <!-- Pending -->
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" x-model="chartLegend.pending" class="form-checkbox h-4 w-4 text-yellow-500 rounded border-gray-300 focus:ring-yellow-500">
-                            <span class="ml-2 flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
-                                Pending
-                            </span>
-                        </label>
+            <!-- Trend Graph (Integrated) -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h4 class="text-md font-bold text-gray-900 dark:text-white mb-4 text-center">Trend Analysis</h4>
+                <div class="relative h-64 w-full">
+                    <div x-show="chartStatus.trend" class="h-full w-full">
+                        <canvas id="sfaoTrendChart"></canvas>
                     </div>
-                </template>
-
-                <!-- Scholars Mode Legend -->
-                <template x-if="viewMode === 'scholars'">
-                    <div class="contents">
-                        <!-- New Scholars -->
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" x-model="chartLegend.newScholars" class="form-checkbox h-4 w-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500">
-                            <span class="ml-2 flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-                                New Scholars
-                            </span>
-                        </label>
-                        <!-- Old Scholars -->
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" x-model="chartLegend.oldScholars" class="form-checkbox h-4 w-4 text-green-500 rounded border-gray-300 focus:ring-green-500">
-                            <span class="ml-2 flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                                Old Scholars
-                            </span>
-                        </label>
-
-
+                    <div x-show="!chartStatus.trend" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No trend data available for this selection.</p>
                     </div>
-                </template>
+                </div>
+            </div>
+
+
+
+
+
+
+        </div>
+
+        <!-- Scholarship Comparison Graph (Outside Main Container) -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mt-6 mb-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 text-center">Scholarship Comparison (All Programs)</h3>
+            <div class="relative h-96 w-full mb-6">
+                 <div x-show="chartStatus.comparison" class="h-full w-full">
+                    <canvas id="sfaoComparisonChart"></canvas>
+                </div>
+                 <!-- No Data Message -->
+                 <div x-show="!chartStatus.comparison" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div class="text-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Comparison Data</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your filters.</p>
+                    </div>
+                </div>
             </div>
         </div>
+
+
 
 
 
         <!-- Key Metrics Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Total Applications -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Applications</dt>
-                                <dd class="text-lg font-medium text-gray-900 dark:text-white" x-text="filteredData.total_applications || 0"></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Key Metrics Moved to Scholarship Status Container -->
 
-            <!-- Approved Applications -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Approved Applications</dt>
-                                <dd class="text-lg font-medium text-gray-900 dark:text-white" x-text="filteredData.approved_applications || 0"></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pending Applications -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending Applications</dt>
-                                <dd class="text-lg font-medium text-gray-900 dark:text-white" x-text="filteredData.pending_applications || 0"></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Approval Rate -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-bsu-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Approval Rate</dt>
-                                <dd class="text-lg font-medium text-gray-900 dark:text-white" x-text="(filteredData.approval_rate || 0) + '%'"></dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detailed Department Statistics Table -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Department Statistics Summary</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Department</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Students</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Applications</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Approved</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Approval Rate</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        <template x-for="dept in filteredData.department_stats" :key="dept.name">
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white" x-text="dept.name"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" x-text="dept.total_students"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" x-text="dept.total_applications"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" x-text="dept.approved_applications"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" x-text="dept.approval_rate + '%'"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <!-- Detailed Department Statistics Table Removed -->
     </div>
 
 </div>

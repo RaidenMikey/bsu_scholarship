@@ -1,8 +1,8 @@
 @extends('layouts.focused')
 
-@section('title', 'Scholar Summary Report')
-@section('navbar-title', 'Scholar Summary Report')
-@section('back-url', route('sfao.dashboard', ['tabs' => 'reports_scholar_summary']))
+@section('title', 'Applicant Summary Report')
+@section('navbar-title', 'Applicant Summary Report')
+@section('back-url', route('sfao.dashboard', ['tabs' => 'reports_applicant_summary']))
 @section('back-text', 'Back to Reports')
 @section('content-width', 'max-w-[95%] 2xl:max-w-full')
 
@@ -23,7 +23,7 @@
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto justify-end">
              <!-- Scholarship Filter -->
              <div class="relative w-full md:w-64">
-                <form action="{{ route('sfao.reports.scholar-summary') }}" method="GET" id="filterForm">
+                <form action="{{ route('sfao.reports.applicant-summary') }}" method="GET" id="filterForm">
                      <!-- Keep Campus Filter if exists -->
                      @if(request('campus_id'))
                         <input type="hidden" name="campus_id" value="{{ request('campus_id') }}">
@@ -33,6 +33,7 @@
                             x-model="selectedScholarship"
                             @change="updateReport($event.target.value)"
                             class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm">
+                        <!-- 'All' option removed as per request -->
                         @foreach($scholarships as $scholarship)
                             <option value="{{ $scholarship->id }}">{{ $scholarship->scholarship_name }}</option>
                         @endforeach
@@ -40,7 +41,7 @@
                 </form>
              </div>
 
-            <button @click="printReport()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-bsu-red hover:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red whitespace-nowrap">
+             <button @click="printReport()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-bsu-red hover:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red whitespace-nowrap">
                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
@@ -63,7 +64,7 @@
                 <h3 class="text-lg font-semibold text-bsu-red uppercase">The National Engineering University</h3>
             </div>
             <div class="mt-6 mb-4">
-                <h1 class="text-2xl font-bold uppercase underline decoration-2 underline-offset-4">Scholar Summary Report</h1>
+                <h1 class="text-2xl font-bold uppercase underline decoration-2 underline-offset-4">Applicant Summary Report</h1>
             </div>
             
             <div class="text-sm space-y-1">
@@ -75,7 +76,7 @@
 
         <!-- Report Content -->
         <div id="report-content-container" class="space-y-8 min-h-[200px]">
-            @include('sfao.reports.partials.scholar-summary-table', ['reportData' => $reportData, 'selectedScholarship' => $selectedScholarship])
+            @include('sfao.reports.partials.applicant-summary-table', ['reportData' => $reportData, 'selectedScholarship' => $selectedScholarship])
         </div>
 
         <!-- Footer Signatures (Placeholder for print) -->
@@ -95,7 +96,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Submission Form (No-Print) -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 border-t-4 border-t-bsu-red print:hidden w-full mx-auto overflow-hidden">
         <div class="p-6">
@@ -113,7 +114,7 @@
 
             <form action="{{ route('sfao.reports.summary-submit') }}" method="POST" class="space-y-6">
                 @csrf
-                <input type="hidden" name="report_type" value="scholar_summary">
+                <input type="hidden" name="report_type" value="student_summary">
                 <input type="hidden" name="campus_id" value="{{ request('campus_id', 'all') }}">
                 <!-- Note: We use the blade selectedScholarship here since the form reloads the page anyway if changed via filter -->
                 <input type="hidden" name="scholarship_id" :value="selectedScholarship">
@@ -155,7 +156,7 @@
         container.style.opacity = '0.5';
         
         // Prepare URL with query params
-        const url = new URL("{{ route('sfao.reports.scholar-summary') }}");
+        const url = new URL("{{ route('sfao.reports.applicant-summary') }}");
         url.searchParams.set('scholarship_id', scholarshipId);
         // Preserve campus filter if present
         const urlParams = new URLSearchParams(window.location.search);

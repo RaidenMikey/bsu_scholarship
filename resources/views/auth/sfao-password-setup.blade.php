@@ -11,15 +11,14 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SFAO Password Setup</title>
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <title>Set Password | Spartan Scholarship</title>
+  <link rel="icon" type="image/png" href="{{ asset('images/lugo.png') }}">
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full">
-    <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md">
-            <div class="flex justify-center">
-                <img class="h-12 w-auto" src="{{ asset('images/Batangas_State_Logo.png') }}" alt="BSU Logo">
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+    <div class="text-center mb-6">
+      <img src="{{ asset('images/lugo.png') }}" alt="Logo" class="h-16 mx-auto mb-2">
             </div>
             <p class="mt-2 text-center text-sm text-gray-600">
                 Complete your SFAO admin account setup

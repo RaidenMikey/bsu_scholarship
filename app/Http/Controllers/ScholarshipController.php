@@ -80,6 +80,7 @@ class ScholarshipController extends Controller
             'application_start_date' => 'nullable|date|before:submission_deadline',
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
+            'campus_id'        => 'nullable|integer',
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'eligibility_notes' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -106,6 +107,7 @@ class ScholarshipController extends Controller
                 'application_start_date' => $request->application_start_date,
                 'slots_available'  => $request->slots_available,
                 'grant_amount'     => $request->grant_amount,
+                'campus_id'        => $request->campus_id ?: null,
                 'renewal_allowed'  => $renewalAllowed,
                 'grant_type'       => $request->grant_type,
                 'eligibility_notes' => $request->eligibility_notes,
@@ -326,20 +328,27 @@ class ScholarshipController extends Controller
     /**
      * Release grant for scholarship (SFAO)
      */
-    public function releaseGrant($id)
+    public function releaseGrant(Request $request, $id)
     {
         if (!session()->has('user_id') || session('role') !== 'sfao') {
             return redirect('/login')->with('session_expired', true);
         }
 
+        $request->validate([
+            'release_date' => 'required|date',
+            'location' => 'required|string',
+            'instructions' => 'required|string',
+        ]);
+
         $scholarship = Scholarship::findOrFail($id);
+        $details = $request->only(['release_date', 'location', 'instructions']);
         
         $user = User::with('campus')->find(session('user_id'));
         $sfaoCampus = $user->campus;
         $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
         
         // Get active scholars under this scholarship belonging to SFAO's campuses
-        $scholars = Scholar::where('scholarship_id', $id)
+        $scholars = \App\Models\Scholar::where('scholarship_id', $id)
             ->where('status', 'active')
             ->whereHas('user', function($q) use ($campusIds) {
                 $q->whereIn('campus_id', $campusIds);
@@ -355,14 +364,15 @@ class ScholarshipController extends Controller
         foreach ($scholars as $scholar) {
             try {
                 // Generate PDF
-                $pdf = Pdf::loadView('pdf.grant-slip', [
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.grant-slip', [
                     'scholar' => $scholar,
-                    'scholarship' => $scholarship
+                    'scholarship' => $scholarship,
+                    'details' => $details
                 ])->output();
                 
                 // Send Email
                 if ($scholar->user && $scholar->user->email) {
-                    Mail::to($scholar->user->email)->send(new GrantSlipMail($scholar, $scholarship, $pdf));
+                    Mail::to($scholar->user->email)->send(new \App\Mail\GrantSlipMail($scholar, $scholarship, $pdf, $details));
                     $count++;
                 }
             } catch (\Exception $e) {
@@ -462,6 +472,108 @@ class ScholarshipController extends Controller
             Log::error('Failed to mark grant claimed: ' . $e->getMessage());
             return back()->with('error', 'Failed to mark grant as claimed: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Bulk mark scholars' grants as claimed (SFAO)
+     */
+    public function bulkMarkScholarAsClaimed(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'scholar_ids' => 'required|array|min:1',
+            'scholar_ids.*' => 'exists:scholars,id'
+        ]);
+
+        // Get SFAO's managed campuses
+        $user = User::with('campus')->find(session('user_id'));
+        $sfaoCampus = $user->campus;
+        $campusIds = $sfaoCampus->getAllCampusesUnder()->pluck('id');
+
+        $successCount = 0;
+        $skippedCount = 0;
+        $errors = [];
+
+        foreach ($request->scholar_ids as $scholarId) {
+            try {
+                $scholar = Scholar::with(['user', 'scholarship', 'application'])->find($scholarId);
+
+                if (!$scholar) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Verify SFAO manages this scholar's campus
+                if (!$campusIds->contains($scholar->user->campus_id)) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Check for one-time grant restriction
+                if ($scholar->scholarship->grant_type === 'one_time' && $scholar->grant_count > 0) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Find the application to mark as claimed
+                $query = Application::where('user_id', $scholar->user_id)
+                    ->where('scholarship_id', $scholar->scholarship_id)
+                    ->latest();
+
+                if ($scholar->scholarship->grant_type === 'recurring') {
+                    $query->whereIn('status', ['approved', 'claimed']);
+                } else {
+                    $query->where('status', 'approved');
+                }
+
+                $application = $query->first();
+
+                if (!$application) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                DB::beginTransaction();
+
+                // Calculate new values
+                $grantAmount = (float) ($scholar->scholarship->grant_amount ?? 0);
+                $newGrantCount = $scholar->grant_count + 1;
+                $newTotalReceived = ((float) $scholar->total_grant_received) + $grantAmount;
+
+                // Update Application
+                $application->status = 'claimed';
+                $application->grant_count = $newGrantCount;
+                $application->save();
+
+                // Update Scholar
+                DB::table('scholars')->where('id', $scholar->id)->update([
+                    'grant_count' => $newGrantCount,
+                    'total_grant_received' => $newTotalReceived,
+                    'type' => ($scholar->type === 'new' && $newGrantCount >= 1) ? 'old' : $scholar->type,
+                    'updated_at' => now(),
+                ]);
+
+                DB::commit();
+                $successCount++;
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Failed to mark scholar ' . $scholarId . ' as claimed: ' . $e->getMessage());
+                $errors[] = "Scholar ID {$scholarId}: " . $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'success_count' => $successCount,
+            'skipped_count' => $skippedCount,
+            'errors' => $errors,
+            'message' => "Successfully marked {$successCount} scholar(s) as claimed." . 
+                        ($skippedCount > 0 ? " {$skippedCount} scholar(s) were skipped." : "")
+        ]);
     }
 
     /**

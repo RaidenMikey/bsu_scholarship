@@ -13,6 +13,50 @@ use App\Http\Controllers\StudentApplicationController;
 use App\Http\Controllers\CentralApplicationController;
 use Illuminate\Http\Request;
 
+// =================================================================
+// 0. DEV TOOLS & SEEDING FIXES
+// =================================================================
+
+Route::get('/dev/fix-dates', function() {
+    $now = now();
+    $count = 0;
+    
+    // Fix Applications
+    $apps = \App\Models\Application::where('created_at', '>', $now)->get();
+    foreach ($apps as $app) {
+        // Shift back 1 year
+        $newDate = \Carbon\Carbon::parse($app->created_at)->subYear();
+        $app->created_at = $newDate;
+        $app->updated_at = $newDate;
+        $app->save();
+        $count++;
+    }
+
+    // Fix Scholars
+    $scholars = \App\Models\Scholar::where('created_at', '>', $now)->get();
+    foreach ($scholars as $s) {
+        $newDate = \Carbon\Carbon::parse($s->created_at)->subYear();
+        $s->created_at = $newDate;
+        $s->updated_at = $newDate;
+        $s->save();
+    }
+    
+    return "Fixed $count applications with future dates.";
+});
+
+// TEMPORARY: Database Reset
+Route::get('/dev/migrate-fresh-seed', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true
+        ]);
+        return "Database Reset and Seeded Successfully!<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 // --------------------------------------------------
 // PUBLIC ROUTES
 // --------------------------------------------------
@@ -60,6 +104,11 @@ Route::post('/email/resend', [AuthController::class, 'resendVerificationByEmail'
 // --------------------------------------------------
 // SHARED ROUTES
 // --------------------------------------------------
+
+// Session Keep-Alive
+Route::get('/ping', function() {
+    return response()->noContent();
+})->middleware('web');
 
 // Profile Picture Upload
 Route::post('/upload-profile-picture/{role}', [UserController::class, 'uploadProfilePicture'])
@@ -151,6 +200,7 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::post('/scholarships/{id}/release-grant', [ScholarshipController::class, 'releaseGrant'])->name('scholarships.release-grant');
     Route::get('/scholarships', [ScholarshipController::class, 'sfaoIndex'])->name('scholarships.index');
     Route::get('/scholarships/{id}', [ScholarshipController::class, 'show'])->name('scholarships.show');
+    Route::post('/scholars/bulk-mark-claimed', [ScholarshipController::class, 'bulkMarkScholarAsClaimed'])->name('scholars.bulk-mark-claimed');
     Route::post('/scholars/{id}/mark-claimed', [ScholarshipController::class, 'markScholarAsClaimed'])->name('scholars.mark-claimed');
     
     // Reports Management (Keep original for now as it wasn't split yet)
@@ -165,7 +215,7 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::post('/reports/generate-data', [ReportController::class, 'generateReportData'])->name('reports.generate-data');
     
     // Specific Report Summaries
-    Route::get('/student-summary', [ReportController::class, 'studentSummary'])->name('reports.student-summary');
+    Route::get('/applicant-summary', [ReportController::class, 'applicantSummary'])->name('reports.applicant-summary');
     Route::get('/scholar-summary', [ReportController::class, 'scholarSummary'])->name('reports.scholar-summary');
     Route::get('/grant-summary', [ReportController::class, 'grantSummary'])->name('reports.grant-summary');
     

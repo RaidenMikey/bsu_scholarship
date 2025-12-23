@@ -105,11 +105,15 @@
                             </td>
                             <td class="px-6 py-4">
                                 @if($student->applications && $student->applications->isNotEmpty())
-                                        @foreach($student->applications as $app)
-                                            <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
-                                                {{ $app->scholarship->scholarship_name ?? 'Unknown' }}
-                                            </span>
-                                        @endforeach
+                                    <button @click="$dispatch('open-applicant-modal', {{ json_encode($student) }})" 
+                                            class="text-left group flex items-center space-x-1 focus:outline-none">
+                                        <span class="text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-800 group-hover:underline">
+                                            {{ $student->applications->count() }} Application{{ $student->applications->count() > 1 ? 's' : '' }}
+                                        </span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                                          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
                                 @else
                                     <span class="text-sm text-gray-500 dark:text-gray-400">None</span>
                                 @endif
@@ -131,7 +135,7 @@
                                 <div class="flex space-x-2">
                                     @if($student->has_documents)
                                         <a href="{{ route('sfao.evaluation.show', $student->student_id) }}"
-                                           class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg inline-block">
                                             Evaluate
                                         </a>
                                     @endif

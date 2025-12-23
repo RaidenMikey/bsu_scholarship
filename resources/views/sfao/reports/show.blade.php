@@ -64,7 +64,7 @@
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             
             <!-- Page Header -->
-            @include('sfao.partials.common.page-header', [
+            @include('sfao.components.page-header', [
                 'title' => 'Report Details'
             ])
             

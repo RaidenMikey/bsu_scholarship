@@ -12,7 +12,7 @@
     </div>
 @else
     @foreach($scholarships as $scholarship)
-        <div x-data="{ showDetails_{{ $scholarship->id }}: false }">
+        <div x-data="{ showDetails_{{ $scholarship->id }}: false, showReleaseGrant_{{ $scholarship->id }}: false }">
             <div @click="showDetails_{{ $scholarship->id }} = true">
                 @include('central.partials.components.scholarship-card', [
                     'scholarship' => $scholarship,
@@ -22,6 +22,7 @@
                 ])
             </div>
             @include('sfao.components.modals.scholarship-details', ['scholarship' => $scholarship])
+            @include('sfao.components.modals.release-grant', ['scholarship' => $scholarship])
         </div>
     @endforeach
 

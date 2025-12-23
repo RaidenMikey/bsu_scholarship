@@ -1,22 +1,3 @@
-@extends('layouts.dashboard', ['user' => Auth::user(), 'title' => 'My Applications'])
-
-@section('sidebar-menu')
-    @include('student.components.sidebar-menu')
-@endsection
-
-@section('navbar')
-  <x-layout.navbar 
-      title="Batangas State University" 
-      subtitle="The National Engineering University"
-      :user="Auth::user()" 
-      :profile="true"
-      :settings="false" 
-      :settings-click="'$dispatch(\'switch-tab\', \'account\')'"
-      :logout="true" 
-  />
-@endsection
-
-@section('content')
     <div class="mb-8">
         @include('student.partials.page-header', [
           'title' => 'My Applications',
@@ -345,4 +326,3 @@
         window.open('{{ url("/student/print-application") }}', '_blank');
     }
 </script>
-@endsection

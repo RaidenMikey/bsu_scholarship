@@ -110,16 +110,16 @@
             <path d="M185 140 L200 155 L225 125" stroke="#DC2626" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
 
-        <img src="images/Batangas_State_Logo.png" alt="BSU Logo" class="logo" onerror="this.style.display='none'">
+        <img src="images/lugo.png" alt="BSU Logo" class="logo" onerror="this.style.display='none'">
         
         <h1>System <span class="highlight">Maintenance</span></h1>
         
         <p>
-            We are currently upgrading our database required to maintain the accuracy of your records.
+            We are currently undergoing a minor system remodel.
             <br>
-            <strong>Your data is safe.</strong>
+            This might affect user data, but we will do everything to keep the data preserved.
             <br><br>
-            Please check back shortly. We apologize for the inconvenience.
+            It might take a long time to open the system again.
         </p>
 
         <div class="spinner"></div>

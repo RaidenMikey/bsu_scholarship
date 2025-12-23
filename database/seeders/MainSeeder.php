@@ -12,6 +12,7 @@ use App\Models\Scholar;
 use App\Models\Application;
 use App\Models\StudentProfile;
 use App\Models\RejectedApplicant;
+use App\Models\Form;
 use Faker\Factory as Faker;
 use Carbon\Carbon;
 
@@ -95,7 +96,7 @@ class MainSeeder extends Seeder
                                     ->orWhere('parent_campus_id', $constituent->id)
                                     ->get();
             
-            $totalInGroup = 30;
+            $totalInGroup = 60;
             $campusCount = $groupCampuses->count();
             
             // Distribute 30 students across these campuses
@@ -106,8 +107,39 @@ class MainSeeder extends Seeder
             foreach ($groupCampuses as $index => $campus) {
                 $countForThisCampus = $baseCount + ($index < $remainder ? 1 : 0);
                 
+                // Get valid departments for this campus
+                $validDepartments = $campus->departments;
+
+                // Fallback if no departments (shouldn't happen with correct seeding, but safe)
+                if ($validDepartments->isEmpty()) {
+                   $this->command->warn("No departments found for campus {$campus->name}. Skipping student generation.");
+                   continue;
+                }
+
+                // Program Mapping (Same as Controller)
+                // ... (Same mapping as before, omitted for brevity if unchanged, but Replace tool needs exact context so I will keep it clean or just target the loop)
+                // Actually, let's just replace the INSIDE of the student loop to handle the dates.
+                
+                // Let's redefine the loop content:
                 for ($i = 0; $i < $countForThisCampus; $i++) {
                     
+                    // ACADEMIC YEAR LOGIC
+                    // We want to simulate data for: 
+                    // AY 2025-2026 (Current)
+                    // AY 2024-2025 (Previous)
+                    // AY 2023-2024 (Legacy)
+                    
+                    $ayYearStart = $faker->randomElement([2023, 2024]); // Removed 2025 to avoid future dates (2025-2026)
+                    $ayYearEnd = $ayYearStart + 1;
+                    
+                    // Strict Range: August 1st of YearStart to May 31st of YearEnd
+                    $startDate = Carbon::create($ayYearStart, 8, 1, 0, 0, 0);
+                    $endDate = Carbon::create($ayYearEnd, 5, 31, 23, 59, 59);
+                    
+                    // Random CreatedAt within this range
+                    $createdAt = Carbon::createFromTimestamp(mt_rand($startDate->timestamp, $endDate->timestamp));
+                    $updatedAt = $createdAt->copy(); // Assume updated same time for simplicity
+
                     // Format: SR-00001
                     $srCode = sprintf("SR-%05d", $studentCounter);
                     $email = "{$srCode}@g.batstate-u.edu.ph";
@@ -116,6 +148,21 @@ class MainSeeder extends Seeder
                     $firstName = $faker->firstName;
                     $lastName = $faker->lastName;
                     $gender = $faker->randomElement(['Male', 'Female']);
+
+                    // Select Random Department from Valid List
+                    $randomDept = $validDepartments->random();
+                    $deptShortName = $randomDept->short_name;
+                    
+                    // Select Random Program from DB
+                    // Query programs for this department (college)
+                    // Using Full Name as requested
+                    $availablePrograms = \App\Models\Program::where('college', $deptShortName)->pluck('name')->toArray();
+                    
+                    if (empty($availablePrograms)) {
+                         // Fallback
+                         $availablePrograms = ["Bachelor of {$deptShortName}"];
+                    }
+                    $program = $faker->randomElement($availablePrograms);
 
                     $student = User::create([
                         'name' => "{$firstName} {$lastName}",
@@ -126,14 +173,16 @@ class MainSeeder extends Seeder
                         'password' => $password,
                         'role' => 'student',
                         'campus_id' => $campus->id,
-                        'email_verified_at' => $now,
+                        'email_verified_at' => $createdAt, // Verified at creation
                         'sr_code' => $srCode,
                         'birthdate' => $now->copy()->subYears($faker->numberBetween(18, 24))->format('Y-m-d'),
                         'sex' => $gender,
                         'contact_number' => '09' . $faker->numberBetween(100000000, 999999999),
-                        'program' => 'BS Information Technology',
-                        'college' => 'CICS',
+                        'program' => $program,
+                        'college' => $deptShortName,
                         'year_level' => $faker->randomElement(['1st Year', '2nd Year', '3rd Year', '4th Year']),
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
                     ]);
 
                     // Create Student Profile
@@ -151,6 +200,27 @@ class MainSeeder extends Seeder
                         'father_occupation' => $faker->jobTitle,
                         'mother_occupation' => $faker->jobTitle,
                         'annual_gross_income' => $faker->numberBetween(100000, 500000),
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
+                    ]);
+
+                    // Create Form (Required for Reports)
+                    Form::create([
+                        'user_id' => $student->id,
+                        'units_enrolled' => 21,
+                        'town_city' => $faker->city,
+                        'province' => $faker->state,
+                        'disability' => $faker->randomElement(['None', 'None', 'None', 'Visual', 'Hearing', 'Mobility']),
+                        'zip_code' => $faker->postcode,
+                        'street_barangay' => $faker->streetName,
+                        'citizenship' => 'Filipino',
+                        'father_name' => $faker->name('Male'),
+                        'mother_name' => $faker->name('Female'),
+                        'father_occupation' => $faker->jobTitle,
+                        'mother_occupation' => $faker->jobTitle,
+                        'estimated_gross_annual_income' => $faker->numberBetween(100000, 500000),
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
                     ]);
 
                     // Assign STATUS (Random)
@@ -175,7 +245,9 @@ class MainSeeder extends Seeder
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
                             'status' => 'in_progress',
-                            'grant_count' => 0
+                            'grant_count' => 0,
+                            'created_at' => $createdAt,
+                            'updated_at' => $updatedAt,
                         ]);
                         continue;
                     }
@@ -186,7 +258,9 @@ class MainSeeder extends Seeder
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
                             'status' => 'pending',
-                            'grant_count' => 0
+                            'grant_count' => 0,
+                            'created_at' => $createdAt,
+                            'updated_at' => $updatedAt,
                         ]);
                         continue;
                     }
@@ -198,7 +272,9 @@ class MainSeeder extends Seeder
                             'scholarship_id' => $scholarship->id,
                             'status' => 'rejected',
                             'remarks' => 'Did not meet requirements.',
-                            'grant_count' => 0
+                            'grant_count' => 0,
+                            'created_at' => $createdAt,
+                            'updated_at' => $updatedAt,
                         ]);
                         
                         RejectedApplicant::create([
@@ -207,8 +283,10 @@ class MainSeeder extends Seeder
                             'application_id' => $app->id,
                             'rejected_by' => 'sfao',
                             'rejected_by_user_id' => 1,
-                            'rejected_at' => $now,
+                            'rejected_at' => $createdAt, // Rejected same day
                             'remarks' => 'Did not meet requirements.',
+                            'created_at' => $createdAt,
+                            'updated_at' => $updatedAt,
                         ]);
                         continue;
                     }
@@ -219,7 +297,10 @@ class MainSeeder extends Seeder
                             'user_id' => $student->id,
                             'scholarship_id' => $scholarship->id,
                             'status' => 'approved',
-                            'grant_count' => 0 
+                            'remarks' => $faker->randomElement(['Completes all requirements', 'SFAO Verified', 'Endorsed for approval', 'Good standing', 'Documents valid']),
+                            'grant_count' => 0,
+                            'created_at' => $createdAt,
+                            'updated_at' => $updatedAt, 
                         ]);
                         continue;
                     }
@@ -234,7 +315,10 @@ class MainSeeder extends Seeder
                         'user_id' => $student->id,
                         'scholarship_id' => $scholarship->id,
                         'status' => 'approved',
-                        'grant_count' => 1 // Current application is always count 1 or just the latest
+                        'remarks' => $faker->randomElement(['Scholarship Awarded', 'Qualified for Grant', 'Excellent academic performance', 'Requirements complete']),
+                        'grant_count' => 1, // Current application is always count 1 or just the latest
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
                     ]);
 
                     $scholarStatus = $faker->randomElement(['active', 'active', 'inactive', 'suspended', 'completed']);
@@ -244,11 +328,13 @@ class MainSeeder extends Seeder
                         'scholarship_id' => $scholarship->id,
                         'application_id' => $app->id,
                         'status' => $scholarStatus,
-                        'scholarship_start_date' => $scholarType === 'new' ? $now->copy()->subMonths(rand(1, 6)) : $now->copy()->subMonths(rand(12, 36)),
-                        'scholarship_end_date' => $scholarStatus === 'completed' ? $now->copy()->subDays(rand(1, 30)) : null,
+                        'scholarship_start_date' => $scholarType === 'new' ? $createdAt : $createdAt->copy()->subYear(), // If old, started earlier
+                        'scholarship_end_date' => $scholarStatus === 'completed' ? $createdAt->copy()->addMonths(5) : null,
                         'type' => $scholarType,
                         'grant_count' => $grantCount,
                         'total_grant_received' => $grantCount * 5000.00, // Mock amount
+                        'created_at' => $createdAt,
+                        'updated_at' => $updatedAt,
                     ]);
 
                 } // End Student Loop

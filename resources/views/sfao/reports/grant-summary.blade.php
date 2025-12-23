@@ -22,7 +22,7 @@
     <div class="bg-white shadow-lg rounded-lg overflow-hidden print:shadow-none">
         <!-- Report Header -->
         <div class="px-8 py-6 border-b border-gray-200 text-center">
-            <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="BSU Logo" class="h-20 mx-auto mb-4">
+            <img src="{{ asset('images/lugo.png') }}" alt="BSU Logo" class="h-20 mx-auto mb-4">
             <h1 class="text-2xl font-bold text-gray-900 uppercase">Batangas State University</h1>
             <h2 class="text-xl font-semibold text-gray-700 mt-2">The National Engineering University</h2>
             <h3 class="text-lg font-medium text-gray-600 mt-4 uppercase tracking-wide">Grant Summary Report</h3>

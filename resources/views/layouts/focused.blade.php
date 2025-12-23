@@ -16,7 +16,7 @@
 @endphp
 
 <!DOCTYPE html>
-<html lang="en" 
+<html lang="en" class="h-full" 
     :class="{ 'dark': darkMode }" 
     x-data="{ 
         darkMode: localStorage.getItem('darkMode_{{ $user->id }}') === 'true',
@@ -33,7 +33,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('page-title', 'BSU Scholarship System')</title>
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/lugo.png') }}">
     
     <!-- Tailwind CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -48,23 +48,25 @@
     </script>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 flex flex-col min-h-screen transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-gray-900 flex flex-col h-full min-h-full transition-colors duration-300">
 
     <!-- Global Standard Navbar -->
-    <x-layout.navbar 
-        :user="$user" 
-        :title="View::hasSection('navbar-title') ? View::getSection('navbar-title') : 'Scholarship Management System'"
-        :sidebar="false"
-        :back-url="View::hasSection('back-url') ? View::getSection('back-url') : null"
-        :back-text="View::hasSection('back-text') ? View::getSection('back-text') : null"
-        :logout="true"
-        :profile="false"
-        :settings="true"
-        settings-click="showRedirectModal = true"
-    />
+    <div class="print:hidden">
+        <x-layout.navbar 
+            :user="$user" 
+            :title="View::hasSection('navbar-title') ? View::getSection('navbar-title') : 'Scholarship Management System'"
+            :sidebar="false"
+            :back-url="View::hasSection('back-url') ? View::getSection('back-url') : null"
+            :back-text="View::hasSection('back-text') ? View::getSection('back-text') : null"
+            :logout="true"
+            :profile="false"
+            :settings="true"
+            settings-click="showRedirectModal = true"
+        />
+    </div>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
+    <main class="flex-1 w-full @yield('content-width', 'max-w-7xl') mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
         @yield('content')
     </main>
 

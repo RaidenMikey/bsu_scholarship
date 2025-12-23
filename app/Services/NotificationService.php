@@ -19,8 +19,61 @@ class NotificationService
      */
     public static function notifyScholarshipCreated(Scholarship $scholarship)
     {
-        // Get all students
-        $students = User::where('role', 'student')->get();
+        // Start query for students
+        $query = User::where('role', 'student');
+
+        // 1. Filter by Campus
+        if ($scholarship->campus_id) {
+            $query->where('campus_id', $scholarship->campus_id);
+        }
+
+        // 2. Filter by Eligibility Conditions
+        // Reload conditions to ensure we have the latest created ones
+        $scholarship->load('conditions');
+
+        foreach ($scholarship->conditions as $cond) {
+            $value = $cond->value;
+            if (!$value) continue;
+
+            switch ($cond->name) {
+                case 'year_level':
+                    $query->where('year_level', $value);
+                    break;
+                    
+                case 'department':
+                    // Map department to college column
+                    $query->where('college', $value);
+                    break;
+                    
+                case 'gwa':
+                    // GWA: lower value is better grade (e.g. 1.0 > 2.0). 
+                    // "Minimum GWA of 2.0" means student must have <= 2.0
+                    $query->whereHas('form', function($q) use ($value) {
+                        $q->where('previous_gwa', '<=', $value)
+                          ->where('previous_gwa', '>', 0);
+                    });
+                    break;
+                    
+                case 'income':
+                    // Income: "Maximum Income" means student income <= value
+                    $query->whereHas('form', function($q) use ($value) {
+                        $q->where('estimated_gross_annual_income', '<=', $value);
+                    });
+                    break;
+                    
+                case 'disability':
+                    if (strtolower($value) === 'yes') {
+                        $query->whereHas('form', function($q) {
+                            $q->whereNotNull('disability')
+                              ->where('disability', '!=', 'None')
+                              ->where('disability', '!=', '');
+                        });
+                    }
+                    break;
+            }
+        }
+
+        $students = $query->get();
         
         foreach ($students as $student) {
             // Create Database Notification

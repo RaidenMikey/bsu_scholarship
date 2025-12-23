@@ -107,6 +107,7 @@
             <option :value="dept.short_name" x-text="dept.short_name"></option>
           </template>
         </select>
+        <input type="hidden" name="college" x-model="formData.college">
       </div>
 
       <div class="mb-4">

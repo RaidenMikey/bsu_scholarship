@@ -29,7 +29,7 @@
     <table class="content">
         <tr>
             <td class="label">Date:</td>
-            <td>{{ now()->format('F d, Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($details['release_date'])->format('F d, Y') }}</td>
         </tr>
         <tr>
             <td class="label">Scholarship:</td>

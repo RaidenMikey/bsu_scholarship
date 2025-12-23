@@ -83,8 +83,8 @@ class DashboardController extends Controller
         $reports = Report::where('sfao_user_id', session('user_id'))->latest()->paginate(5);
 
         // View Parameters
-        $activeTab = $request->get('tab', 'statistics');
-        $campusOptions = collect([['id' => 'all', 'name' => 'All Campuses']])
+        $activeTab = $request->get('tabs', $request->get('tab', 'analytics'));
+        $campusOptions = collect([['id' => 'all', 'name' => 'All Campus']])
             ->merge($monitoredCampuses->map(function($c) { return ['id' => $c->id, 'name' => $c->name]; }));
 
         // Pass empty collections for the "Detailed Lists" that are handled by AJAX or specific tabs
@@ -168,8 +168,8 @@ class DashboardController extends Controller
                     });
                 }
                 
-                if ($request->get('status_filter') && $request->get('status_filter') !== 'all') {
-                    $query->where('status', $request->get('status_filter'));
+                if ($request->get('scholarship_filter') && $request->get('scholarship_filter') !== 'all') {
+                    $query->where('scholarship_id', $request->get('scholarship_filter'));
                 }
                 
                  if ($request->get('type_filter') && $request->get('type_filter') !== 'all') {
@@ -182,26 +182,15 @@ class DashboardController extends Controller
                 $view = 'sfao.scholars.list';
                 $data = ['scholars' => $scholarsList];
                 
+                
+                // Get filtered scholars for accurate counts
+                $filteredScholars = $query->get();
+                
                 $counts = [
-                    'total' => $scholars->count(), // $scholars is the full collection from line 77, should be safe to reuse or re-query if needed?
-                    // Wait, $scholars at line 77 is ALREADY filtered by campusIds.
-                    // But if the user changed campus_filter in AJAX, $scholars (the outer one) is NOT filtered by that specific campus filter, only the global permitted ones.
-                    // The counts logic below uses `$scholars` from line 77/80.
-                    // line 186-190 uses `$scholars`.
-                    // If I filter by campus in AJAX, the counts should probably reflect that?
-                    // The current implementation uses `$scholars` which is:
-                    // Scholar::with(...)->whereHas('user', ...In('campus_id', $campusIds))->get();
-                    // This is "All my scholars".
-                    // The dashboard counts usually show "Total Scholars" (globally for me), so reusing `$scholars` is probably intended behavior for the stats cards, even if the list is filtered.
-                    // However, if the user filters by "New", they might expect the counts to update?
-                    // The `sfaoApplicantsList` updated counts based on the base query.
-                    // But here, the implementation uses the pre-loaded `$scholars`.
-                    // I will leave the counts logic AS IS for now to minimize scope creep/risk, focusing on the VIEW fix.
-                    
-                    'total' => $scholars->count(),
-                    'active' => $scholars->where('status', 'active')->count(),
-                    'new' => $scholars->where('type', 'new')->count(),
-                    'old' => $scholars->where('type', 'old')->count()
+                    'total' => $filteredScholars->count(),
+                    'active' => $filteredScholars->where('status', 'active')->count(),
+                    'new' => $filteredScholars->where('type', 'new')->count(),
+                    'old' => $filteredScholars->where('type', 'old')->count()
                 ];
 
                 return response()->json([
@@ -295,7 +284,7 @@ class DashboardController extends Controller
         $analytics['campus_departments'] = $campusDepartments;
 
         // Get Programs per Department (for filters)
-        $programsData = User::where('role', 'student')
+        $dbProgramsData = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
             ->whereNotNull('program')
             ->select('college', 'program')
@@ -306,7 +295,20 @@ class DashboardController extends Controller
                 return $items->pluck('program')->unique()->values()->all();
             })->toArray();
             
-        $analytics['department_programs'] = $programsData;
+        // Merge with Standard Programs to ensure filters are populated
+        $standardPrograms = $this->getStandardPrograms();
+        $mergedPrograms = $standardPrograms;
+        
+        foreach ($dbProgramsData as $college => $programs) {
+            if (isset($mergedPrograms[$college])) {
+                $mergedPrograms[$college] = array_unique(array_merge($mergedPrograms[$college], $programs));
+                sort($mergedPrograms[$college]);
+            } else {
+                $mergedPrograms[$college] = $programs;
+            }
+        }
+        
+        $analytics['department_programs'] = $mergedPrograms;
 
         // Calculate stats per department
         $departmentStats = [];
@@ -375,8 +377,23 @@ class DashboardController extends Controller
                 $join->on('users.id', '=', 'scholars.user_id')
                      ->on('scholarships.id', '=', 'scholars.scholarship_id');
             })
+            ->where('users.role', 'student') // Only count students
             ->whereIn('users.campus_id', $campusIds)
-            ->select('users.id as user_id', 'users.sex', 'users.campus_id', 'users.college', 'users.program', 'scholarships.scholarship_type', 'scholarships.scholarship_name as scholarship_name', 'applications.status', 'applications.created_at', 'scholars.id as scholar_id', 'scholars.status as scholar_status', 'scholars.type as scholar_type')
+            ->select(
+                'users.id as user_id', 
+                'users.sex', 
+                'users.campus_id', 
+                'users.college', 
+                'users.program', 
+                'scholarships.scholarship_type', 
+                'scholarships.scholarship_name as scholarship_name', 
+                'applications.status', 
+                'applications.created_at', 
+                'scholars.id as scholar_id', 
+                'scholars.status as scholar_status', 
+                'scholars.type as scholar_type',
+                DB::raw('(SELECT COUNT(*) FROM scholars as s WHERE s.user_id = users.id) as is_global_scholar')
+            )
             ->distinct()
             ->get();
             
@@ -467,6 +484,20 @@ class DashboardController extends Controller
     private function studentDashboard(Request $request)
     {
         // TODO: Migrated from StudentController
-        return view('student.dashboard');
+        return view('student.index');
+    }
+
+    private function getStandardPrograms()
+    {
+        // Fetch from Programs Table (Grouped by College)
+        $programs = \App\Models\Program::all();
+        $grouped = [];
+        
+        foreach ($programs as $prog) {
+            // Using Full Name as requested (Reverted from Short Name)
+            $grouped[$prog->college][] = $prog->name;
+        }
+        
+        return $grouped;
     }
 }

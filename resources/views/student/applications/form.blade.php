@@ -8,406 +8,473 @@
 @section('back-text', 'Back to Dashboard')
 
 @section('content')
-<div class="bg-gray-50 py-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="mb-8">
-            @include('student.partials.page-header', [
-              'title' => 'Apply for Scholarship',
-              'subtitle' => $scholarship->scholarship_name . ' - Grant Amount: ₱' . number_format($scholarship->grant_amount, 2) . ' | Deadline: ' . \Carbon\Carbon::parse($scholarship->submission_deadline)->format('M d, Y')
-            ])
-        </div>
-
-        <!-- Progress Indicator -->
-        <div class="mb-8">
-            <div class="flex items-center justify-center space-x-4">
-                <!-- Stage 1 -->
-                <div class="flex items-center">
-                    <div class="w-12 h-12 rounded-full border-4 {{ $currentStage >= 1 ? 'border-green-500 bg-green-50' : 'border-gray-300' }} flex items-center justify-center">
-                        @if($currentStage > 1)
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        @else
-                            <span class="text-lg font-semibold {{ $currentStage >= 1 ? 'text-green-600' : 'text-gray-600' }}">1</span>
-                        @endif
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900">SFAO Required Documents</p>
-                        <p class="text-xs text-gray-500">Form 137, Grades, Application Form</p>
-                    </div>
-                </div>
-
-                <!-- Connector -->
-                <div class="flex-1 h-0.5 {{ $currentStage > 1 ? 'bg-green-500' : 'bg-gray-300' }}"></div>
-
-                <!-- Stage 2 -->
-                <div class="flex items-center">
-                    <div class="w-12 h-12 rounded-full border-4 {{ $currentStage >= 2 ? 'border-green-500 bg-green-50' : 'border-gray-300' }} flex items-center justify-center">
-                        @if($currentStage > 2)
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        @else
-                            <span class="text-lg font-semibold {{ $currentStage >= 2 ? 'text-green-600' : 'text-gray-600' }}">2</span>
-                        @endif
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900">Scholarship Required Documents</p>
-                        <p class="text-xs text-gray-500">Additional documents</p>
-                    </div>
-                </div>
-
-                <!-- Connector -->
-                <div class="flex-1 h-0.5 {{ $currentStage > 2 ? 'bg-green-500' : 'bg-gray-300' }}"></div>
-
-                <!-- Stage 3 -->
-                <div class="flex items-center">
-                    <div class="w-12 h-12 rounded-full border-4 {{ $currentStage >= 3 ? 'border-green-500 bg-green-50' : 'border-gray-300' }} flex items-center justify-center">
-                        @if($currentStage > 3)
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        @else
-                            <span class="text-lg font-semibold {{ $currentStage >= 3 ? 'text-green-600' : 'text-gray-600' }}">3</span>
-                        @endif
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900">Confirmation & Submit</p>
-                        <p class="text-xs text-gray-500">Review and submit application</p>
-                    </div>
-                </div>
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-10 text-center">
+            <h1 class="text-3xl font-extrabold text-red-600 dark:text-red-400 mb-2">Apply for Scholarship</h1>
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
+                <span class="text-red-700 dark:text-red-300 font-medium text-sm">
+                    {{ $scholarship->scholarship_name }}
+                </span>
+                <span class="mx-3 text-gray-300 dark:text-gray-600">|</span>
+                <span class="text-gray-600 dark:text-gray-400 text-sm">
+                    Grant: <span class="font-semibold text-red-600 dark:text-red-400">₱{{ number_format($scholarship->grant_amount, 2) }}</span>
+                </span>
+                <span class="mx-3 text-gray-300 dark:text-gray-600">|</span>
+                <span class="text-gray-600 dark:text-gray-400 text-sm">
+                    Deadline: <span class="font-semibold text-red-600 dark:text-red-400">{{ \Carbon\Carbon::parse($scholarship->submission_deadline)->format('M d, Y') }}</span>
+                </span>
             </div>
         </div>
 
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                    </div>
-                </div>
+        <!-- Progress Stepper -->
+        <div class="mb-12">
+            <div class="relative after:absolute after:inset-x-0 after:top-1/2 after:block after:h-0.5 after:-translate-y-1/2 after:rounded-lg after:bg-gray-200 dark:after:bg-gray-700">
+                <ol class="relative z-10 flex justify-between text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <li class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-900">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full {{ $currentStage >= 1 ? 'bg-red-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' }} ring-4 ring-gray-50 dark:ring-gray-900">
+                            @if($currentStage > 1)
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            @else
+                                1
+                            @endif
+                        </span>
+                        <span class="{{ $currentStage >= 1 ? 'text-red-600 dark:text-red-400 font-bold' : '' }}">SFAO Requirements</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-900">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full {{ $currentStage >= 2 ? 'bg-red-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' }} ring-4 ring-gray-50 dark:ring-gray-900">
+                            @if($currentStage > 2)
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            @else
+                                2
+                            @endif
+                        </span>
+                        <span class="{{ $currentStage >= 2 ? 'text-red-600 dark:text-red-400 font-bold' : '' }}">Scholarship Requirements</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-900">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-full {{ $currentStage >= 3 ? 'bg-red-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' }} ring-4 ring-gray-50 dark:ring-gray-900">
+                            3
+                        </span>
+                        <span class="{{ $currentStage >= 3 ? 'text-red-600 dark:text-red-400 font-bold' : '' }}">Review & Submit</span>
+                    </li>
+                </ol>
             </div>
-        @endif
+        </div>
 
-        @if(session('error'))
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        {{-- Messages removed - now shown in modals --}}
 
-        @if($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
-                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        <!-- Main Content -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
+        <!-- Main Form Content -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
             @if($currentStage == 1)
-                <!-- Stage 1: SFAO Required Documents -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Stage 1: SFAO Required Documents</h2>
-                    <p class="text-gray-600">Please upload the following documents required by the SFAO office.</p>
-                </div>
-
-                <form method="POST" action="{{ route('student.apply.sfao-documents', $scholarship->id) }}" enctype="multipart/form-data">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @php
-                            $getDoc = function($name) use ($submittedDocuments) {
-                                return $submittedDocuments->where('document_category', 'sfao_required')
-                                    ->filter(function($d) use ($name) { return str_contains($d->document_name, $name); })
-                                    ->first();
-                            };
-                            
-                            $docs = [
-                                'form_137' => ['name' => 'Form 137', 'required' => true],
-                                'grades' => ['name' => 'Grades', 'required' => true],
-                                'certificate' => ['name' => 'Certificate', 'required' => false],
-                                'application_form' => ['name' => 'Application Form', 'required' => true],
-                            ];
-                        @endphp
-
-                        @foreach($docs as $key => $config)
-                            @php
-                                $doc = $getDoc($config['name']);
-                                $status = $doc ? $doc->evaluation_status : null;
-                                $isApproved = $status === 'approved';
-                                $isRejected = $status === 'rejected';
-                            @endphp
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    {{ $config['name'] }} @if($config['required'] && !$isApproved)<span class="text-red-500">*</span>@endif
-                                    
-                                    @if($isApproved)
-                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                            Approved
-                                        </span>
-                                    @elseif($isRejected)
-                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            Rejected
-                                        </span>
-                                    @elseif($status === 'pending')
-                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            Pending
-                                        </span>
-                                    @endif
-                                </label>
-                                
-                                @if($isApproved)
-                                    <div class="flex items-center p-3 text-sm text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-                                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        {{ $doc->original_filename }}
-                                    </div>
-                                @else
-                                    <input type="file" name="{{ $key }}" id="{{ $key }}" 
-                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error($key) border-red-500 @enderror"
-                                           accept=".pdf,.jpg,.jpeg,.png,.docx" {{ ($config['required'] && !$isApproved) ? 'required' : '' }}>
-                                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                                    @if($isRejected && $doc->remarks)
-                                        <p class="text-xs text-red-600 mt-1"><strong>Reason:</strong> {{ $doc->remarks }}</p>
-                                    @endif
-                                @endif
-                                
-                                @error($key)
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        @endforeach
+                <!-- Stage 1 Content -->
+                <div class="p-8">
+                    <div class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">SFAO Required Documents</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Please verify and upload the standard documents required by the Scholarship Office.</p>
                     </div>
 
-                    <div class="mt-6 flex justify-end">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                            Upload SFAO Documents
-                        </button>
-                    </div>
-                </form>
-
-            @elseif($currentStage == 2)
-                <!-- Stage 2: Scholarship Required Documents -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Stage 2: Scholarship Required Documents</h2>
-                    <p class="text-gray-600">Please upload the additional documents required for this specific scholarship.</p>
-                </div>
-
-                @if($scholarship->requiredDocuments->count() > 0)
-                    <form method="POST" action="{{ route('student.apply.scholarship-documents', $scholarship->id) }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('student.apply.sfao-documents', $scholarship->id) }}" enctype="multipart/form-data">
                         @csrf
-                        <div class="space-y-6">
-                            @foreach($scholarship->requiredDocuments as $doc)
-                                @php
-                                    // Use check helper if it was defined in scope or redefine local logic
-                                    // We need to match by document_name as stored in database
-                                    $submittedDoc = $submittedDocuments->where('document_category', 'scholarship_required')
-                                        ->where('document_name', $doc->document_name)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            @php
+                                $getDoc = function($name) use ($submittedDocuments) {
+                                    return $submittedDocuments->where('document_category', 'sfao_required')
+                                        ->filter(function($d) use ($name) { return str_contains($d->document_name, $name); })
                                         ->first();
-                                        
-                                    $status = $submittedDoc ? $submittedDoc->evaluation_status : null;
+                                };
+                                
+                                $docs = [
+                                    'form_137' => ['name' => 'Form 137', 'required' => true, 'desc' => 'Your high school report card or transcript.'],
+                                    'grades' => ['name' => 'Grades', 'required' => true, 'desc' => 'Recent copy of grades or certificate of grades.'],
+                                    'certificate' => ['name' => 'Certificate', 'required' => false, 'desc' => 'Certificate of Good Moral Character (optional).'],
+                                    'application_form' => ['name' => 'Application Form', 'required' => true, 'desc' => 'Duly accomplished scholarship application form.'],
+                                ];
+                            @endphp
+
+                            @foreach($docs as $key => $config)
+                                @php
+                                    $doc = $getDoc($config['name']);
+                                    $status = $doc ? $doc->evaluation_status : null;
                                     $isApproved = $status === 'approved';
                                     $isRejected = $status === 'rejected';
+                                    $isPending = $status === 'pending';
                                 @endphp
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        {{ strip_tags($doc->document_name) }}@if($doc->is_mandatory && !$isApproved)<span class="text-red-500">*</span>@endif
-
+                                
+                                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <label class="block text-base font-bold text-gray-900 dark:text-white">
+                                            {{ $config['name'] }}
+                                            @if($config['required'] && !$isApproved)
+                                                <span class="text-red-500 ml-1">*</span>
+                                            @endif
+                                        </label>
+                                        
                                         @if($isApproved)
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 Approved
                                             </span>
                                         @elseif($isRejected)
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                                 Rejected
                                             </span>
-                                        @elseif($status === 'pending')
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        @elseif($isPending)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 Pending
                                             </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-200">
+                                                Not Uploaded
+                                            </span>
                                         @endif
-                                    </label>
+                                    </div>
                                     
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">{{ $config['desc'] }}</p>
+
                                     @if($isApproved)
-                                        <div class="flex items-center p-3 text-sm text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-                                            <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                            {{ $submittedDoc->original_filename }}
+                                        <div class="flex items-center p-3 text-sm text-green-700 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            <span class="truncate">{{ $doc->original_filename }}</span>
                                         </div>
                                     @else
-                                        <input type="file" name="scholarship_doc_{{ $doc->id }}" 
-                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                               accept=".pdf,.jpg,.jpeg,.png,.docx" {{ ($doc->is_mandatory && !$isApproved) ? 'required' : '' }}>
-                                        <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, or DOCX (Max 10MB)</p>
-                                        @if($doc->description)
-                                            <p class="text-xs text-gray-600 mt-1">{{ $doc->description }}</p>
-                                        @endif
-                                        @if($isRejected && $submittedDoc->remarks)
-                                            <p class="text-xs text-red-600 mt-1"><strong>Reason:</strong> {{ $submittedDoc->remarks }}</p>
+                                        <div class="relative">
+                                            <input type="file" name="{{ $key }}" id="{{ $key }}" 
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer"
+                                                   accept=".pdf,.jpg,.jpeg,.png,.docx" {{ ($config['required'] && !$isApproved) ? 'required' : '' }}>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-2">Max 10MB (PDF, JPG, PNG, DOCX)</p>
+                                        @if($isRejected && $doc->remarks)
+                                            <div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs rounded-lg border border-red-100 dark:border-red-800">
+                                                <strong>Correction Needed:</strong> {{ $doc->remarks }}
+                                            </div>
                                         @endif
                                     @endif
+                                    
+                                    @error($key)
+                                        <p class="text-xs text-red-500 mt-2 font-medium">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             @endforeach
                         </div>
 
-                        <div class="mt-6 flex justify-between">
-                            <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 1]) }}" 
-                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                                </svg>
-                                Back to Previous
-                            </a>
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                Upload Scholarship Documents
+                        <div class="mt-8 flex justify-end pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <button type="submit" class="inline-flex items-center px-8 py-3 bg-white border-2 border-red-600 text-red-600 text-sm font-bold uppercase tracking-wide rounded-xl shadow-lg hover:bg-red-50 hover:shadow-xl hover:translate-y-[-1px] transition-all duration-200">
+                                Upload & Continue
+                                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </button>
                         </div>
                     </form>
-                @else
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                        <p class="text-yellow-800">No additional documents required for this scholarship.</p>
+                </div>
+
+            @elseif($currentStage == 2)
+                <!-- Stage 2 Content -->
+                <div class="p-8">
+                    <div class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Scholarship Required Documents</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Additional requirements specific to <span class="font-semibold text-blue-600">{{ $scholarship->scholarship_name }}</span>.</p>
                     </div>
-                    <div class="flex justify-between">
-                        <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 1]) }}" 
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                            </svg>
-                            Back to Previous
-                        </a>
-                        <a href="{{ route('student.apply', $scholarship->id) }}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                            Continue to Confirmation
-                        </a>
-                    </div>
-                @endif
+
+                    @if($scholarship->requiredDocuments->count() > 0)
+                        <form method="POST" action="{{ route('student.apply.scholarship-documents', $scholarship->id) }}" enctype="multipart/form-data">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                @foreach($scholarship->requiredDocuments as $doc)
+                                    @php
+                                        $submittedDoc = $submittedDocuments->where('document_category', 'scholarship_required')
+                                            ->where('document_name', $doc->document_name)
+                                            ->first();
+                                            
+                                        $status = $submittedDoc ? $submittedDoc->evaluation_status : null;
+                                        $isApproved = $status === 'approved';
+                                        $isRejected = $status === 'rejected';
+                                        $isPending = $status === 'pending';
+                                    @endphp
+
+                                    <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <label class="block text-base font-bold text-gray-900 dark:text-white">
+                                                {{ strip_tags($doc->document_name) }}
+                                                @if($doc->is_mandatory && !$isApproved)
+                                                    <span class="text-red-500 ml-1">*</span>
+                                                @endif
+                                            </label>
+                                            
+                                            @if($isApproved)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                                                    Approved
+                                                </span>
+                                            @elseif($isRejected)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300">
+                                                    Rejected
+                                                </span>
+                                            @elseif($isPending)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
+                                                    Pending
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-200">
+                                                    Not Uploaded
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        @if($doc->description)
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">{{ $doc->description }}</p>
+                                        @endif
+                                        
+                                        @if($isApproved)
+                                            <div class="flex items-center p-3 text-sm text-green-700 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                <span class="truncate">{{ $submittedDoc->original_filename }}</span>
+                                            </div>
+                                        @else
+                                            <div class="relative">
+                                                <input type="file" name="scholarship_doc_{{ $doc->id }}" 
+                                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer"
+                                                       accept=".pdf,.jpg,.jpeg,.png,.docx" {{ ($doc->is_mandatory && !$isApproved) ? 'required' : '' }}>
+                                            </div>
+                                            <p class="text-xs text-gray-400 mt-2">Max 10MB (PDF, JPG, PNG, DOCX)</p>
+                                            @if($isRejected && $submittedDoc->remarks)
+                                                <div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs rounded-lg border border-red-100 dark:border-red-800">
+                                                    <strong>Correction Needed:</strong> {{ $submittedDoc->remarks }}
+                                                </div>
+                                            @endif
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="mt-8 flex justify-between items-center pt-6 border-t border-gray-100 dark:border-gray-700">
+                                <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 1]) }}" 
+                                   class="inline-flex items-center px-6 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                    Previous Step
+                                </a>
+                                <button type="submit" class="inline-flex items-center px-8 py-3 bg-white border-2 border-red-600 text-red-600 text-sm font-bold uppercase tracking-wide rounded-xl shadow-lg hover:bg-red-50 hover:shadow-xl hover:translate-y-[-1px] transition-all duration-200">
+                                    Continue
+                                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </button>
+                            </div>
+                        </form>
+                    @else
+                        <div class="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-xl p-8 text-center mb-8">
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+                                <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h3 class="text-lg font-medium text-red-900 dark:text-red-300">All Set!</h3>
+                            <p class="text-red-700 dark:text-red-400 mt-2">No additional documents are required for this scholarship.</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 1]) }}" 
+                               class="inline-flex items-center px-6 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                Previous Step
+                            </a>
+                            <a href="{{ route('student.apply', $scholarship->id) }}" class="inline-flex items-center px-8 py-3 bg-white border-2 border-red-600 text-red-600 text-sm font-bold uppercase tracking-wide rounded-xl shadow-lg hover:bg-red-50 hover:shadow-xl hover:translate-y-[-1px] transition-all duration-200">
+                                Continue to Review
+                                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </a>
+                        </div>
+                    @endif
+                </div>
 
             @elseif($currentStage == 3)
                 <!-- Stage 3: Confirmation -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Stage 3: Confirmation & Submit</h2>
-                    <p class="text-gray-600">Review your submitted documents and submit your application.</p>
-                </div>
+                <div class="p-8">
+                    <div class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Review & Submit</h2>
+                        <p class="text-gray-500 dark:text-gray-400">Please review your submitted documents before finalizing your application.</p>
+                    </div>
 
-                <!-- Submitted Documents Summary -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Submitted Documents</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Submitted Documents Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         @foreach($submittedDocuments as $doc)
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <div>
-                                            <p class="text-sm font-medium text-green-800">{{ strip_tags($doc->document_name) }}</p>
-                                            <p class="text-xs text-green-600">{{ ucfirst($doc->document_category) }} Document</p>
-                                        </div>
+                            <div class="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-red-600 dark:text-red-400">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                     </div>
-                                    <a href="{{ $doc->getViewUrl() }}" target="_blank" 
-                                       class="inline-flex items-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition-colors"
-                                       title="View document">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                    </a>
+                                    <div class="ml-4">
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">{{ strip_tags($doc->document_name) }}</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ ucfirst($doc->document_category) }} Phase</p>
+                                    </div>
                                 </div>
+                                <a href="{{ $doc->getViewUrl() }}" target="_blank" 
+                                   class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2"
+                                   title="View Document">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </a>
                             </div>
                         @endforeach
                     </div>
-                </div>
 
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-yellow-800">Important Notice</h3>
-                            <div class="mt-2 text-sm text-yellow-700">
-                                <p>Please review all your submitted documents carefully. Once you submit your application, it will be sent for review and you cannot make changes.</p>
+                    @if($application)
+                         <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-8 text-center mb-8">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 mb-4">
+                                <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-green-900 dark:text-green-300">Application Submitted!</h3>
+                            <p class="text-green-700 dark:text-green-400 mt-2">Your application is now under review. Good luck!</p>
+                            <div class="mt-6">
+                                <span class="px-4 py-2 rounded-lg bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 font-semibold text-sm">
+                                    Status: {{ ucfirst($application->status) }}
+                                </span>
+                            </div>
+                         </div>
+                    @else
+                        <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 mb-8 flex items-start">
+                            <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 class="text-sm font-bold text-yellow-900 dark:text-yellow-300">Final Confirmation</h4>
+                                <p class="text-sm text-yellow-800 dark:text-yellow-400 mt-1">By submitting this application, you certify that all information provided is true and correct. Once submitted, you cannot make changes to your attached documents.</p>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                @if($application)
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-green-800">Application Submitted</h3>
-                                <div class="mt-2 text-sm text-green-700">
-                                    <p>Your application has been successfully submitted and is now under review.</p>
-                                    <p class="mt-1">Status: <span class="font-medium">{{ ucfirst($application->status) }}</span></p>
-                                </div>
-                            </div>
+                        <div class="flex justify-between items-center pt-6 border-t border-gray-100 dark:border-gray-700">
+                            <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 2]) }}" 
+                               class="inline-flex items-center px-6 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                Previous Step
+                            </a>
+                            <form method="POST" action="{{ route('student.apply.final-submission', $scholarship->id) }}" class="inline">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center px-8 py-3 bg-white border-2 border-green-600 text-green-600 text-sm font-bold uppercase tracking-wide rounded-xl shadow-lg hover:bg-green-50 hover:shadow-xl hover:translate-y-[-1px] transition-all duration-200">
+                                    Submit Application
+                                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                            </form>
                         </div>
-                    </div>
-                @else
-                    <div class="flex justify-between">
-                        <a href="{{ route('student.apply', ['scholarship_id' => $scholarship->id, 'stage' => 2]) }}" 
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                            </svg>
-                            Back to Previous
-                        </a>
-                        <form method="POST" action="{{ route('student.apply.final-submission', $scholarship->id) }}" class="inline">
-                            @csrf
-                            <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                                Submit Application
-                            </button>
-                        </form>
-                    </div>
-                @endif
+                    @endif
+                </div>
             @endif
         </div>
     </div>
 </div>
+
+{{-- Success Message Modal --}}
+@if(session('success'))
+<div x-data="{ showModal: true }" 
+     x-show="showModal"
+     x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     aria-labelledby="modal-title" 
+     role="dialog" 
+     aria-modal="true">
+    
+    {{-- Background Overlay --}}
+    <div x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+         @click="showModal = false"></div>
+
+    {{-- Modal Content --}}
+    <div x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
+        
+        {{-- Success Icon --}}
+        <div class="flex justify-center mb-6">
+            <div class="flex items-center justify-center h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30">
+                <svg class="h-12 w-12 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        </div>
+        
+        {{-- Title and Message --}}
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3" id="modal-title">
+                Success!
+            </h3>
+            <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                {{ session('success') }}
+            </p>
+        </div>
+        
+        {{-- Action Button --}}
+        <button type="button"
+                @click="showModal = false"
+                class="w-full inline-flex justify-center items-center px-6 py-3 bg-green-600 text-white text-base font-semibold rounded-xl shadow-lg hover:bg-green-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200">
+            Continue
+            <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+@endif
+
+{{-- Error Message Modal --}}
+@if(session('error'))
+<div x-data="{ showModal: true }" 
+     x-show="showModal"
+     x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     aria-labelledby="modal-title" 
+     role="dialog" 
+     aria-modal="true">
+    
+    {{-- Background Overlay --}}
+    <div x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+         @click="showModal = false"></div>
+
+    {{-- Modal Content --}}
+    <div x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
+        
+        {{-- Error Icon --}}
+        <div class="flex justify-center mb-6">
+            <div class="flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900/30">
+                <svg class="h-12 w-12 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+        </div>
+        
+        {{-- Title and Message --}}
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3" id="modal-title">
+                Error
+            </h3>
+            <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                {{ session('error') }}
+            </p>
+        </div>
+        
+        {{-- Action Button --}}
+        <button type="button"
+                @click="showModal = false"
+                class="w-full inline-flex justify-center items-center px-6 py-3 bg-red-600 text-white text-base font-semibold rounded-xl shadow-lg hover:bg-red-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200">
+            Close
+        </button>
+    </div>
+</div>
+@endif
+
 @endsection

@@ -1,6 +1,4 @@
-  <!-- Global Sidebar Wrapper -->
-  <x-layout.sidebar-wrapper :user="$user">
-
+@props(['user'])
 
     <!-- Navigation - Scrollable -->
     <nav class="mt-6 px-4 pb-4 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
@@ -154,7 +152,3 @@
         </button>
       </div>
     </nav>
-
-    <!-- Settings Section Removed -->
-
-  </x-global.sidebar-wrapper>

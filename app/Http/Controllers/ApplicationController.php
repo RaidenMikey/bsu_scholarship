@@ -313,6 +313,10 @@ class ApplicationController extends Controller
         $baseCountQuery = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
             ->whereDoesntHave('scholars');
+
+        if ($campusFilter !== 'all') {
+            $baseCountQuery->where('campus_id', $campusFilter);
+        }
             
         $counts = [
             'total' => (clone $baseCountQuery)->whereHas('applications')->count(),
@@ -405,12 +409,8 @@ class ApplicationController extends Controller
              $q->where('status', 'rejected');
         });
 
-        $queryApproved->whereExists(function ($q) {
-            $q->select(DB::raw(1))
-              ->from('student_submitted_documents')
-              ->whereColumn('student_submitted_documents.user_id', 'users.id')
-              ->where('student_submitted_documents.evaluation_status', 'approved')
-              ->where('student_submitted_documents.document_category', 'sfao_required');
+        $queryApproved->whereHas('applications', function($q) {
+             $q->where('status', 'approved');
         });
 
         // Helper to process (fetch, sort, paginate)
@@ -689,30 +689,47 @@ class ApplicationController extends Controller
         $analytics = [];
         
         // 1. Basic Counts
-        $totalStudents = User::where('role', 'student')
-            ->whereIn('campus_id', $campusIds)
-            ->count();
+        $countQuery = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds);
+
+        if ($campusFilter !== 'all') {
+            $countQuery->where('campus_id', $campusFilter);
+        }
+
+        $totalStudents = (clone $countQuery)->count();
             
-        $studentsWithApplications = Application::whereHas('user', function($query) use ($campusIds) {
+        $studentsWithApplications = Application::whereHas('user', function($query) use ($campusIds, $campusFilter) {
                 $query->whereIn('campus_id', $campusIds);
+                if ($campusFilter !== 'all') {
+                    $query->where('campus_id', $campusFilter);
+                }
             })
             ->distinct('user_id')
             ->count('user_id');
             
-        $pendingApplications = Application::whereHas('user', function($query) use ($campusIds) {
+        $pendingApplications = Application::whereHas('user', function($query) use ($campusIds, $campusFilter) {
                 $query->whereIn('campus_id', $campusIds);
+                if ($campusFilter !== 'all') {
+                    $query->where('campus_id', $campusFilter);
+                }
             })
             ->where('status', 'pending')
             ->count();
             
-        $approvedApplications = Application::whereHas('user', function($query) use ($campusIds) {
+        $approvedApplications = Application::whereHas('user', function($query) use ($campusIds, $campusFilter) {
                 $query->whereIn('campus_id', $campusIds);
+                if ($campusFilter !== 'all') {
+                    $query->where('campus_id', $campusFilter);
+                }
             })
             ->where('status', 'approved')
             ->count();
             
-        $rejectedApplications = Application::whereHas('user', function($query) use ($campusIds) {
+        $rejectedApplications = Application::whereHas('user', function($query) use ($campusIds, $campusFilter) {
                 $query->whereIn('campus_id', $campusIds);
+                if ($campusFilter !== 'all') {
+                    $query->where('campus_id', $campusFilter);
+                }
             })
             ->where('status', 'rejected')
             ->count();
@@ -1136,7 +1153,7 @@ class ApplicationController extends Controller
         $campuses = \App\Models\Campus::all();
 
         // Get filtering parameters
-        $tab = $request->get('tab', 'all_scholarships');
+        $tab = $request->get('tabs', $request->get('tab', 'all_scholarships'));
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $statusFilter = $request->get('status_filter', 'all');
@@ -1266,8 +1283,26 @@ class ApplicationController extends Controller
             $query->where('report_type', $request->type);
         }
 
+        // Apply campus filter
         if ($request->filled('campus') && $request->campus !== 'all') {
             $query->where('campus_id', $request->campus);
+        }
+
+        // Apply Academic Year Filter
+        $academicYearFilter = $request->get('academic_year', 'all');
+        if ($academicYearFilter !== 'all') {
+            // Parse "2023-2024" -> Start: 2023-08-01, End: 2024-07-31
+            $years = explode('-', $academicYearFilter);
+            if (count($years) === 2) {
+                $startYear = (int)$years[0];
+                $endYear = (int)$years[1];
+                $startDate = \Carbon\Carbon::createFromDate($startYear, 8, 1)->startOfDay();
+                $endDate = \Carbon\Carbon::createFromDate($endYear, 7, 31)->endOfDay();
+                
+                // Filter by report_period_start if possible, or created_at fallback
+                // Assuming report_period_start is the most accurate reflection of the report's coverage
+                $query->whereBetween('report_period_start', [$startDate, $endDate]);
+            }
         }
 
         // Apply sorting
@@ -1296,12 +1331,33 @@ class ApplicationController extends Controller
         $queryRejected = clone $query;
 
         // Paginate results (10 per page)
-        $reportsParams = ['status', 'type', 'campus', 'sort', 'order']; // Params to append
+        $reportsParams = ['status', 'type', 'campus', 'sort', 'order', 'academic_year']; // Params to append
         
         $reportsSubmitted = $querySubmitted->where('status', 'submitted')->paginate(10, ['*'], 'page_submitted')->appends($request->only($reportsParams));
         $reportsReviewed = $queryReviewed->where('status', 'reviewed')->paginate(10, ['*'], 'page_reviewed')->appends($request->only($reportsParams));
         $reportsApproved = $queryApproved->where('status', 'approved')->paginate(10, ['*'], 'page_approved')->appends($request->only($reportsParams));
         $reportsRejected = $queryRejected->where('status', 'rejected')->paginate(10, ['*'], 'page_rejected')->appends($request->only($reportsParams));
+
+        // ...
+
+        // Generate Academic Year Options
+        // Find the oldest report to determine start range
+        $oldestReport = \App\Models\Report::orderBy('report_period_start', 'asc')->first();
+        $startYear = $oldestReport && $oldestReport->report_period_start ? $oldestReport->report_period_start->year : now()->year;
+        // If the report is from say Jan 2024, that falls in 2023-2024. If Aug 2024, 2024-2025.
+        // Simplified: Start from the year of the oldest report.
+        
+        $currentYear = now()->year;
+        $academicYearOptions = [];
+        // Generate range from startYear down to currentYear+1
+        // We go up to currentYear + 1 to cover the "next" academic year if we are in Aug-Dec
+        for ($y = $currentYear + 1; $y >= $startYear; $y--) {
+            // Academic Year: Y-1 to Y
+            $prev = $y - 1;
+            $label = "{$prev}-{$y}";
+            $academicYearOptions[] = $label;
+        }
+        $academicYearOptions = array_unique($academicYearOptions);
 
         $totalReports = \App\Models\Report::count();
 
@@ -1514,7 +1570,7 @@ class ApplicationController extends Controller
             ->orderBy('rejected_at', 'desc')
             ->get();
 
-        return view('central.dashboard', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reportStats', 'analytics', 'reportsSubmitted', 'reportsReviewed', 'reportsApproved', 'reportsRejected', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'scholarsAll', 'scholarsNew', 'scholarsOld', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports'));
+        return view('central.analytics.index', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reportStats', 'analytics', 'reportsSubmitted', 'reportsReviewed', 'reportsApproved', 'reportsRejected', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'scholarsAll', 'scholarsNew', 'scholarsOld', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports', 'academicYearOptions', 'academicYearFilter'));
     }
 
     public function getFilteredAnalytics(Request $request)
@@ -2299,6 +2355,55 @@ class ApplicationController extends Controller
 
         // All documents are approved
         return 'approve';
+    }
+
+    /**
+     * Show final review - Stage 4
+     */
+    public function finalEvaluation($userId, $scholarshipId)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $student = User::with(['campus'])->findOrFail($userId);
+        $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($scholarshipId);
+        
+        // Verify SFAO has jurisdiction
+        $sfaoAdmin = User::with('campus')->find(session('user_id'));
+        $campusIds = $sfaoAdmin->campus->getAllCampusesUnder()->pluck('id')->toArray();
+        
+        if (!in_array($student->campus_id, $campusIds)) {
+            return redirect()->route('sfao.dashboard')->with('error', 'You do not have permission to evaluate this student.');
+        }
+
+        // Get all submitted documents for this scholarship
+        $allDocuments = StudentSubmittedDocument::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->with('evaluator')
+            ->get();
+
+        // Separate SFAO and scholarship documents
+        $sfaoDocuments = $allDocuments->where('document_category', 'sfao_required');
+        $scholarshipDocuments = $allDocuments->where('document_category', 'scholarship_required');
+
+        // Get application
+        $application = Application::where('user_id', $userId)
+            ->where('scholarship_id', $scholarshipId)
+            ->first();
+
+        // Determine auto-decision based on document statuses
+        $autoDecision = $this->determineAutoDecision($allDocuments);
+
+        return view('sfao.applicants.evaluation.stage4-final-review', compact(
+            'student',
+            'scholarship',
+            'sfaoDocuments',
+            'scholarshipDocuments',
+            'allDocuments',
+            'application',
+            'autoDecision'
+        ))->with('evaluatedDocuments', $allDocuments);
     }
 
     /**

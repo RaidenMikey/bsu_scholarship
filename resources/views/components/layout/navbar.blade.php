@@ -2,8 +2,7 @@
 
 <!-- Main Header -->
 <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300 print:hidden"
-        :class="{ 'md:ml-64': sidebarOpen, 'md:mr-64': rightSidebarOpen }"
-        :style="isDesktop && rightSidebarOpen ? 'margin-right: 16rem;' : ''">
+        :class="{ 'md:ml-64': sidebarOpen }">
   <!-- Branding -->
   <div class="flex items-center space-x-2 md:space-x-3">
       
@@ -27,7 +26,7 @@
           </button>
       @endif
 
-      <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-10 md:h-12 w-auto">
+      <img src="{{ asset('images/lugo.png') }}" alt="Logo" class="h-10 md:h-12 w-auto">
       <div class="text-white">
           <div class="text-sm md:text-base font-bold leading-tight">Batangas State University</div>
           <div class="text-xs font-light hidden md:block">{{ $title ?? 'The National Engineering University' }}</div>
@@ -76,11 +75,11 @@
       <!-- Profile Dropdown (Optional, if we want it here instead of separate sidebar) -->
       @if(isset($profile) && $profile)
         <div class="relative">
-          <button @click="rightSidebarOpen = true" class="flex items-center focus:outline-none">
+          <div class="flex items-center">
               <img src="{{ $user && $user->profile_picture ? asset('storage/profile_pictures/' . $user->profile_picture) . '?' . now()->timestamp : asset('images/default-avatar.png') }}"
                    alt="Profile"
-                   class="h-10 w-10 rounded-full border-2 border-white object-cover hover:border-bsu-red transition-colors">
-          </button>
+                   class="h-10 w-10 rounded-full border-2 border-white object-cover">
+          </div>
         </div>
       @endif
 

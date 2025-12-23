@@ -281,6 +281,15 @@ class UserController extends Controller
             }
         }
 
+        // Check for any active/pending applications
+        $hasPendingApplication = $user->appliedScholarships()
+            ->whereIn('status', ['pending', 'in_progress', 'approved'])
+            ->exists();
+
+        // Count types before pagination
+        $privateScholarshipsCount = $scholarships->where('scholarship_type', 'private')->count();
+        $governmentScholarshipsCount = $scholarships->where('scholarship_type', 'government')->count();
+
         // Pagination Logic
         $page = $request->get('page', 1);
         $perPage = 5;
@@ -368,7 +377,7 @@ class UserController extends Controller
             $s->applied = true; // Treat as applied for visual consistency, or handle separately
         });
 
-        return view('student.dashboard.index', compact('hasApplication', 'scholarships', 'myScholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments'));
+        return view('student.index', compact('hasApplication', 'scholarships', 'myScholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments', 'privateScholarshipsCount', 'governmentScholarshipsCount', 'hasPendingApplication'));
     }
 
     /**
@@ -449,6 +458,10 @@ class UserController extends Controller
             $scholarships = $scholarships->where('scholarship_type', $scholarshipType);
         }
 
+        // Count types before pagination
+        $privateScholarshipsCount = $scholarships->where('scholarship_type', 'private')->count();
+        $governmentScholarshipsCount = $scholarships->where('scholarship_type', 'government')->count();
+
         // Pagination Logic
         $page = $request->get('page', 1);
         $perPage = 5;
@@ -536,7 +549,7 @@ class UserController extends Controller
             $s->applied = true; // Treat as applied for visual consistency, or handle separately
         });
 
-        return view('student.dashboard', compact('hasApplication', 'scholarships', 'myScholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'scholarshipType', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments'));
+        return view('student.index', compact('hasApplication', 'scholarships', 'myScholarships', 'gwa', 'applications', 'applicationTracking', 'form', 'notifications', 'unreadCount', 'scholarshipType', 'unreadCountScholarships', 'unreadCountStatus', 'unreadCountComments', 'privateScholarshipsCount', 'governmentScholarshipsCount'));
     }
 
     /**
@@ -1125,7 +1138,7 @@ class UserController extends Controller
             }
         }
 
-        return redirect()->route('student.apply', $scholarship_id)
+        return redirect()->route('student.dashboard')
             ->with('success', 'SFAO required documents uploaded successfully!');
     }
 
@@ -1212,7 +1225,7 @@ class UserController extends Controller
             }
         }
 
-        return redirect()->route('student.apply', $scholarship_id)
+        return redirect()->route('student.dashboard')
             ->with('success', 'Scholarship required documents uploaded successfully!');
     }
 

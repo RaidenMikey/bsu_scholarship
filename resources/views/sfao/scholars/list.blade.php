@@ -19,7 +19,12 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-bsu-red text-white">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">#</th>
+                        <th class="px-4 py-3 text-left">
+                            <input type="checkbox" 
+                                   x-model="selectAll" 
+                                   @change="toggleSelectAll()"
+                                   class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2 cursor-pointer">
+                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Scholar</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Campus</th>
                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Scholarship</th>
@@ -32,9 +37,17 @@
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach($scholars as $index => $scholar)
+                        @php
+                            $isEligible = !($scholar->scholarship->grant_type === 'one_time' && $scholar->grant_count > 0);
+                        @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                {{ $index + 1 }}
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                @if($isEligible)
+                                    <input type="checkbox" 
+                                           :checked="isScholarSelected({{ $scholar->id }})"
+                                           @change="toggleScholar({{ $scholar->id }})"
+                                           class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2 cursor-pointer">
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
@@ -76,16 +89,14 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 @if($scholar->scholarship->grant_type === 'one_time' && $scholar->grant_count > 0)
-                                    <button disabled class="text-gray-400 bg-gray-100 px-3 py-1 rounded-md cursor-not-allowed text-xs font-semibold">
+                                    <button disabled class="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg cursor-not-allowed text-sm font-semibold border border-gray-300">
                                         Claimed
                                     </button>
                                 @else
-                                    <form action="{{ route('sfao.scholars.mark-claimed', $scholar->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to mark this grant as claimed? This will update the scholar\'s grant history.');">
-                                        @csrf
-                                        <button type="submit" class="text-green-600 hover:text-green-900 bg-green-100 hover:bg-green-200 px-3 py-1 rounded-md transition-colors text-xs font-semibold">
-                                            Mark as Claimed
-                                        </button>
-                                    </form>
+                                    <button @click="openMarkAsModal({{ $scholar->id }}, '{{ $scholar->user->name ?? 'Scholar' }}')" 
+                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg">
+                                        Mark as
+                                    </button>
                                 @endif
                             </td>
                         </tr>

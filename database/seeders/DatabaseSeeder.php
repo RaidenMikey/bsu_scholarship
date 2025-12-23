@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CampusDepartmentSeeder::class, // Add CampusDepartmentSeeder
             FormsTableSeeder::class,
             NotificationSeeder::class,
+            ProgramSeeder::class, // Add ProgramSeeder
             MainSeeder::class, // Replaces Users, App, Scholars
         ]);
         

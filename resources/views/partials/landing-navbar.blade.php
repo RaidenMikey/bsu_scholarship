@@ -4,7 +4,7 @@
             <div class="flex items-center space-x-3">
                 <a href="#home" class="flex items-center space-x-2">
                     <!-- Increased logo size -->
-                    <img src="{{ asset('images/Batangas_State_Logo.png') }}" alt="Logo" class="h-10 md:h-14 lg:h-16 w-auto">
+                    <img src="{{ asset('images/lugo.png') }}" alt="Logo" class="h-10 md:h-14 lg:h-16 w-auto">
                     <div class="text-gray-800">
                         <div class="text-base md:text-lg font-bold leading-tight">Batangas State University</div>
                         <div class="text-xs md:text-sm italic text-red-600 leading-tight">The National Engineering University</div>

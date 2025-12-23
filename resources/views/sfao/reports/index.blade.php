@@ -6,18 +6,7 @@
   <div class="space-y-6">
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white" x-text="
-            tab === 'reports-student_summary' ? 'Student Summary Report' :
-            (tab === 'reports-scholar_summary' ? 'Scholar Summary Report' :
-            (tab === 'reports-grant_summary' ? 'Grant Summary Report' : 'Reports'))
-        "></h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" x-text="
-            tab === 'reports-student_summary' ? 'Select a campus to generate a report' :
-            (tab === 'reports-scholar_summary' ? 'Generate and view scholar summary reports' :
-            (tab === 'reports-grant_summary' ? 'Generate and view grant summary reports' : 'Manage reports'))
-        "></p>
-      </div>
+      <!-- Header Text Removed -->
       <div class="mt-4 sm:mt-0">
 
         
@@ -35,12 +24,12 @@
 
 
 
-    <!-- Campus Selection Cards (Student Summary) -->
-    <div x-show="tab === 'reports-student_summary'" class="mt-6">
+    <!-- Campus Selection Cards (Applicant Summary) -->
+    <div x-show="tab === 'reports-applicant_summary'" class="mt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- All Campuses Card -->
             @if(isset($monitoredCampuses) && $monitoredCampuses->count() > 1)
-            <a href="{{ route('sfao.reports.student-summary', ['campus_id' => 'all']) }}" 
+            <a href="{{ route('sfao.reports.applicant-summary', ['campus_id' => 'all']) }}" 
                class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                 <div class="p-6 flex items-center justify-between">
                     <div class="flex items-center">
@@ -64,7 +53,7 @@
             <!-- Individual Campus Cards -->
             @if(isset($monitoredCampuses))
                 @foreach($monitoredCampuses as $campus)
-                    <a href="{{ route('sfao.reports.student-summary', ['campus_id' => $campus->id]) }}" 
+                    <a href="{{ route('sfao.reports.applicant-summary', ['campus_id' => $campus->id]) }}" 
                        class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                         <div class="p-6 flex items-center justify-between">
                             <div class="flex items-center">
@@ -195,7 +184,7 @@
     </div>
 
     <!-- Filters (Shared for now) - Hidden on Summary Reports -->
-    <div x-show="!['reports-student_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+    <div x-show="!['reports-applicant_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
       <form method="GET" action="{{ route('sfao.dashboard') }}" class="flex flex-wrap gap-4">
         <input type="hidden" name="tab" :value="tab">
         <div class="flex-1 min-w-0">
@@ -230,7 +219,7 @@
     </div>
 
     <!-- Reports Table - Hidden on Summary Reports -->
-    <div x-show="!['reports-student_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <div x-show="!['reports-applicant_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
       @if (isset($reports) && $reports->count() > 0)
         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
           @foreach ($reports as $report)
@@ -365,7 +354,7 @@
           </p>
           <div class="mt-6">
             <!-- Default Create Report Button (Empty State) -->
-            <div x-show="tab !== 'reports-student_summary'">
+            <div x-show="tab !== 'reports-applicant_summary'">
               <a href="{{ route('sfao.reports.create') }}"
                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-bsu-red hover:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

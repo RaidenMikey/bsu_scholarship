@@ -7,7 +7,7 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        @include('sfao.partials.common.page-header', [
+        @include('sfao.components.page-header', [
             'title' => request('from_status') ? 'Evaluation Details' : 'Document Evaluation',
             'subtitle' => request('from_status') ? 'View application evaluation details and status' : 'Stage 4: Final Review & Application Decision'
         ])
@@ -397,7 +397,7 @@
     </div>
 </div>
 
-@include('sfao.modals.confirmation-stage4')
+@include('sfao.components.modals.confirmation-stage4')
 
 
 @endsection
