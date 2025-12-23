@@ -47,7 +47,9 @@
            @include('sfao.applicants.index')   <!-- Applicants Lists -->
            @include('sfao.scholars.index')     <!-- Scholars Lists -->
            @include('sfao.reports.index')      <!-- Reports -->
-           @include('sfao.analytics.index')            <!-- Analytics -->
+           @include('sfao.analytics.index')    <!-- Analytics -->
+           @include('sfao.application-forms.index')  <!-- Application Forms -->
+           @include('sfao.application-forms.upload') <!-- Upload Application Forms -->
            @include('sfao.account.index')      <!-- Account -->
         </div>
 

@@ -117,6 +117,10 @@ Route::post('/central/login', [AuthController::class, 'centralLogin']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 
+
+// Shared Application Forms Download (accessible by students and SFAO)
+Route::get('/application-forms/{id}/download', [App\Http\Controllers\ApplicationFormController::class, 'download'])->name('application-forms.download')->middleware(['web', 'checkUserExists']);
+
 // Email Verification
 Route::get('/email/verify', [AuthController::class, 'showVerificationNotice'])->name('verification.notice');
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
@@ -180,6 +184,10 @@ Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')
     Route::get('/print-application/{scholarship_id}', [FormPrintController::class, 'printApplication'])->name('print-application.scholarship');
     Route::get('/download-file', [FormPrintController::class, 'downloadFile'])->name('download-file');
 
+
+    // Application Forms
+    Route::get('/application-forms', [App\Http\Controllers\ApplicationFormController::class, 'studentIndex'])->name('application-forms.index');
+
     // Change Password
     Route::post('/change-password', [UserController::class, 'changePassword'])->name('change-password');
 });
@@ -240,6 +248,13 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::get('/applicant-summary', [ReportController::class, 'applicantSummary'])->name('reports.applicant-summary');
     Route::get('/scholar-summary', [ReportController::class, 'scholarSummary'])->name('reports.scholar-summary');
     Route::get('/grant-summary', [ReportController::class, 'grantSummary'])->name('reports.grant-summary');
+    
+    
+    // Application Forms Management
+    Route::get('/application-forms', [App\Http\Controllers\ApplicationFormController::class, 'index'])->name('application-forms.index');
+    Route::get('/application-forms/create', [App\Http\Controllers\ApplicationFormController::class, 'create'])->name('application-forms.create');
+    Route::post('/application-forms', [App\Http\Controllers\ApplicationFormController::class, 'store'])->name('application-forms.store');
+    Route::delete('/application-forms/{id}', [App\Http\Controllers\ApplicationFormController::class, 'destroy'])->name('application-forms.destroy');
     
     // Change Password
     Route::post('/change-password', [UserManagementController::class, 'changePassword'])->name('change-password');

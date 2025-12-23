@@ -204,6 +204,13 @@ class DashboardController extends Controller
             }
         }
 
+
+        // 5. Application Forms
+        $forms = \App\Models\ApplicationForm::with(['campus', 'uploader'])
+            ->whereIn('campus_id', $campusIds)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
         return view('sfao.index', array_merge([
             'user' => $user,
             'sfaoCampus' => $sfaoCampus,
@@ -214,6 +221,7 @@ class DashboardController extends Controller
             'scholarshipsGov' => $scholarshipsGov,
             'scholars' => $scholars,
             'reports' => $reports,
+            'forms' => $forms,
             'activeTab' => $activeTab,
             'campusOptions' => $campusOptions,
             'sortBy' => 'name', 'sortOrder' => 'asc', 'campusFilter' => 'all', 'statusFilter' => 'all',

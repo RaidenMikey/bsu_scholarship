@@ -32,7 +32,7 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ asset('js/sfao-script.js') }}?v=fixed_loop"></script>
+    <script src="{{ asset('js/sfao-script.js') }}?v={{ time() }}_revert"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     
     <script>

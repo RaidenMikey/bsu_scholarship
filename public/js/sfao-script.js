@@ -1350,7 +1350,7 @@ window.sfaoDashboardState = function (config) {
         tab: 'analytics',
         statsCampus: localStorage.getItem('sfaoStatsCampus') || config.defaultStatsCampus,
         campusList: config.campusList || [],
-        openDropdowns: { dashboard: false, scholarships: false, applicants: false, scholars: false, reports: false },
+        openDropdowns: { dashboard: false, scholarships: false, applicants: false, scholars: false, reports: false, applicationForms: false },
 
         urlMapping: {
             'overview': 'analytics',
@@ -1369,6 +1369,8 @@ window.sfaoDashboardState = function (config) {
             'reports_applicant_summary': 'reports-applicant_summary',
             'reports_scholar_summary': 'reports-scholar_summary',
             'reports_grant_summary': 'reports-grant_summary',
+            'all-app-forms': 'all-app-forms',
+            'up-app-form': 'up-app-form',
             'account_settings': 'account'
         },
 
@@ -1376,8 +1378,6 @@ window.sfaoDashboardState = function (config) {
             // Watch Stats Campus Change
             this.$watch('statsCampus', val => {
                 localStorage.setItem('sfaoStatsCampus', val);
-                // Ensure filtered data updates in the child component if needed, 
-                // but checking tab state to update URL explicitly is key.
                 this.updateUrl(this.tab);
             });
 
@@ -1473,6 +1473,7 @@ window.sfaoDashboardState = function (config) {
             else if (currentTab.startsWith('applicants')) this.openDropdowns.applicants = true;
             else if (currentTab.startsWith('scholars')) this.openDropdowns.scholars = true;
             else if (currentTab.startsWith('reports')) this.openDropdowns.reports = true;
+            else if (currentTab === 'all-app-forms' || currentTab === 'up-app-form') this.openDropdowns.applicationForms = true;
         }
     };
 };
