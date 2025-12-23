@@ -67,6 +67,10 @@
     <!-- Applications List -->
     <div class="space-y-6">
         @forelse($applications as $application)
+            @if(!$application->scholarship)
+                {{-- Skip applications where the scholarship has been deleted --}}
+                @continue
+            @endif
             <div class="bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
                 <!-- Application Header -->
                 <div class="p-6 border-b border-gray-200">

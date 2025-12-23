@@ -491,8 +491,84 @@ class DashboardController extends Controller
      */
     private function studentDashboard(Request $request)
     {
-        // TODO: Migrated from StudentController
-        return view('student.index');
+        $user = \App\Models\User::find(session('user_id'));
+        
+        // 1. Fetch Application Forms
+        $forms = \App\Models\ApplicationForm::where('campus_id', $user->campus_id)
+            ->with('uploader')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 2. Fetch Scholarships
+        $scholarships = \App\Models\Scholarship::where('is_active', true)
+            ->withCount('applications')
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+            
+        // Append user-specific status to scholarships
+        foreach($scholarships as $scholarship) {
+             $application = \App\Models\Application::where('user_id', $user->id)
+                 ->where('scholarship_id', $scholarship->id)
+                 ->first();
+             
+             $scholarship->applied = $application ? true : false;
+             $scholarship->application_status = $application ? $application->status : null;
+             
+             $scholar = \App\Models\Scholar::where('user_id', $user->id)
+                  ->where('scholarship_id', $scholarship->id)
+                  ->exists();
+             $scholarship->is_scholar = $scholar;
+        }
+
+        // 3. Check for any pending application
+        $hasPendingApplication = \App\Models\Application::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        // 4. Notification Counts
+        $unreadCount = \App\Models\Notification::where('user_id', $user->id)->where('is_read', false)->count();
+        $unreadCountScholarships = \App\Models\Notification::where('user_id', $user->id)->where('is_read', false)->where('type', 'scholarship_created')->count();
+        $unreadCountStatus = \App\Models\Notification::where('user_id', $user->id)->where('is_read', false)->where('type', 'application_status')->count();
+        $unreadCountComments = \App\Models\Notification::where('user_id', $user->id)->where('is_read', false)->where('type', 'sfao_comment')->count();
+
+        // 5. Scholarship Counts for Empty States
+        $privateScholarshipsCount = \App\Models\Scholarship::where('is_active', true)->where('scholarship_type', 'Private')->count();
+        $governmentScholarshipsCount = \App\Models\Scholarship::where('is_active', true)->where('scholarship_type', 'Government')->count();
+
+        // 6. User's Filled Application Form (for SFAO/TDP tabs)
+        $form = \App\Models\Form::where('user_id', $user->id)->first();
+
+        // 7. Student Applications
+        $applications = \App\Models\Application::where('user_id', $user->id)
+            ->with('scholarship')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 8. Notifications
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // 9. My Scholarships
+        $scholarshipIds = \App\Models\Scholar::where('user_id', $user->id)->pluck('scholarship_id');
+        $myScholarships = \App\Models\Scholarship::whereIn('id', $scholarshipIds)->get();
+
+        return view('student.index', compact(
+            'forms', 
+            'user', 
+            'scholarships', 
+            'applications',
+            'notifications',
+            'myScholarships',
+            'hasPendingApplication', 
+            'unreadCount', 
+            'unreadCountScholarships', 
+            'unreadCountStatus', 
+            'unreadCountComments',
+            'privateScholarshipsCount',
+            'governmentScholarshipsCount',
+            'form'
+        ));
     }
 
     private function getStandardPrograms()

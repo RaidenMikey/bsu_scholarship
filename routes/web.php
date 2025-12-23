@@ -150,7 +150,7 @@ Route::get('/document/view/{id}', [UserController::class, 'viewDocument'])->name
 Route::middleware(['web', 'checkUserExists', 'role:student'])->prefix('student')->name('student.')->group(function () {
     
     // Dashboard
-    Route::get('/', [UserController::class, 'studentDashboard'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Scholarships
     Route::get('/scholarships', [UserController::class, 'scholarships'])->name('scholarships');

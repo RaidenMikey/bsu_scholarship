@@ -1,25 +1,8 @@
-@extends('layouts.dashboard')
-
-@section('title', 'Application Forms')
-
-@section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Application Forms</h1>
         <p class="text-gray-600 dark:text-gray-400 mt-1">Download application forms for your campus</p>
     </div>
-
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg">
-            {{ session('error') }}
-        </div>
-    @endif
 
     @if($forms->isEmpty())
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
@@ -92,4 +75,3 @@
         </div>
     @endif
 </div>
-@endsection

@@ -54,6 +54,7 @@
         'scholarship_notifications': { tab: 'notifications', subTab: 'scholarship_created' },
         'status_updates': { tab: 'notifications', subTab: 'application_status' },
         'comments': { tab: 'notifications', subTab: 'sfao_comment' },
+        'all-app-forms': { tab: 'all-app-forms', subTab: 'all' },
         'account_settings': { tab: 'account', subTab: 'all' }
     },
 
@@ -65,6 +66,8 @@
         if (urlTab && this.tabMapping[urlTab]) {
             this.tab = this.tabMapping[urlTab].tab;
             this.subTab = this.tabMapping[urlTab].subTab;
+        } else if (urlTab) {
+            this.tab = urlTab;
         } else {
             this.tab = localStorage.getItem('studentActiveTab') || 'scholarships';
         }
@@ -131,9 +134,24 @@
       </div>
     </div>
 
+
+
+    <!-- Stats Overview (Only visible on home/scholarships tab) -->
+    <div x-show="tab === 'scholarships' && subTab === 'all'" class="mb-8">
+        <!-- Stats content here -->
+    </div>
+    
     <!-- Applied Scholarships Tab -->
-    <div x-show="tab === 'applied-scholarships'" x-transition>
-      @include('student.applications.index')
+    <div x-show="tab === 'applied-scholarships' || tab === 'applied_scholarships' || tab === 'application_tracking'" x-transition>
+      @if(isset($applications))
+          @include('student.applications.index')
+      @else
+          <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              <strong>Critical Error:</strong> The system cannot find your applications data. 
+              <br>This confirms that <code>DashboardController.php</code> was not successfully updated on the server.
+              <br>Please re-upload <code>app/Http/Controllers/DashboardController.php</code>.
+          </div>
+      @endif
     </div>
     
     <!-- Notifications Tab -->
@@ -144,6 +162,11 @@
     <!-- Account Tab -->
     <div x-show="tab === 'account'" x-transition>
         @include('student.account.index')
+    </div>
+
+    <!-- Application Forms Tab -->
+    <div x-show="tab === 'all-app-forms'" x-transition>
+        @include('student.application-forms.index')
     </div>
 
     <!-- Application Limit Warning Modal -->
