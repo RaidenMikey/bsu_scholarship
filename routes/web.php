@@ -247,8 +247,10 @@ Route::middleware(['web', 'checkUserExists:sfao', 'role:sfao'])->prefix('sfao')-
     Route::post('/reports/generate-data', [ReportController::class, 'generateReportData'])->name('reports.generate-data');
     
     // Specific Report Summaries
-    Route::get('/applicant-summary', [ReportController::class, 'applicantSummary'])->name('reports.applicant-summary');
-    Route::get('/scholar-summary', [ReportController::class, 'scholarSummary'])->name('reports.scholar-summary');
+    Route::get('/student-summary', [ReportController::class, 'studentSummary'])->name('reports.student-summary');
+    Route::get('/scholar-summary', function() {
+        return redirect()->route('sfao.reports.student-summary', ['student_type' => 'scholars']);
+    })->name('reports.scholar-summary');
     Route::get('/grant-summary', [ReportController::class, 'grantSummary'])->name('reports.grant-summary');
     
     

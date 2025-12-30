@@ -49,7 +49,6 @@
            @include('sfao.reports.index')      <!-- Reports -->
            @include('sfao.analytics.index')    <!-- Analytics -->
            @include('sfao.application-forms.index')  <!-- Application Forms -->
-           @include('sfao.application-forms.upload') <!-- Upload Application Forms -->
            @include('sfao.account.index')      <!-- Account -->
         </div>
 

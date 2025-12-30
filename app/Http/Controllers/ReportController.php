@@ -11,6 +11,8 @@ use App\Models\Application;
 use App\Models\Scholarship;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ReportController extends Controller
 {
@@ -1010,4 +1012,262 @@ class ReportController extends Controller
         ]);
     }
 
+    /**
+     * Student Summary Report Page (Unified Applicant/Scholar)
+     */
+    public function studentSummary(Request $request)
+    {
+        if (!session()->has('user_id') || session('role') !== 'sfao') {
+            return redirect('/login')->with('session_expired', true);
+        }
+
+        $user = User::with('campus')->find(session('user_id'));
+        $campus = $user->campus;
+        $monitoredCampuses = $campus->getAllCampusesUnder();
+        $campusIds = $monitoredCampuses->pluck('id');
+
+        // Filters
+        $studentType = $request->get('student_type', 'applicants'); // applicants, scholars
+        $campusId = $request->get('campus_id', 'all');
+        
+        // If specific campus selected
+        if ($campusId !== 'all') {
+            $monitoredCampuses = $monitoredCampuses->where('id', $campusId);
+            $campusIds = [$campusId];
+        }
+
+        $departmentFilter = $request->get('department', 'all');
+        $programFilter = $request->get('program', 'all');
+        $academicYearFilter = $request->get('academic_year', 'all');
+        $scholarshipFilter = $request->get('scholarship_id', 'all');
+
+        // Fetch Filter Options (Departments, Programs, Academic Years, Scholarships)
+        // Departments
+        $departments = \App\Models\Department::select('name', 'short_name')->get();
+        
+        // Programs - Grouped by Department
+        $programs = User::where('role', 'student')
+            ->whereIn('campus_id', $campus->getAllCampusesUnder()->pluck('id')) // Allow filtering across all campuses
+            ->whereNotNull('program')
+            ->select('college', 'program')
+            ->distinct()
+            ->get()
+            ->groupBy('college')
+             ->map(function ($items) {
+                return $items->pluck('program')->unique()->values()->all();
+            })->toArray();
+
+        // Academic Years (Logic from DashboardController)
+        $oldestReport = \App\Models\Report::orderBy('report_period_start', 'asc')->first();
+        $startYear = $oldestReport && $oldestReport->report_period_start ? $oldestReport->report_period_start->year : now()->year;
+        $currentYear = now()->year;
+        $academicYearOptions = [];
+        for ($y = $currentYear + 1; $y >= $startYear; $y--) {
+            $prev = $y - 1;
+            $academicYearOptions[] = "{$prev}-{$y}";
+        }
+        $academicYearOptions = array_unique($academicYearOptions);
+        
+        // Scholarships
+        $scholarships = \App\Models\Scholarship::where('is_active', true)->select('id', 'scholarship_name')->orderBy('scholarship_name')->get();
+
+
+        // Data Fetching
+        $reportData = [];
+
+        foreach ($monitoredCampuses as $camp) {
+            $campusData = [
+                'campus' => $camp,
+                'students' => []
+            ];
+
+            $query = User::where('campus_id', $camp->id)->where('role', 'student');
+
+             // Apply Department Filter
+            if ($departmentFilter !== 'all') {
+                $query->where(function($q) use ($departmentFilter) {
+                    $q->where('college', $departmentFilter)
+                      ->orWhere('college', \App\Models\Department::where('short_name', $departmentFilter)->value('name') ?? $departmentFilter);
+                });
+            }
+             // Apply Program Filter
+            if ($programFilter !== 'all') {
+                $query->where('program', $programFilter);
+            }
+            
+            // For Applicants vs Scholars
+            if ($studentType === 'applicants') {
+                 // Filter by Applicant logic (Students who have applications AND are NOT scholars)
+                 $query->whereDoesntHave('scholars')
+                       ->whereHas('applications', function($qApp) use ($academicYearFilter, $scholarshipFilter) {
+                     // Scholarship Filter
+                     if ($scholarshipFilter !== 'all') {
+                         $qApp->where('scholarship_id', $scholarshipFilter);
+                     }
+                     // Academic Year Filter for Applicants
+                     if ($academicYearFilter !== 'all') {
+                         $years = explode('-', $academicYearFilter);
+                         if (count($years) === 2) {
+                             $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                             $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                             $qApp->whereBetween('created_at', [$startDt, $endDt]);
+                         }
+                     }
+                 })->with(['form', 'applications.scholarship']);
+            } else {
+                // Scholars
+                $query->whereHas('scholars', function($qScholar) use ($academicYearFilter, $scholarshipFilter) {
+                     // Scholarship Filter
+                     if ($scholarshipFilter !== 'all') {
+                         $qScholar->where('scholarship_id', $scholarshipFilter);
+                     }
+                     // Academic Year Filter for Scholars
+                      if ($academicYearFilter !== 'all') {
+                         $years = explode('-', $academicYearFilter);
+                         if (count($years) === 2) {
+                             $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                             $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                             $qScholar->whereBetween('created_at', [$startDt, $endDt]);
+                         }
+                     }
+                })->with(['form', 'scholars.scholarship']);
+            }
+
+            $students = $query->get();
+            $processedStudents = [];
+            $seq = 1;
+
+            foreach ($students as $student) {
+                if ($studentType === 'applicants') {
+                    // List all relevant applications for this student
+                    foreach ($student->applications as $app) {
+                         // Apply Scholarship Filter
+                         if ($scholarshipFilter !== 'all' && $app->scholarship_id != $scholarshipFilter) continue;
+                        
+                         // Apply AY Filter to the specific application if needed (since has() filters students but we iterating all apps)
+                         if ($academicYearFilter !== 'all') {
+                              $years = explode('-', $academicYearFilter);
+                              if (count($years) === 2) {
+                                  $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                                  $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                                  if (!$app->created_at->between($startDt, $endDt)) continue;
+                              }
+                         }
+                        
+                         $processedStudents[] = [
+                            'seq' => $seq++,
+                            'app_id' => $app->id,
+                            'last_name' => $student->last_name,
+                            'first_name' => $student->first_name,
+                            'middle_name' => $student->middle_name,
+                            'sex' => $student->sex,
+                            'birthdate' => $student->birthdate ? $student->birthdate->format('Y-m-d') : 'N/A',
+                            'course' => $student->program ?? $student->college,
+                            'year_level' => $student->year_level,
+                            'units' => $student->form ? $student->form->units_enrolled : 'N/A',
+                            'municipality' => $student->form ? $student->form->town_city : 'N/A',
+                            'province' => $student->form ? $student->form->province : 'N/A',
+                            'pwd' => $student->form ? $student->form->disability : 'N/A',
+                            'scholarship' => $app->scholarship ? $app->scholarship->scholarship_name : 'N/A',
+                            'grant' => $app->scholarship ? $app->scholarship->grant_amount : 'N/A',
+                            'status_remarks' => $app->remarks ?: ucfirst($app->status)
+                         ];
+                    }
+                } else {
+                     // Scholars
+                     foreach ($student->scholars as $scholar) {
+                        // Apply Scholarship Filter
+                        if ($scholarshipFilter !== 'all' && $scholar->scholarship_id != $scholarshipFilter) continue;
+                         
+                        // Apply AY filter Check
+                        if ($academicYearFilter !== 'all') {
+                              $years = explode('-', $academicYearFilter);
+                              if (count($years) === 2) {
+                                  $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                                  $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                                  if (!$scholar->created_at->between($startDt, $endDt)) continue;
+                              }
+                        }
+
+                        $processedStudents[] = [
+                            'seq' => $seq++,
+                            'app_id' => $scholar->id, // Scholar ID
+                            'last_name' => $student->last_name,
+                            'first_name' => $student->first_name,
+                            'middle_name' => $student->middle_name,
+                            'sex' => $student->sex,
+                            'department' => $student->college,
+                            'program' => $student->program,
+                            'scholarship' => $scholar->scholarship ? $scholar->scholarship->scholarship_name : 'N/A',
+                            'status' => ucfirst($scholar->type) . ' Scholar'
+                         ];
+                     }
+                }
+            }
+            $campusData['students'] = $processedStudents;
+            $reportData[] = $campusData;
+        }
+
+        // Export to Excel Logic
+        if ($request->get('export') === 'excel') {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            
+            // Set Headers
+            $headers = ['Seq', 'Last Name', 'First Name', 'Middle Name', 'Sex', 'Birthdate', 'Course/Program', 'Year Level', 'Units', 'Municipality', 'Province', 'PWD', 'Scholarship', 'Grant', 'Status/Remarks'];
+            $sheet->fromArray($headers, NULL, 'A1');
+            
+            // Style Header
+            $sheet->getStyle('A1:O1')->getFont()->setBold(true);
+
+            $row = 2;
+            foreach ($reportData as $data) {
+                // Campus Header Row (Optional, but good for separation if multiple campuses)
+                if (count($reportData) > 1) {
+                    $sheet->setCellValue('A' . $row, $data['campus']->name);
+                    $sheet->mergeCells("A{$row}:O{$row}");
+                    $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setItalic(true);
+                    $row++;
+                }
+
+                foreach ($data['students'] as $student) {
+                    $sheet->setCellValue('A' . $row, $student['seq']);
+                    $sheet->setCellValue('B' . $row, $student['last_name']);
+                    $sheet->setCellValue('C' . $row, $student['first_name']);
+                    $sheet->setCellValue('D' . $row, $student['middle_name']);
+                    $sheet->setCellValue('E' . $row, $student['sex']);
+                    // Check if keys exist (Applicant vs Scholar diffs)
+                    $sheet->setCellValue('F' . $row, $student['birthdate'] ?? 'N/A');
+                    $sheet->setCellValue('G' . $row, $student['course'] ?? ($student['program'] ?? 'N/A'));
+                    $sheet->setCellValue('H' . $row, $student['year_level'] ?? 'N/A');
+                    $sheet->setCellValue('I' . $row, $student['units'] ?? 'N/A');
+                    $sheet->setCellValue('J' . $row, $student['municipality'] ?? 'N/A');
+                    $sheet->setCellValue('K' . $row, $student['province'] ?? 'N/A');
+                    $sheet->setCellValue('L' . $row, $student['pwd'] ?? 'N/A');
+                    $sheet->setCellValue('M' . $row, $student['scholarship']);
+                    $sheet->setCellValue('N' . $row, $student['grant'] ?? 'N/A');
+                    $sheet->setCellValue('O' . $row, $student['status_remarks'] ?? ($student['status'] ?? 'N/A'));
+                    $row++;
+                }
+            }
+
+            foreach(range('A','O') as $columnID) {
+                $sheet->getColumnDimension($columnID)->setAutoSize(true);
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $fileName = "Student_Summary_Report_" . date('Y-m-d_His') . ".xlsx";
+
+            return response()->streamDownload(function() use ($writer) {
+                $writer->save('php://output');
+            }, $fileName);
+        }
+
+        if ($request->ajax()) {
+            return view('sfao.reports.partials.student-summary-table', compact('reportData', 'studentType'));
+        }
+
+        return view('sfao.reports.student-summary', 
+            compact('user', 'monitoredCampuses', 'reportData', 'studentType', 'departments', 'programs', 'academicYearOptions', 'scholarships'));
+    }
 }

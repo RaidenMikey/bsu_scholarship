@@ -24,12 +24,13 @@
 
 
 
-    <!-- Campus Selection Cards (Applicant Summary) -->
-    <div x-show="tab === 'reports-applicant_summary'" class="mt-6">
+    <!-- Campus Selection Cards (Student Summary) -->
+    <div x-show="tab === 'reports-student_summary'" class="mt-6">
+        
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- All Campuses Card -->
             @if(isset($monitoredCampuses) && $monitoredCampuses->count() > 1)
-            <a href="{{ route('sfao.reports.applicant-summary', ['campus_id' => 'all']) }}" 
+            <a href="{{ route('sfao.reports.student-summary', ['student_type' => 'applicants', 'campus_id' => 'all']) }}" 
                class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                 <div class="p-6 flex items-center justify-between">
                     <div class="flex items-center">
@@ -40,7 +41,7 @@
                         </div>
                         <div class="ml-4">
                             <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-bsu-red dark:group-hover:text-red-400 transition-colors">All Campuses</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Generate report for all campuses</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Generate student report for all campuses</p>
                         </div>
                     </div>
                     <svg class="w-6 h-6 text-gray-400 group-hover:text-bsu-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +54,7 @@
             <!-- Individual Campus Cards -->
             @if(isset($monitoredCampuses))
                 @foreach($monitoredCampuses as $campus)
-                    <a href="{{ route('sfao.reports.applicant-summary', ['campus_id' => $campus->id]) }}" 
+                    <a href="{{ route('sfao.reports.student-summary', ['student_type' => 'applicants', 'campus_id' => $campus->id]) }}" 
                        class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
                         <div class="p-6 flex items-center justify-between">
                             <div class="flex items-center">
@@ -64,7 +65,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ $campus->name }}</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate report for this campus</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate student report for this campus</p>
                                 </div>
                             </div>
                             <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,57 +78,6 @@
         </div>
     </div>
 
-    <!-- Campus Selection Cards (Scholar Summary) -->
-    <div x-show="tab === 'reports-scholar_summary'" class="mt-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- All Campuses Card -->
-            @if(isset($monitoredCampuses) && $monitoredCampuses->count() > 1)
-            <a href="{{ route('sfao.reports.scholar-summary', ['campus_id' => 'all']) }}" 
-               class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
-                <div class="p-6 flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 text-bsu-red group-hover:bg-bsu-red group-hover:text-white transition-colors duration-300">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-bsu-red dark:group-hover:text-red-400 transition-colors">All Campuses</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Generate scholar report for all campuses</p>
-                        </div>
-                    </div>
-                    <svg class="w-6 h-6 text-gray-400 group-hover:text-bsu-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </div>
-            </a>
-            @endif
-
-            <!-- Individual Campus Cards -->
-            @if(isset($monitoredCampuses))
-                @foreach($monitoredCampuses as $campus)
-                    <a href="{{ route('sfao.reports.scholar-summary', ['campus_id' => $campus->id]) }}" 
-                       class="block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700 group">
-                        <div class="p-6 flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-4">
-                                    <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ $campus->name }}</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">Generate scholar report for this campus</p>
-                                </div>
-                            </div>
-                            <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </div>
-                    </a>
-                @endforeach
-            @endif
-        </div>
     </div>
 
     <!-- Campus Selection Cards (Grant Summary) -->
@@ -184,7 +134,7 @@
     </div>
 
     <!-- Filters (Shared for now) - Hidden on Summary Reports -->
-    <div x-show="!['reports-applicant_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+    <div x-show="!['reports-student_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
       <form method="GET" action="{{ route('sfao.dashboard') }}" class="flex flex-wrap gap-4">
         <input type="hidden" name="tab" :value="tab">
         <div class="flex-1 min-w-0">
@@ -219,7 +169,7 @@
     </div>
 
     <!-- Reports Table - Hidden on Summary Reports -->
-    <div x-show="!['reports-applicant_summary', 'reports-scholar_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <div x-show="!['reports-student_summary', 'reports-grant_summary'].includes(tab)" class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
       @if (isset($reports) && $reports->count() > 0)
         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
           @foreach ($reports as $report)
@@ -354,7 +304,7 @@
           </p>
           <div class="mt-6">
             <!-- Default Create Report Button (Empty State) -->
-            <div x-show="tab !== 'reports-applicant_summary'">
+            <div x-show="!tab.startsWith('reports-')">
               <a href="{{ route('sfao.reports.create') }}"
                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-bsu-red hover:bg-bsu-redDark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

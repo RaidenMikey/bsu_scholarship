@@ -1,114 +1,137 @@
 <!-- Upload Application Form Tab -->
 <div x-show="tab === 'up-app-form'" x-cloak>
-<div class="container mx-auto px-4 py-8 max-w-3xl">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Upload Application Form</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">Upload a new application form for students in your campus</p>
-    </div>
-
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <form action="{{ route('sfao.application-forms.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            <div class="mb-6">
-                <label for="form_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Form Name <span class="text-red-500">*</span>
-                </label>
-                <input type="text" 
-                       id="form_name" 
-                       name="form_name" 
-                       value="{{ old('form_name') }}"
-                       required
-                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-transparent dark:bg-gray-700 dark:text-white"
-                       placeholder="e.g., SFAO Application Form">
-                @error('form_name')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
+    <div class="container mx-auto px-4 py-8">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-bsu-red">
+                <h2 class="text-xl font-bold text-white">Upload New Form</h2>
+                <p class="text-sm text-white/80 mt-1">Share downloadable resources with students</p>
             </div>
 
-            <div class="mb-6">
-                <label for="form_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Form Type
-                </label>
-                <select id="form_type" 
-                        name="form_type"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-transparent dark:bg-gray-700 dark:text-white">
-                    <option value="">Select Type (Optional)</option>
-                    <option value="SFAO Application Form" {{ old('form_type') == 'SFAO Application Form' ? 'selected' : '' }}>SFAO Application Form</option>
-                    <option value="TDP Application Form" {{ old('form_type') == 'TDP Application Form' ? 'selected' : '' }}>TDP Application Form</option>
-                    <option value="Scholarship Application" {{ old('form_type') == 'Scholarship Application' ? 'selected' : '' }}>Scholarship Application</option>
-                    <option value="Renewal Form" {{ old('form_type') == 'Renewal Form' ? 'selected' : '' }}>Renewal Form</option>
-                    <option value="Other" {{ old('form_type') == 'Other' ? 'selected' : '' }}>Other</option>
-                </select>
-                @error('form_type')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
+            <div class="p-6" x-data="{ fileName: null }">
+                <form action="{{ route('sfao.application-forms.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
-            <div class="mb-6">
-                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Description
-                </label>
-                <textarea id="description" 
-                          name="description" 
-                          rows="3"
-                          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-transparent dark:bg-gray-700 dark:text-white"
-                          placeholder="Brief description of this form...">{{ old('description') }}</textarea>
-                @error('description')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Left Column: Form Details -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Form Name -->
+                                <div>
+                                    <label for="form_name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Form Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           id="form_name" 
+                                           name="form_name" 
+                                           value="{{ old('form_name') }}"
+                                           required
+                                           class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:text-white transition-all"
+                                           placeholder="e.g., Scholarship Application 2025">
+                                    @error('form_name')
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-            <div class="mb-6">
-                <label for="file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Upload File <span class="text-red-500">*</span>
-                </label>
-                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg hover:border-bsu-red transition">
-                    <div class="space-y-1 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <div class="flex text-sm text-gray-600 dark:text-gray-400">
-                            <label for="file" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-bsu-red hover:text-red-700 focus-within:outline-none">
-                                <span>Upload a file</span>
-                                <input id="file" name="file" type="file" class="sr-only" required accept=".pdf,.doc,.docx,.xls,.xlsx">
-                            </label>
-                            <p class="pl-1">or drag and drop</p>
+                                <!-- Form Type -->
+                                <div>
+                                    <label for="form_type" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Category
+                                    </label>
+                                    <div class="relative">
+                                        <select id="form_type" 
+                                                name="form_type"
+                                                class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:text-white appearance-none transition-all">
+                                            <option value="">Select Category (Optional)</option>
+                                            <option value="SFAO Application Form" {{ old('form_type') == 'SFAO Application Form' ? 'selected' : '' }}>SFAO Application Form</option>
+                                            <option value="TDP Application Form" {{ old('form_type') == 'TDP Application Form' ? 'selected' : '' }}>TDP Application Form</option>
+                                            <option value="Scholarship Application" {{ old('form_type') == 'Scholarship Application' ? 'selected' : '' }}>Scholarship Application</option>
+                                            <option value="Renewal Form" {{ old('form_type') == 'Renewal Form' ? 'selected' : '' }}>Renewal Form</option>
+                                            <option value="Other" {{ old('form_type') == 'Other' ? 'selected' : '' }}>Other</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    Description
+                                </label>
+                                <textarea id="description" 
+                                          name="description" 
+                                          rows="6"
+                                          class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:text-white transition-all"
+                                          placeholder="Briefly describe what this form is for...">{{ old('description') }}</textarea>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                            PDF, DOC, DOCX, XLS, XLSX up to 10MB
-                        </p>
-                    </div>
-                </div>
-                @error('file')
-                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
 
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-                <div class="flex">
-                    <svg class="h-5 w-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                    </svg>
-                    <div class="text-sm text-blue-700 dark:text-blue-300">
-                        <p class="font-medium">Campus: {{ $user->campus->name }}</p>
-                        <p class="mt-1">This form will only be visible to students in your campus.</p>
-                    </div>
-                </div>
-            </div>
+                        <!-- Right Column: File Upload -->
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    Attachment <span class="text-red-500">*</span>
+                                </label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-xl hover:border-bsu-red dark:hover:border-red-500 transition-colors group bg-gray-50 dark:bg-gray-900/30 h-full min-h-[200px] flex-col justify-center">
+                                    <div class="space-y-2 text-center">
+                                        <div x-show="!fileName">
+                                            <div class="mx-auto h-12 w-12 text-gray-400 group-hover:text-bsu-red transition-colors">
+                                                <svg stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                </svg>
+                                            </div>
+                                            <div class="flex text-sm text-gray-600 dark:text-gray-400 justify-center">
+                                                <label for="file" class="relative cursor-pointer rounded-md font-medium text-bsu-red hover:text-red-700 focus-within:outline-none focus:underline">
+                                                    <span>Choose a file</span>
+                                                    <input id="file" name="file" type="file" class="sr-only" required accept=".pdf,.doc,.docx,.xls,.xlsx" @change="fileName = $event.target.files[0].name">
+                                                </label>
+                                                <p class="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                                PDF, Word, Excel up to 10MB
+                                            </p>
+                                        </div>
+                                        
+                                        <div x-show="fileName" x-cloak class="flex flex-col items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="fileName"></span>
+                                            <button type="button" @click="fileName = null; document.getElementById('file').value = ''" class="mt-2 text-xs text-red-500 hover:text-red-700 font-medium">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @error('file')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-            <div class="flex justify-end gap-3">
-                <button type="button" @click="$dispatch('switch-tab', 'all-app-forms')" class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 bg-bsu-red text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    Upload Form
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+                            <!-- Info Banner -->
+                            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
+                                <svg class="h-5 w-5 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div class="text-sm text-blue-700 dark:text-blue-300">
+                                    <p class="font-medium">Campus Visibility: {{ $user->campus->name }}</p>
+                                    <p class="mt-0.5">This file will be available for download by students belonging to this campus only.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="mt-8 flex justify-end gap-3 items-center border-t border-gray-100 dark:border-gray-700 pt-5">
+                        <button type="button" @click="$dispatch('switch-tab', 'all-app-forms')" class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-bsu-red hover:bg-red-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Publish Form
+                        </button>
+
 </div>

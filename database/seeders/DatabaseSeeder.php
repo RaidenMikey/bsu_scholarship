@@ -17,15 +17,27 @@ class DatabaseSeeder extends Seeder
         // Disable foreign key checks temporarily
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         
-        // Call campus seeder first so campus_id exists before users
         $this->call([
+            // 1. Structure / Static Data
             CampusSeeder::class,
-            DepartmentSeeder::class, // Add DepartmentSeeder
-            CampusDepartmentSeeder::class, // Add CampusDepartmentSeeder
-            FormsTableSeeder::class,
+            DepartmentSeeder::class,
+            CampusDepartmentSeeder::class,
+            ProgramSeeder::class,
+
+            // 2. Admins
+            AdminSeeder::class,
+
+            // 3. Scholarships (Depends on Admin)
+            ScholarshipsTableSeeder::class,
+
+            // 4. Students (Depends on Campuses/Programs)
+            StudentSeeder::class,
+
+            // 5. Applications (Depends on Students & Scholarships)
+            ApplicationSeeder::class,
+
+            // 6. Notifications (Depends on Users)
             NotificationSeeder::class,
-            ProgramSeeder::class, // Add ProgramSeeder
-            MainSeeder::class, // Replaces Users, App, Scholars
         ]);
         
         // Re-enable foreign key checks
