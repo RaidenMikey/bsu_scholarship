@@ -202,12 +202,22 @@ class ScholarshipsTableSeeder extends Seeder
             ],
         ];
 
+        // Get all campuses
+        $campuses = \App\Models\Campus::all();
+
         foreach ($scholarships as $data) {
             $conditions = $data['conditions'] ?? [];
             unset($data['conditions']); // Remove conditions from scholarship data
             
             $scholarship = Scholarship::create($data);
             
+            // ATTACH TO RANDOM CAMPUSES
+            // Randomly pick 1 to 3 campuses to attach this scholarship to
+            if ($campuses->count() > 0) {
+                $randomCampuses = $campuses->random(rand(1, min(3, $campuses->count())));
+                $scholarship->campuses()->attach($randomCampuses);
+            }
+
             // Add multiple conditions for each scholarship
             foreach ($conditions as $condition) {
                 ScholarshipRequiredCondition::create([

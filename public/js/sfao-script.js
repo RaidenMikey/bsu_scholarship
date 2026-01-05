@@ -13,7 +13,7 @@ window.addEventListener("pageshow", function (event) {
 window.sfaoStatisticsTab = function (config = {}) {
     // Store chart instances globally or in a scoped tracking object (non-reactive)
     const chartInstances = {
-        department: null,
+        college: null,
         gender: null,
         scholarshipType: null,
         comparison: null,
@@ -26,14 +26,16 @@ window.sfaoStatisticsTab = function (config = {}) {
         campusOptions: config.campusOptions || [],
         academicYearOptions: [], // Dynamic list
         filteredData: {
-            department_stats: [],
+            college_stats: [],
             genderStats: { Male: 0, Female: 0 },
             scholarshipStats: {}
         },
-        availableDepartments: [],
+        availableColleges: [],
+        availableTracks: [],
         localFilters: {
-            department: 'all',
-            program: 'all'
+            college: 'all',
+            program: 'all',
+            track: 'all'
         },
         chartLegend: {
             approved: true,
@@ -45,7 +47,7 @@ window.sfaoStatisticsTab = function (config = {}) {
             nonScholars: true
         },
         chartStatus: { // Track if charts have data
-            department: true,
+            college: true,
             comparison: true,
             trend: true
         },
@@ -94,12 +96,13 @@ window.sfaoStatisticsTab = function (config = {}) {
 
 
 
-                this.availableDepartments = this.analyticsData.all_departments || [];
+                this.availableColleges = this.analyticsData.all_colleges || [];
 
                 // Initialize logic
-                this.updateDepartmentsList(this.filters.campus);
+                this.updateCollegesList(this.filters.campus);
                 this.generateAcademicYears(); // Populate AY options
                 this.updateProgramList();
+                this.updateTrackList();
 
                 // DEFERRED RESTORATION:
                 // Move the restoration logic here, at the END of init, and wrap in nextTick.
@@ -139,7 +142,9 @@ window.sfaoStatisticsTab = function (config = {}) {
 
                 // Reactivity
                 this.$watch('filters.campus', (value) => {
-                    this.updateDepartmentsList(value);
+                    this.updateCollegesList(value);
+                    this.updateProgramList();
+                    this.updateTrackList();
                     this.applyFilters();
                 });
 
@@ -148,11 +153,20 @@ window.sfaoStatisticsTab = function (config = {}) {
                 this.$watch('viewMode', () => this.applyFilters()); // Watch Student Type (Applicants/Scholars)
 
                 // Watch Local Filters for Scholarship Status Graph
-                this.$watch('localFilters.department', (val) => {
+                this.$watch('localFilters.college', (val) => {
                     this.updateProgramList();
+                    this.updateTrackList();
                     this.applyFilters(); // Recalculate ALL stats
                 });
-                this.$watch('localFilters.program', () => this.applyFilters()); // Recalculate ALL stats
+                this.$watch('localFilters.program', () => {
+                    this.updateTrackList();
+                    this.applyFilters();
+                });
+
+                this.$watch('localFilters.track', () => {
+                    this.applyFilters();
+                });
+
                 this.$watch('chartLegend', () => {
                     this.applyFilters();
                 }, { deep: true }); // Watch Legend Changes
@@ -213,51 +227,116 @@ window.sfaoStatisticsTab = function (config = {}) {
             return gender === 'male' ? ((male / total) * 100).toFixed(1) : ((female / total) * 100).toFixed(1);
         },
 
-        updateDepartmentsList(campusId) {
+        updateCollegesList(campusId) {
             if (campusId === 'all') {
-                // All unique departments from all campuses
-                const allShortNames = [...new Set(Object.values(this.analyticsData.campus_departments || {}).flat())];
-                this.availableDepartments = (this.analyticsData.all_departments || []).filter(d => allShortNames.includes(d.short_name));
+                // All unique colleges from all campuses
+                const allShortNames = [...new Set(Object.values(this.analyticsData.campus_colleges || {}).flat())];
+                this.availableColleges = (this.analyticsData.all_colleges || []).filter(d => allShortNames.includes(d.short_name));
             } else {
-                // Departments for specific campus
-                const campusShortNames = (this.analyticsData.campus_departments || {})[campusId] || [];
-                this.availableDepartments = (this.analyticsData.all_departments || []).filter(d => campusShortNames.includes(d.short_name));
+                // Colleges for specific campus
+                const campusShortNames = (this.analyticsData.campus_colleges || {})[campusId] || [];
+                this.availableColleges = (this.analyticsData.all_colleges || []).filter(d => campusShortNames.includes(d.short_name));
             }
 
-            // Reset department selection if invalid
-            if (this.filters.department !== 'all' && !this.availableDepartments.find(d => d.short_name === this.filters.department)) {
-                this.filters.department = 'all';
+            // Reset college selection if invalid
+            if (this.localFilters.college !== 'all' && !this.availableColleges.find(d => d.short_name === this.localFilters.college)) {
+                this.localFilters.college = 'all';
             }
         },
 
         updateProgramList() {
-            const dept = this.localFilters.department;
+            const campus = this.filters.campus;
+            const college = this.localFilters.college;
+            // Use strict map (CampusID -> CollegeName -> [Programs])
+            const strictMap = this.analyticsData.campus_college_programs || {};
 
+            const allPrograms = new Set();
 
-            const programsMap = this.analyticsData.department_programs || {};
+            // 1. Identify Target Campuses
+            let targetCampuses = [];
+            if (campus === 'all') {
+                targetCampuses = Object.keys(strictMap);
+            } else {
+                targetCampuses = [String(campus)];
+            }
 
+            // 2. Iterate Campus and Collect Programs
+            targetCampuses.forEach(cId => {
+                const campusData = strictMap[cId] || {};
 
-            if (dept === 'all') {
-                // Get ALL programs from ALL departments
-                const allPrograms = new Set();
-                Object.values(programsMap).forEach(progList => {
-                    if (Array.isArray(progList)) {
-                        progList.forEach(p => allPrograms.add(p));
+                // Identify Target Colleges within this Campus
+                let targetColleges = [];
+                if (college === 'all') {
+                    targetColleges = Object.keys(campusData);
+                } else {
+                    // Only specific college if it exists in this campus
+                    if (campusData[college]) targetColleges = [college];
+                }
+
+                // Collect
+                targetColleges.forEach(colName => {
+                    const progs = campusData[colName] || [];
+                    progs.forEach(p => allPrograms.add(p));
+                });
+            });
+
+            this.availablePrograms = Array.from(allPrograms).sort();
+
+            // ONLY reset if the current selection is no longer valid
+            if (this.localFilters.program !== 'all' && !this.availablePrograms.includes(this.localFilters.program)) {
+                this.localFilters.program = 'all';
+            }
+        },
+
+        updateTrackList() {
+            const campus = this.filters.campus;
+            const college = this.localFilters.college;
+            const program = this.localFilters.program;
+            const tracksMap = this.analyticsData.program_tracks || {};
+            // Use strict map (CampusID -> CollegeName -> [Programs])
+            const strictMap = this.analyticsData.campus_college_programs || {};
+
+            if (program === 'all') {
+                const allTracks = new Set();
+
+                // 1. Identify Target Campuses
+                let targetCampuses = [];
+                if (campus === 'all') {
+                    targetCampuses = Object.keys(strictMap);
+                } else {
+                    targetCampuses = [String(campus)];
+                }
+
+                // 2. Iterate Campuses and Collect Tracks
+                targetCampuses.forEach(cId => {
+                    const campusData = strictMap[cId] || {};
+
+                    // Identify Target Colleges within this Campus
+                    let targetColleges = [];
+                    if (college === 'all') {
+                        targetColleges = Object.keys(campusData);
+                    } else {
+                        // Only specific college if it exists in this campus
+                        if (campusData[college]) targetColleges = [college];
                     }
+
+                    // Collect Tracks from strictly identified programs
+                    targetColleges.forEach(colName => {
+                        const progs = campusData[colName] || [];
+                        progs.forEach(p => {
+                            const pTracks = tracksMap[p] || [];
+                            pTracks.forEach(t => allTracks.add(t));
+                        });
+                    });
                 });
 
-                this.availablePrograms = Array.from(allPrograms).sort();
-                this.localFilters.program = 'all';
+                this.availableTracks = Array.from(allTracks).sort();
+                this.localFilters.track = 'all';
             } else {
-                // Get programs for this college (department)
-                const rawProgs = programsMap[dept] || [];
-                // Ensure it's a plain array to avoid Proxy complications in the view
-                this.availablePrograms = Array.from(rawProgs);
+                this.availableTracks = tracksMap[program] || [];
 
-
-                // ONLY reset if the current selection is no longer valid
-                if (this.localFilters.program !== 'all' && !this.availablePrograms.includes(this.localFilters.program)) {
-                    this.localFilters.program = 'all';
+                if (this.localFilters.track !== 'all' && !this.availableTracks.includes(this.localFilters.track)) {
+                    this.localFilters.track = 'all';
                 }
             }
         },
@@ -290,21 +369,21 @@ window.sfaoStatisticsTab = function (config = {}) {
             let allStudents = this.analyticsData.all_students_data || [];
             let allApplications = this.analyticsData.all_applications_data || [];
 
-            // 1. Filter Department Stats based on Campus (Sidebar)
-            let allowedDepartments = [];
+            // 1. Filter College Stats based on Campus (Sidebar)
+            let allowedColleges = [];
             if (this.filters.campus === 'all') {
-                const allDepts = Object.values(this.analyticsData.campus_departments || {}).flat();
-                allowedDepartments = [...new Set(allDepts)];
+                const allCols = Object.values(this.analyticsData.campus_colleges || {}).flat();
+                allowedColleges = [...new Set(allCols)];
             } else {
-                allowedDepartments = (this.analyticsData.campus_departments || {})[this.filters.campus] || [];
+                allowedColleges = (this.analyticsData.campus_colleges || {})[this.filters.campus] || [];
                 // Filter students by campus
                 allStudents = allStudents.filter(s => s.campus_id == this.filters.campus);
                 // Filter applications by campus
                 allApplications = allApplications.filter(a => a.campus_id == this.filters.campus);
             }
 
-            if (data.department_stats) {
-                data.department_stats = data.department_stats.filter(d => allowedDepartments.includes(d.name));
+            if (data.college_stats) {
+                data.college_stats = data.college_stats.filter(d => allowedColleges.includes(d.name));
             }
 
             // 2. Filter by Scholarship (MANDATORY single selection now)
@@ -333,14 +412,18 @@ window.sfaoStatisticsTab = function (config = {}) {
                 });
             }
 
-            // 4. Apply Local Filters (Moved from createDepartmentChart)
-            // Filter by Department
-            if (this.localFilters.department !== 'all') {
-                allApplications = allApplications.filter(item => item.college === this.localFilters.department);
+            // 4. Apply Local Filters (Moved from createCollegeChart)
+            // Filter by College
+            if (this.localFilters.college !== 'all') {
+                allApplications = allApplications.filter(item => item.college === this.localFilters.college);
             }
             // Filter by Program
             if (this.localFilters.program !== 'all') {
                 allApplications = allApplications.filter(item => item.program === this.localFilters.program);
+            }
+            // Filter by Track
+            if (this.localFilters.track !== 'all') {
+                allApplications = allApplications.filter(item => item.track === this.localFilters.track);
             }
 
             // Calculate Gender Stats
@@ -495,8 +578,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                 const campus = this.campusOptions.find(c => c.id == this.filters.campus);
                 label = 'Campus: ' + (campus ? campus.name : this.filters.campus);
             }
-            if (this.filters.department !== 'all') {
-                label += (this.filters.campus === 'all' ? ' | ' : ', ') + 'Dept: ' + this.filters.department;
+            if (this.localFilters.college !== 'all') {
+                label += (this.filters.campus === 'all' ? ' | ' : ', ') + 'College: ' + this.localFilters.college;
             }
             return label;
         },
@@ -507,8 +590,8 @@ window.sfaoStatisticsTab = function (config = {}) {
             }
             // Find campus name
             const campus = this.campusOptions.find(c => c.id == this.filters.campus);
-            const name = campus ? campus.name : 'Department Comparison';
-            return `Scholarship Status (${name} - Departments)`;
+            const name = campus ? campus.name : 'College Comparison';
+            return `Scholarship Status (${name} - Colleges)`;
         },
 
         createAllCharts(retryCount = 0) {
@@ -522,10 +605,10 @@ window.sfaoStatisticsTab = function (config = {}) {
                 setTimeout(() => this.createAllCharts(retryCount + 1), 500);
                 return;
             }
-            const ctx = document.getElementById('sfaoDepartmentChart');
+            const ctx = document.getElementById('sfaoCollegeChart');
             if (!ctx) {
                 if (retryCount > 10) return; // Stop silently if element doesn't exist (maybe different tab)
-                console.error('Canvas sfaoDepartmentChart not found in DOM');
+                console.error('Canvas sfaoCollegeChart not found in DOM');
                 // Retry in case DOM insertion is slow or x-show transition is still running logic
                 setTimeout(() => this.createAllCharts(retryCount + 1), 500);
                 return;
@@ -554,16 +637,16 @@ window.sfaoStatisticsTab = function (config = {}) {
             // Ideally we should track the observer too.
 
             const ro = new ResizeObserver(() => {
-                if (chartInstances.department && ctx.getBoundingClientRect().width > 0) {
-                    chartInstances.department.resize();
-                } else if (!chartInstances.department && ctx.getBoundingClientRect().width > 0) {
+                if (chartInstances.college && ctx.getBoundingClientRect().width > 0) {
+                    chartInstances.college.resize();
+                } else if (!chartInstances.college && ctx.getBoundingClientRect().width > 0) {
                     // Late binding create if it became visible just now
-                    this.createDepartmentChart();
+                    this.createCollegeChart();
                 }
             });
             ro.observe(container);
 
-            this.createDepartmentChart();
+            this.createCollegeChart();
             this.createComparisonChart();
             this.createTrendChart();
             this.createGenderChart();
@@ -571,22 +654,20 @@ window.sfaoStatisticsTab = function (config = {}) {
         },
 
         updateCharts() {
-            this.updateDepartmentChart();
-            this.updateComparisonChart();
-            this.updateTrendChart();
-            this.updateGenderChart();
-            this.updateScholarshipStatusChart();
+            this.createCollegeChart();
+            this.createComparisonChart();
+            this.createTrendChart();
+            this.createGenderChart();
+            this.createScholarshipStatusChart();
         },
 
-        createDepartmentChart() {
-            // "Scholarship Department" Chart (re-purposed from Dept Logic for now mostly handled the Scholarship Status names in previous impl)
-            // Wait, previous impl called it "sfaoDepartmentChart" but logic grouped by Scholarship Name.
-            // Keeping this as is, since user didn't ask to change the big chart, only remove the *other* smaller "Scholarship Scholar Status" chart.
+        createCollegeChart() {
+            // "Scholarship College" Chart
 
-            const ctx = document.getElementById('sfaoDepartmentChart');
+            const ctx = document.getElementById('sfaoCollegeChart');
             if (!ctx) return;
 
-            if (chartInstances.department) chartInstances.department.destroy();
+            if (chartInstances.college) chartInstances.college.destroy();
 
             // Start with Globally filtered applications (Campus, Global Scholarship, Time)
             let rawData = this.filteredData.all_applications_data || [];
@@ -610,7 +691,7 @@ window.sfaoStatisticsTab = function (config = {}) {
 
             // Logic:
             // If filters.campus === 'all', we want to compare CAMPUSES (e.g. Alangilan vs Pablo Borbon)
-            // If filters.campus !== 'all', we want to compare DEPARTMENTS (e.g. CICS vs CAS) within that campus.
+            // If filters.campus !== 'all', we want to compare COLLEGES (e.g. CICS vs CAS) within that campus.
 
             const isComparisonMode = (this.filters.campus === 'all');
 
@@ -627,7 +708,7 @@ window.sfaoStatisticsTab = function (config = {}) {
                 if (isComparisonMode) {
                     groupKey = campusMap[item.campus_id] || 'Other';
                 } else {
-                    groupKey = item.college || 'No Dept';
+                    groupKey = item.college || 'No College';
                 }
 
                 if (!groupedData[groupKey]) {
@@ -710,14 +791,14 @@ window.sfaoStatisticsTab = function (config = {}) {
                 return count > 0;
             });
 
-            this.chartStatus = { ...this.chartStatus, department: labels.length > 0 && hasData };
-            this.chartStatus = { ...this.chartStatus, department: labels.length > 0 && hasData };
+            this.chartStatus = { ...this.chartStatus, college: labels.length > 0 && hasData };
+            this.chartStatus = { ...this.chartStatus, college: labels.length > 0 && hasData };
 
             // If no data, destroy chart and return
             if (labels.length === 0 || !hasData) {
-                if (chartInstances.department) {
-                    chartInstances.department.destroy();
-                    chartInstances.department = null;
+                if (chartInstances.college) {
+                    chartInstances.college.destroy();
+                    chartInstances.college = null;
                 }
                 return;
             }
@@ -767,7 +848,7 @@ window.sfaoStatisticsTab = function (config = {}) {
                 ];
             }
 
-            chartInstances.department = new Chart(ctx, {
+            chartInstances.college = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: processedLabels,
@@ -857,8 +938,8 @@ window.sfaoStatisticsTab = function (config = {}) {
 
             // D. Department & Program (Global/Local context - typically ignored for Scholarship Status unless explicitly set?)
             // The requirement says "Overview ... total of all campus". It implies standard global filters apply.
-            if (this.localFilters.department !== 'all') {
-                rawData = rawData.filter(item => item.college === this.localFilters.department);
+            if (this.localFilters.college !== 'all') {
+                rawData = rawData.filter(item => item.college === this.localFilters.college);
             }
             if (this.localFilters.program !== 'all') {
                 rawData = rawData.filter(item => item.program === this.localFilters.program);
@@ -1062,8 +1143,8 @@ window.sfaoStatisticsTab = function (config = {}) {
             }
 
             // 3. Dept
-            if (this.localFilters.department !== 'all') {
-                rawData = rawData.filter(item => item.college === this.localFilters.department);
+            if (this.localFilters.college !== 'all') {
+                rawData = rawData.filter(item => item.college === this.localFilters.college);
             }
             // 4. Program
             if (this.localFilters.program !== 'all') {
@@ -1536,7 +1617,16 @@ window.sfaoScholarshipsFilter = function (routeUrl) {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const url = new URL(link.href);
-                    const page = url.searchParams.get('page_scholarships') || 1;
+
+                    let page = 1;
+                    // Dynamically detect page parameter (page_all, page_private, page_scholarships, etc.)
+                    for (const key of url.searchParams.keys()) {
+                        if (key.startsWith('page')) {
+                            page = url.searchParams.get(key);
+                            break;
+                        }
+                    }
+
                     this.fetchScholarships(page);
                 });
             });

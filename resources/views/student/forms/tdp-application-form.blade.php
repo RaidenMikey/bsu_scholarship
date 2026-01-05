@@ -258,13 +258,13 @@ if (!$user) {
           </div>
 
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department</label>
-            <select name="college_department" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-                <option value="">-- Select College/Department --</option>
-                <option value="CICS" {{ old('college_department', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
-                <option value="CTE" {{ old('college_department', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
-                <option value="CABEIHM" {{ old('college_department', $user->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
-                <option value="CAS" {{ old('college_department', $user->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College</label>
+            <select name="college" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                <option value="">-- Select College --</option>
+                <option value="CICS" {{ old('college', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
+                <option value="CTE" {{ old('college', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
+                <option value="CABEIHM" {{ old('college', $user->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
+                <option value="CAS" {{ old('college', $user->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
             </select>
           </div>
         </div>

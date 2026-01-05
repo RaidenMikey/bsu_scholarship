@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('programs', function (Blueprint $table) {
             $table->id();
-            $table->string('college')->nullable(); // Short Name of Department
-            $table->string('name')->unique(); // Full Name
+            $table->foreignId('campus_college_id')->nullable()->constrained('campus_college')->onDelete('cascade');
+            $table->string('name'); // Full Name (Not Unique)
             $table->string('short_name'); // Abbreviation
             $table->timestamps();
         });

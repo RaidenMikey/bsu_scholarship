@@ -11,7 +11,6 @@ class Scholarship extends Model
 
     protected $fillable = [
         'scholarship_name',
-        'campus_id',
         'scholarship_type',
         'description',
         'submission_deadline',
@@ -46,6 +45,12 @@ class Scholarship extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'applications');
+    }
+
+    // Get campuses where this scholarship is available
+    public function campuses()
+    {
+        return $this->belongsToMany(Campus::class, 'campus_scholarship');
     }
 
     // Conditions only (e.g. gwa, disability, income, year_level)
@@ -130,10 +135,10 @@ class Scholarship extends Model
                 return $this->meetsDisabilityRequirement($condition->value, $formData->disability);
                 
             case 'program':
-                return $this->meetsDepartmentRequirement($condition->value, $formData->program);
+                return $this->meetsProgramRequirement($condition->value, $formData->program);
 
-            case 'department':
-                return $this->meetsDepartmentRequirement($condition->value, $formData->college_department ?? $formData->college ?? $formData->program);
+            case 'college':
+                return $this->meetsCollegeRequirement($condition->value, $formData->college_department ?? $formData->college ?? $formData->program);
                 
             case 'campus':
                 return $this->meetsCampusRequirement($condition->value, $formData->campus);
@@ -197,22 +202,22 @@ class Scholarship extends Model
         return $requiredDisability === $studentDisability; // Exact match
     }
 
-    // Department/Program requirement matching
-    public function meetsDepartmentRequirement($requiredDepartment, $studentDepartment)
+    // College/Program requirement matching
+    public function meetsCollegeRequirement($requiredCollege, $studentCollege)
     {
-        if ($requiredDepartment === null || $studentDepartment === null) {
+        if ($requiredCollege === null || $studentCollege === null) {
             return true;
         }
         
-        return strtolower($requiredDepartment) === strtolower($studentDepartment);
+        return strtolower($requiredCollege) === strtolower($studentCollege);
     }
 
     /**
-     * @deprecated Use meetsDepartmentRequirement instead
+     * @deprecated Use meetsCollegeRequirement instead
      */
     public function meetsProgramRequirement($requiredProgram, $studentProgram)
     {
-        return $this->meetsDepartmentRequirement($requiredProgram, $studentProgram);
+        return $this->meetsCollegeRequirement($requiredProgram, $studentProgram);
     }
 
     // Campus requirement matching
@@ -273,8 +278,8 @@ class Scholarship extends Model
             'year_level' => 'Year Level',
             'income' => 'Monthly Income',
             'disability' => 'Disability Status',
-            'program' => 'Department', // Map legacy program to Department label
-            'department' => 'Department',
+            'program' => 'Program', 
+            'college' => 'College',
             'campus' => 'Campus',
             'age' => 'Age',
             'sex' => 'Gender'
@@ -297,7 +302,7 @@ class Scholarship extends Model
                 return $formData->disability ?? 'None';
             case 'program':
                 return $formData->program ?? 'Not specified';
-            case 'department':
+            case 'college':
                 return $formData->college_department ?? $formData->college ?? 'Not specified';
             case 'campus':
                 return $formData->campus ?? 'Not specified';

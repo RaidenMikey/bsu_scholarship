@@ -172,7 +172,7 @@ class AuthController extends Controller
             });
         }
 
-        $campuses = \App\Models\Campus::with('departments')->get();
+        $campuses = \App\Models\Campus::with('colleges')->get();
         $scholarships = \App\Models\Scholarship::all();
         return view('auth.register', compact('campuses', 'scholarships'));
     }
@@ -224,6 +224,7 @@ class AuthController extends Controller
         ]);
 
         // Handle existing scholarships
+        $existingScholarshipNames = [];
         if ($request->has('selected_scholarships') && is_array($request->selected_scholarships)) {
             foreach ($request->selected_scholarships as $scholarshipId) {
                 Scholar::create([
@@ -231,12 +232,22 @@ class AuthController extends Controller
                     'scholarship_id' => $scholarshipId,
                     'scholarship_start_date' => now(),
                     'status' => 'active',
-                    'type' => 'new', // Default to new, or could be 'old' based on requirements
+                    'type' => 'new',
                     'grant_count' => 0,
                     'total_grant_received' => 0
                 ]);
             }
+            $existingScholarshipNames = \App\Models\Scholarship::whereIn('id', $request->selected_scholarships)->pluck('scholarship_name')->toArray();
         }
+
+        // Create SFAO Application Form (Auto-populate)
+        \App\Models\Form::create([
+            'user_id' => $user->id,
+            'age' => \Carbon\Carbon::parse($request->birthdate)->age,
+            'has_existing_scholarship' => $request->has_scholarship === 'yes',
+            'existing_scholarship_details' => !empty($existingScholarshipNames) ? implode(', ', $existingScholarshipNames) : null,
+            'form_status' => 'draft'
+        ]);
 
         $user->sendEmailVerificationNotification();
 

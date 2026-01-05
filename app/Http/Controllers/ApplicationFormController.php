@@ -42,8 +42,17 @@ class ApplicationFormController extends Controller
 
         $user = User::with('campus')->find(session('user_id'));
         $sfaoCampus = $user->campus;
+        $managedCampuses = $sfaoCampus->getAllCampusesUnder();
+        $campusIds = $managedCampuses->pluck('id');
         
-        return view('sfao.application-forms.upload', compact('user', 'sfaoCampus'));
+        $activeScholarshipsList = \App\Models\Scholarship::where('is_active', true)
+            ->whereHas('campuses', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            })
+            ->orderBy('scholarship_name', 'asc')
+            ->get();
+
+        return view('sfao.application-forms.upload', compact('user', 'sfaoCampus', 'managedCampuses', 'activeScholarshipsList'));
     }
 
     /**
@@ -60,14 +69,34 @@ class ApplicationFormController extends Controller
             'form_type' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
             'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:10240', // 10MB max
+            'campus_id' => 'required|exists:campuses,id',
         ]);
 
         $user = User::with('campus')->find(session('user_id'));
 
+        // Verify campus permission
+        // Default to user's campus if not provided or valid
+        $campusId = $user->campus_id;
+        
+        // Use request campus_id only if it's strictly managed (though UI hides this now)
+        if ($request->has('campus_id')) {
+             $allowedCampuses = $user->campus->getAllCampusesUnder()->pluck('id');
+             if ($allowedCampuses->contains($request->campus_id)) {
+                 $campusId = $request->campus_id;
+             }
+        }
+
         try {
             // Store file
             $file = $request->file('file');
-            $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $originalName = $file->getClientOriginalName();
+
+            // Block lock files
+            if (str_starts_with($originalName, '.~lock') || str_starts_with($originalName, '~$')) {
+                return back()->withInput()->with('error', 'Invalid file. Please do not upload temporary or lock files.');
+            }
+
+            $filename = time() . '_' . str_replace(' ', '_', $originalName);
             $path = $file->storeAs('application_forms', $filename);
 
             // Create record
@@ -77,7 +106,7 @@ class ApplicationFormController extends Controller
                 'description' => $request->description,
                 'file_path' => $path,
                 'file_type' => $file->getClientOriginalExtension(),
-                'campus_id' => $user->campus_id,
+                'campus_id' => $request->campus_id,
                 'uploaded_by' => $user->id,
             ]);
 
@@ -103,17 +132,24 @@ class ApplicationFormController extends Controller
         $user = User::with('campus')->find(session('user_id'));
         $campusIds = $user->campus->getAllCampusesUnder()->pluck('id');
 
+        Log::info("SFAO User {$user->id} attempting to delete form {$id}");
+
         $form = ApplicationForm::findOrFail($id);
 
-        // Verify SFAO has permission
-        if (!$campusIds->contains($form->campus_id)) {
+
+        // Verify SFAO has permission (Allow if uploaded by user OR matches campus)
+        if ($form->uploaded_by !== $user->id && !$campusIds->contains($form->campus_id)) {
             return back()->with('error', 'You do not have permission to delete this form.');
         }
 
         try {
-            // Delete file
-            if (Storage::exists($form->file_path)) {
-                Storage::delete($form->file_path);
+            // Attempt to delete file, but continue to delete record even if file missing/locked
+            try {
+                if ($form->file_path && Storage::exists($form->file_path)) {
+                    Storage::delete($form->file_path);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Could not delete file for form ' . $form->id . ': ' . $e->getMessage());
             }
 
             // Delete record
@@ -138,9 +174,18 @@ class ApplicationFormController extends Controller
 
         $user = User::with('campus')->find(session('user_id'));
 
-        // Get forms from student's campus
+        // Get scholarships available to this student
+        $availableScholarships = \App\Models\Scholarship::where('is_active', true)
+            ->whereHas('campuses', function($q) use ($user) {
+                $q->where('campus_id', $user->campus_id);
+            })->pluck('scholarship_name');
+
+        // Get forms: Match Campus OR Match Scholarship Category
         $forms = ApplicationForm::with(['campus', 'uploader'])
-            ->where('campus_id', $user->campus_id)
+            ->where(function($query) use ($user, $availableScholarships) {
+                $query->where('campus_id', $user->campus_id)
+                      ->orWhereIn('form_type', $availableScholarships);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -160,8 +205,25 @@ class ApplicationFormController extends Controller
         $user = User::with('campus')->find(session('user_id'));
 
         // Verify access
-        if (session('role') === 'student' && $form->campus_id !== $user->campus_id) {
-            return back()->with('error', 'You do not have permission to download this form.');
+        if (session('role') === 'student') {
+            $hasAccess = false;
+            
+            // 1. Check Campus Match
+            if ($form->campus_id === $user->campus_id) {
+                $hasAccess = true;
+            }
+            
+            // 2. Check Scholarship Availability (if not matched by campus)
+            if (!$hasAccess && $form->form_type) {
+                $hasAccess = \App\Models\Scholarship::where('scholarship_name', $form->form_type)
+                    ->whereHas('campuses', function($q) use ($user) {
+                        $q->where('campus_id', $user->campus_id);
+                    })->exists();
+            }
+
+            if (!$hasAccess) {
+                return back()->with('error', 'You do not have permission to download this form.');
+            }
         }
 
         if (session('role') === 'sfao') {

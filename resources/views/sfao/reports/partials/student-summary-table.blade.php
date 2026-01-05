@@ -37,7 +37,7 @@
                         @endif
 
                         @if($studentType === 'scholars')
-                            <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">DEPARTMENT</th>
+                            <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">COLLEGE</th>
                         @endif
 
                         <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">COURSE/PROGRAM @if($studentType === 'applicants') ENROLLED @endif</th>
@@ -82,7 +82,7 @@
                         @endif
 
                         @if($studentType === 'scholars')
-                            <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[8px]">{{ $student['department'] ?: 'N/A' }}</td>
+                            <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[8px]">{{ $student['college'] ?: 'N/A' }}</td>
                         @endif
 
                         <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[7px] leading-none">{{ $student['course'] ?? $student['program'] ?? '' }}</td>

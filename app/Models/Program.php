@@ -7,5 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
 {
-    protected $fillable = ['college', 'name', 'short_name'];
+    protected $fillable = ['campus_college_id', 'name', 'short_name'];
+
+    public function campusCollege()
+    {
+        return $this->belongsTo(CampusCollege::class);
+    }
+
+    public function tracks()
+    {
+        return $this->hasMany(ProgramTrack::class);
+    }
 }

@@ -58,9 +58,9 @@ class ScholarshipController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-        $departments = \App\Models\Department::orderBy('short_name')->pluck('short_name');
+        $colleges = \App\Models\College::orderBy('short_name')->pluck('short_name');
         $campuses = \App\Models\Campus::orderBy('name')->get();
-        return view('central.scholarships.create', compact('departments', 'campuses'));
+        return view('central.scholarships.create', compact('colleges', 'campuses'));
     }
 
     /**
@@ -72,7 +72,6 @@ class ScholarshipController extends Controller
             return redirect('/login')->with('session_expired', true);
         }
 
-
         $request->validate([
             'scholarship_name' => 'required|string|max:255',
             'scholarship_type' => 'required|in:private,government',
@@ -81,7 +80,9 @@ class ScholarshipController extends Controller
             'application_start_date' => 'nullable|date|before:submission_deadline',
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
-            'campus_id'        => 'nullable|integer',
+            // 'campus_id'        => 'nullable|integer', // Replaced by campuses array
+            'campuses'         => 'nullable|array',
+            'campuses.*'       => 'exists:campuses,id',
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'eligibility_notes' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -108,7 +109,7 @@ class ScholarshipController extends Controller
                 'application_start_date' => $request->application_start_date,
                 'slots_available'  => $request->slots_available,
                 'grant_amount'     => $request->grant_amount,
-                'campus_id'        => $request->campus_id ?: null,
+                'campus_id'        => null, // Deprecated or Primary Campus logic, setting null for now
                 'renewal_allowed'  => $renewalAllowed,
                 'grant_type'       => $request->grant_type,
                 'eligibility_notes' => $request->eligibility_notes,
@@ -118,6 +119,11 @@ class ScholarshipController extends Controller
                 'created_by'       => session('user_id'),
             ]);
             
+            // Sync Campuses
+            if ($request->has('campuses')) {
+                $scholarship->campuses()->sync($request->campuses);
+            }
+
             Log::info('Scholarship created successfully:', ['id' => $scholarship->id, 'name' => $scholarship->scholarship_name]);
         } catch (\Exception $e) {
             Log::error('Error creating scholarship:', ['error' => $e->getMessage()]);
@@ -164,7 +170,7 @@ class ScholarshipController extends Controller
         }
 
         try {
-            $scholarship = Scholarship::with(['conditions', 'requiredDocuments'])->findOrFail($id);
+            $scholarship = Scholarship::with(['conditions', 'requiredDocuments', 'campuses'])->findOrFail($id);
             
             Log::info('Accessing scholarship edit form:', [
                 'id' => $scholarship->id,
@@ -172,10 +178,9 @@ class ScholarshipController extends Controller
                 'accessed_by' => session('user_id')
             ]);
             
-            $departments = \App\Models\Department::orderBy('short_name')->pluck('short_name');
-            $campuses = \App\Models\Campus::orderBy('name')->get();
-            
-            return view('central.scholarships.create', compact('scholarship', 'departments', 'campuses'));
+        $colleges = \App\Models\College::orderBy('short_name')->pluck('short_name');
+        $campuses = \App\Models\Campus::orderBy('name')->get();
+        return view('central.scholarships.create', compact('colleges', 'campuses'));
             
         } catch (\Exception $e) {
             Log::error('Error accessing scholarship edit form:', [
@@ -207,6 +212,8 @@ class ScholarshipController extends Controller
             'application_start_date' => 'nullable|date|before:submission_deadline',
             'slots_available'  => 'nullable|integer|min:0',
             'grant_amount'     => 'nullable|numeric|min:0',
+            'campuses'         => 'nullable|array',
+            'campuses.*'       => 'exists:campuses,id',
             'grant_type'       => 'required|in:one_time,recurring,discontinued',
             'eligibility_notes' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -237,7 +244,7 @@ class ScholarshipController extends Controller
             'description'      => $request->description,
             'submission_deadline' => $request->submission_deadline,
             'application_start_date' => $request->application_start_date,
-            'campus_id'        => $request->campus_id ?: null,
+            'campus_id'        => null,
             'slots_available'  => $request->slots_available,
             'grant_amount'     => $request->grant_amount,
             'renewal_allowed'  => $renewalAllowed,
@@ -246,6 +253,18 @@ class ScholarshipController extends Controller
             'background_image' => $backgroundImagePath,
             'allow_existing_scholarship' => $request->has('allow_existing_scholarship'),
         ]);
+
+        // Sync Campuses
+        if ($request->has('campuses')) {
+             $scholarship->campuses()->sync($request->campuses);
+        } else {
+             // If no campuses sent (and not 'all' logic handled by frontend sending empty array? No, HTML forms don't send unchecked boxes)
+             // But if specific input 'campuses' IS missing, it might mean "All" if we have a separate "All" checkbox that prevents 'campuses' from being sent?
+             // Actually, if 'campuses' is missing, it usually means none selected.
+             // But if we want "All", we might need to handle it.
+             // For now, let's assume the frontend sends an empty array if none, or we clear it.
+             $scholarship->campuses()->detach();
+        }
 
         // Refresh conditions
         $scholarship->conditions()->delete();
@@ -677,7 +696,7 @@ class ScholarshipController extends Controller
     {
         // Get all scholarships that allow new applications and filter by all conditions
         $allScholarships = Scholarship::where('is_active', true)
-            ->with('conditions')
+            ->with(['conditions', 'campuses'])
             ->orderBy('submission_deadline')
             ->get();
 
@@ -688,6 +707,25 @@ class ScholarshipController extends Controller
                 return false;
             }
             
+            // Campus Visibility Restriction
+            // Check if the scholarship is available for the student's campus
+            if ($scholarship->campuses->isNotEmpty()) {
+                 if (empty($form->campus)) {
+                     return false; 
+                 }
+                 
+                 // Check if student's campus is in the allowed list
+                 $allowed = $scholarship->campuses->contains(function ($campus) use ($form) {
+                     return strtolower($campus->name) === strtolower($form->campus);
+                 });
+                 
+                 if (!$allowed) return false;
+            } else {
+                 // If no campuses are linked, the scholarship is not available to anyone
+                 // (Since we migrated 'All' to include all campuses)
+                 return false;
+            }
+
             // Check if student meets all conditions
             return $scholarship->meetsAllConditions($form);
         });
@@ -700,7 +738,7 @@ class ScholarshipController extends Controller
      */
     public function getScholarshipDetails($id)
     {
-        return Scholarship::with(['conditions', 'requiredDocuments', 'applications'])
+        return Scholarship::with(['conditions', 'requiredDocuments', 'applications', 'campuses'])
             ->findOrFail($id);
     }
 

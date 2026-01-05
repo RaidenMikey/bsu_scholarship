@@ -38,11 +38,11 @@ class StudentSeeder extends Seeder
             foreach ($groupCampuses as $index => $campus) {
                 $countForThisCampus = $baseCount + ($index < $remainder ? 1 : 0);
                 
-                // Get valid departments for this campus
-                $validDepartments = $campus->departments;
+                // Get valid colleges for this campus
+                $validColleges = $campus->colleges;
 
-                if ($validDepartments->isEmpty()) {
-                   $this->command->warn("No departments found for campus {$campus->name}. Skipping student generation for this campus.");
+                if ($validColleges->isEmpty()) {
+                   $this->command->warn("No colleges found for campus {$campus->name}. Skipping student generation for this campus.");
                    continue;
                 }
 
@@ -83,16 +83,41 @@ class StudentSeeder extends Seeder
                     $lastName = $faker->lastName;
                     $gender = $faker->randomElement(['Male', 'Female']);
 
-                    // Select Random Department from Valid List
-                    $randomDept = $validDepartments->random();
-                    $deptShortName = $randomDept->short_name;
+                    // Select Random College from Valid List
+                    $randomCollege = $validColleges->random();
+                    $collegeShortName = $randomCollege->short_name;
                     
-                    $availablePrograms = \App\Models\Program::where('college', $deptShortName)->pluck('name')->toArray();
+                    // Find the Pivot ID
+                    $campusCollege = \App\Models\CampusCollege::where('campus_id', $campus->id)
+                                        ->where('college_id', $randomCollege->id)
+                                        ->first();
+
+                    $availablePrograms = [];
+                    if ($campusCollege) {
+                        $availablePrograms = \App\Models\Program::where('campus_college_id', $campusCollege->id)->pluck('name')->toArray();
+                    }
                     
                     if (empty($availablePrograms)) {
-                         $availablePrograms = ["Bachelor of {$deptShortName}"];
+                         $availablePrograms = ["Bachelor of {$collegeShortName}"];
                     }
                     $program = $faker->randomElement($availablePrograms);
+
+                    // Assign Track/Major if available
+                    $track = null;
+                    if ($campusCollege) {
+                         $progModel = \App\Models\Program::where('campus_college_id', $campusCollege->id)
+                                        ->where('name', $program)
+                                        ->first();
+                         if ($progModel) {
+                             $tracks = \Illuminate\Support\Facades\DB::table('program_tracks')
+                                        ->where('program_id', $progModel->id)
+                                        ->pluck('name')
+                                        ->toArray();
+                             if (!empty($tracks)) {
+                                 $track = $faker->randomElement($tracks);
+                             }
+                         }
+                    }
 
                     $student = User::create([
                         'name' => "{$firstName} {$lastName}",
@@ -109,7 +134,8 @@ class StudentSeeder extends Seeder
                         'sex' => $gender,
                         'contact_number' => '09' . $faker->numberBetween(100000000, 999999999),
                         'program' => $program,
-                        'college' => $deptShortName,
+                        'track' => $track,
+                        'college' => $collegeShortName,
                         'year_level' => $faker->randomElement(['1st Year', '2nd Year', '3rd Year', '4th Year']),
                         'created_at' => $createdAt,
                         'updated_at' => $updatedAt,

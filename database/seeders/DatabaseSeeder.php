@@ -20,9 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // 1. Structure / Static Data
             CampusSeeder::class,
-            DepartmentSeeder::class,
-            CampusDepartmentSeeder::class,
+            CollegeSeeder::class,
+            CampusCollegeSeeder::class,
             ProgramSeeder::class,
+            ProgramTrackSeeder::class,
 
             // 2. Admins
             AdminSeeder::class,

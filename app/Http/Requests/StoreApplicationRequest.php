@@ -78,9 +78,10 @@ class StoreApplicationRequest extends FormRequest
             'sr_code'            => 'nullable|string',
             'education_level'    => 'nullable|string',
             'program'            => 'nullable|string',
-            'college_department' => 'nullable|string',
+            'college'            => 'nullable|string',
             'year_level'         => 'nullable|string',
             'campus_id'          => 'nullable|exists:campuses,id',
+            'track'              => 'nullable|string',
             
             // ------------------- Helpers -------------------
             'birth_mm'           => 'nullable|numeric',

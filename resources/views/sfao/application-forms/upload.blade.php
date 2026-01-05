@@ -43,11 +43,11 @@
                                                 name="form_type"
                                                 class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-bsu-red focus:border-bsu-red dark:text-white appearance-none transition-all">
                                             <option value="">Select Category (Optional)</option>
-                                            <option value="SFAO Application Form" {{ old('form_type') == 'SFAO Application Form' ? 'selected' : '' }}>SFAO Application Form</option>
-                                            <option value="TDP Application Form" {{ old('form_type') == 'TDP Application Form' ? 'selected' : '' }}>TDP Application Form</option>
-                                            <option value="Scholarship Application" {{ old('form_type') == 'Scholarship Application' ? 'selected' : '' }}>Scholarship Application</option>
-                                            <option value="Renewal Form" {{ old('form_type') == 'Renewal Form' ? 'selected' : '' }}>Renewal Form</option>
-                                            <option value="Other" {{ old('form_type') == 'Other' ? 'selected' : '' }}>Other</option>
+                                            @if(isset($activeScholarshipsList))
+                                                @foreach($activeScholarshipsList as $scholarship)
+                                                    <option value="{{ $scholarship->scholarship_name }}" {{ old('form_type') == $scholarship->scholarship_name ? 'selected' : '' }}>{{ $scholarship->scholarship_name }}</option>
+                                                @endforeach
+                                            @endif
                                         </select>
                                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -109,16 +109,21 @@
                                 @enderror
                             </div>
 
-                            <!-- Info Banner -->
+                            <!-- Visibility Info Banner -->
                             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
                                 <svg class="h-5 w-5 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <div class="text-sm text-blue-700 dark:text-blue-300">
-                                    <p class="font-medium">Campus Visibility: {{ $user->campus->name }}</p>
-                                    <p class="mt-0.5">This file will be available for download by students belonging to this campus only.</p>
+                                    <p class="font-medium">Automatic Visibility</p>
+                                    <p class="mt-0.5">
+                                        If a <strong>Category</strong> is selected, this form will be visible to all students eligible for that scholarship regardless of campus. 
+                                        If no category is selected, it will be visible only to students of <strong>{{ $user->campus->name }}</strong>.
+                                    </p>
                                 </div>
                             </div>
+                            <!-- Default to uploader's campus for reference/origin -->
+                            <input type="hidden" name="campus_id" value="{{ $user->campus_id }}">
                         </div>
                     </div>
 

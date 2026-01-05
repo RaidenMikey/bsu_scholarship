@@ -280,28 +280,50 @@ if (!$user) {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4"
+             x-data="{
+                selectedProgram: @json(old('program', $user->program ?? '')),
+                selectedTrack: @json(old('track', $user->track ?? '')),
+                allProgramTracks: @json($programTracks ?? []),
+                tracks: [],
+                updateTracks() {
+                    this.tracks = this.allProgramTracks[this.selectedProgram] || [];
+                    if (this.tracks.length === 0) {
+                        this.selectedTrack = ''; 
+                    }
+                }
+             }"
+             x-init="updateTracks(); $watch('selectedProgram', () => updateTracks())">
+             
           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Program <span class="text-red-500">*</span></label>
-            <select name="program" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+            <select name="program" x-model="selectedProgram" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
                 <option value="">-- Select Program --</option>
                 @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
-                    <option value="{{ $program }}" 
-                        {{ old('program', $user->program ?? '') == $program ? 'selected' : '' }}>
-                        {{ $program }}
-                    </option>
+                    <option value="{{ $program }}">{{ $program }}</option>
                 @endforeach
             </select>
           </div>
 
           <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College/Department <span class="text-red-500">*</span></label>
-            <select name="college_department" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-                <option value="">-- Select College/Department --</option>
-                <option value="CICS" {{ old('college_department', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
-                <option value="CTE" {{ old('college_department', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
-                <option value="CABEIHM" {{ old('college_department', $user->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
-                <option value="CAS" {{ old('college_department', $user->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
+             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Track / Major <span x-show="tracks.length > 0" class="text-red-500">*</span></label>
+             <select name="track" x-model="selectedTrack" :required="tracks.length > 0" :disabled="tracks.length === 0" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed dark:disabled:bg-gray-800">
+                <option value="">-- Select Track --</option>
+                <template x-for="track of tracks" :key="track">
+                    <option :value="track" x-text="track"></option>
+                </template>
+                <option value="No Track Yet" x-show="tracks.length > 0">No Track Yet</option>
+             </select>
+          </div>
+
+          <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College <span class="text-red-500">*</span></label>
+            <select name="college" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                <option value="">-- Select College --</option>
+                <option value="CICS" {{ old('college', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
+                <option value="CTE" {{ old('college', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
+                <option value="CABEIHM" {{ old('college', $user->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
+                <option value="CAS" {{ old('college', $user->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
             </select>
           </div>
         </div>

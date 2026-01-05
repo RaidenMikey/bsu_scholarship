@@ -56,7 +56,7 @@ class DashboardController extends Controller
         $limit = 5; // Dashboard preview limit
         
         // 2. Scholarships Data
-        $scholarshipsAll = Scholarship::withCount([
+        $scholarshipsQuery = Scholarship::withCount([
             'applications' => function($query) use ($campusIds) {
                 $query->whereHas('user', function($userQuery) use ($campusIds) {
                     $userQuery->whereIn('campus_id', $campusIds);
@@ -67,11 +67,23 @@ class DashboardController extends Controller
                     $userQuery->whereIn('campus_id', $campusIds);
                 });
             }
-        ])->get();
+        ])->whereHas('campuses', function($q) use ($campusIds) {
+            $q->whereIn('campus_id', $campusIds);
+        });
+
+        $scholarshipsAll = (clone $scholarshipsQuery)->orderBy('scholarship_name', 'asc')->get();
         // Sorting and Pagination logic for scholarships... (Simplified for initial migration)
         $scholarshipsAll = $this->paginate($scholarshipsAll, 5, $request->get('page_all', 1), 'page_all');
-        $scholarshipsPrivate = $this->paginate($scholarshipsAll->getCollection()->where('scholarship_type', 'private'), 5, $request->get('page_private', 1), 'page_private');
-        $scholarshipsGov = $this->paginate($scholarshipsAll->getCollection()->where('scholarship_type', 'government'), 5, $request->get('page_gov', 1), 'page_gov');
+        $scholarshipsPrivate = $this->paginate((clone $scholarshipsQuery)->where('scholarship_type', 'private')->orderBy('scholarship_name', 'asc')->get(), 5, $request->get('page_private', 1), 'page_private');
+        $scholarshipsGov = $this->paginate((clone $scholarshipsQuery)->where('scholarship_type', 'government')->orderBy('scholarship_name', 'asc')->get(), 5, $request->get('page_gov', 1), 'page_gov');
+        
+        // Scholarships List for Dropdowns (Unpaginated)
+        $activeScholarshipsList = Scholarship::where('is_active', true)
+            ->whereHas('campuses', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            })
+            ->orderBy('scholarship_name', 'asc')
+            ->get();
 
         // 3. Scholars Data
         $scholars = Scholar::with(['user', 'scholarship'])
@@ -124,7 +136,9 @@ class DashboardController extends Controller
                             $userQuery->whereIn('campus_id', $campusIds);
                         });
                     }
-                ]);
+                ])->whereHas('campuses', function($q) use ($campusIds) {
+                    $q->whereIn('campus_id', $campusIds);
+                });
                 
                 if ($request->has('scholars_sort_by')) {
                      // This is actually for scholars tab, ignore
@@ -215,10 +229,12 @@ class DashboardController extends Controller
             'user' => $user,
             'sfaoCampus' => $sfaoCampus,
             'monitoredCampuses' => $monitoredCampuses,
+            'managedCampuses' => $monitoredCampuses,
             'analytics' => $analytics,
             'scholarshipsAll' => $scholarshipsAll,
             'scholarshipsPrivate' => $scholarshipsPrivate,
             'scholarshipsGov' => $scholarshipsGov,
+            'activeScholarshipsList' => $activeScholarshipsList,
             'scholars' => $scholars,
             'reports' => $reports,
             'forms' => $forms,
@@ -269,9 +285,9 @@ class DashboardController extends Controller
         $analytics['rejected_applications'] = $rejectedApplications;
         $analytics['approval_rate'] = $studentsWithApplications > 0 ? round(($approvedApplications / $studentsWithApplications) * 100, 1) : 0;
 
-        // 2. Department Statistics
-        // Get all departments
-        $allDepartments = \App\Models\Department::all();
+        // 2. Department Statistics (Refactored to College)
+        // Get all colleges
+        $allColleges = \App\Models\College::all();
         // Fetch available scholarships for filter
         $availableScholarships = Scholarship::where('is_active', true)
             ->select('id', 'scholarship_name', 'scholarship_type')
@@ -279,17 +295,17 @@ class DashboardController extends Controller
             ->get();
         $analytics['available_scholarships'] = $availableScholarships;
         
-        $analytics['all_departments'] = $allDepartments;
+        $analytics['all_colleges'] = $allColleges;
         
         // Map campuses to departments
         $sfaoUser = User::find(session('user_id'));
         $sfaoCampus = $sfaoUser->campus;
         
-        $campusDepartments = [];
+        $campusColleges = [];
         foreach ($sfaoCampus->getAllCampusesUnder() as $camp) {
-            $campusDepartments[$camp->id] = $camp->departments->pluck('short_name')->toArray();
+            $campusColleges[$camp->id] = $camp->colleges->pluck('short_name')->toArray();
         }
-        $analytics['campus_departments'] = $campusDepartments;
+        $analytics['campus_colleges'] = $campusColleges;
 
         // Get Programs per Department (for filters)
         $dbProgramsData = User::where('role', 'student')
@@ -316,59 +332,97 @@ class DashboardController extends Controller
             }
         }
         
-        $analytics['department_programs'] = $mergedPrograms;
+        $analytics['college_programs'] = $mergedPrograms;
 
-        // Calculate stats per department
-        $departmentStats = [];
-        foreach ($allDepartments as $dept) {
-            // Count students in this department
-            $deptStudentsCount = User::where('role', 'student')
+        // Generate Strict Campus-College-Program Map
+        $rawPrograms = \App\Models\Program::with(['campusCollege.campus', 'campusCollege.college'])->get();
+        $campusCollegePrograms = [];
+        foreach ($rawPrograms as $prog) {
+            if ($prog->campusCollege && $prog->campusCollege->campus && $prog->campusCollege->college) {
+                $cId = $prog->campusCollege->campus_id;
+                $colName = $prog->campusCollege->college->short_name;
+                $pName = $prog->name;
+                $campusCollegePrograms[$cId][$colName][] = $pName;
+            }
+        }
+        // Ensure uniqueness and sort
+        foreach ($campusCollegePrograms as $cId => $cols) {
+            foreach ($cols as $colName => $progs) {
+                $uniqueProgs = array_unique($progs);
+                sort($uniqueProgs);
+                $campusCollegePrograms[$cId][$colName] = $uniqueProgs;
+            }
+        }
+        $analytics['campus_college_programs'] = $campusCollegePrograms;
+
+        // Get Tracks for Programs (Grouped by Program Name)
+        $programTracks = [];
+        $programsWithTracks = \App\Models\Program::with('tracks')->get();
+        foreach ($programsWithTracks as $p) {
+             if ($p->tracks->isNotEmpty()) {
+                 if (!isset($programTracks[$p->name])) {
+                     $programTracks[$p->name] = [];
+                 }
+                 $programTracks[$p->name] = array_unique(array_merge($programTracks[$p->name], $p->tracks->pluck('name')->toArray()));
+             }
+        }
+        foreach ($programTracks as $name => $tracks) {
+             $programTracks[$name] = array_values($tracks);
+             sort($programTracks[$name]);
+        }
+        $analytics['program_tracks'] = $programTracks;
+
+        // Calculate stats per college
+        $collegeStats = [];
+        foreach ($allColleges as $college) {
+            // Count students in this college
+            $colStudentsCount = User::where('role', 'student')
                 ->whereIn('campus_id', $campusIds)
-                ->where('college', $dept->short_name)
+                ->where('college', $college->short_name)
                 ->count();
                 
-            // Count applications for students in this department
-            $deptApplicationsCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+            // Count applications for students in this college
+            $colApplicationsCount = Application::whereHas('user', function($query) use ($campusIds, $college) {
                     $query->whereIn('campus_id', $campusIds)
-                           ->where('college', $dept->short_name);
+                           ->where('college', $college->short_name);
                 })
                 ->count();
                 
-            $deptApprovedCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+            $colApprovedCount = Application::whereHas('user', function($query) use ($campusIds, $college) {
                     $query->whereIn('campus_id', $campusIds)
-                           ->where('college', $dept->short_name);
+                           ->where('college', $college->short_name);
                 })
                 ->where('status', 'approved')
                 ->count();
 
-            $deptPendingCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+            $colPendingCount = Application::whereHas('user', function($query) use ($campusIds, $college) {
                     $query->whereIn('campus_id', $campusIds)
-                           ->where('college', $dept->short_name);
+                           ->where('college', $college->short_name);
                 })
                 ->where('status', 'pending')
                 ->count();
 
-            $deptRejectedCount = Application::whereHas('user', function($query) use ($campusIds, $dept) {
+            $colRejectedCount = Application::whereHas('user', function($query) use ($campusIds, $college) {
                     $query->whereIn('campus_id', $campusIds)
-                           ->where('college', $dept->short_name);
+                           ->where('college', $college->short_name);
                 })
                 ->where('status', 'rejected')
                 ->count();
 
-            if ($deptStudentsCount > 0 || $deptApplicationsCount > 0) {
-                $departmentStats[] = [
-                    'name' => $dept->short_name,
-                    'full_name' => $dept->name,
-                    'total_students' => $deptStudentsCount,
-                    'total_applications' => $deptApplicationsCount,
-                    'approved_applications' => $deptApprovedCount,
-                    'pending_applications' => $deptPendingCount,
-                    'rejected_applications' => $deptRejectedCount,
-                    'approval_rate' => $deptApplicationsCount > 0 ? round(($deptApprovedCount / $deptApplicationsCount) * 100, 1) : 0
+            if ($colStudentsCount > 0 || $colApplicationsCount > 0) {
+                $collegeStats[] = [
+                    'name' => $college->short_name,
+                    'full_name' => $college->name,
+                    'total_students' => $colStudentsCount,
+                    'total_applications' => $colApplicationsCount,
+                    'approved_applications' => $colApprovedCount,
+                    'pending_applications' => $colPendingCount,
+                    'rejected_applications' => $colRejectedCount,
+                    'approval_rate' => $colApplicationsCount > 0 ? round(($colApprovedCount / $colApplicationsCount) * 100, 1) : 0
                 ];
             }
         }
-        $analytics['department_stats'] = $departmentStats;
+        $analytics['college_stats'] = $collegeStats;
 
         // 3. All Students Data for Client-side Filtering (Gender Chart)
         $allStudentsData = User::where('role', 'student')
@@ -393,6 +447,7 @@ class DashboardController extends Controller
                 'users.campus_id', 
                 'users.college', 
                 'users.program', 
+                'users.track', 
                 'scholarships.scholarship_type', 
                 'scholarships.scholarship_name as scholarship_name', 
                 'applications.status', 
@@ -1188,7 +1243,11 @@ class DashboardController extends Controller
             ->get();
 
         // 2. Fetch Scholarships
+        // 2. Fetch Scholarships
         $scholarships = \App\Models\Scholarship::where('is_active', true)
+            ->whereHas('campuses', function($query) use ($user) {
+                $query->where('campus_id', $user->campus_id);
+            })
             ->withCount('applications')
             ->orderBy('created_at', 'desc')
             ->paginate(12);
@@ -1262,14 +1321,22 @@ class DashboardController extends Controller
     private function getStandardPrograms()
     {
         // Fetch from Programs Table (Grouped by College)
-        $programs = \App\Models\Program::all();
+        // Eager load campusCollege and college
+        $programs = \App\Models\Program::with('campusCollege.college')->get();
         $grouped = [];
         
         foreach ($programs as $prog) {
-            // Using Full Name as requested (Reverted from Short Name)
-            $grouped[$prog->college][] = $prog->name;
+            if ($prog->campusCollege && $prog->campusCollege->college) {
+                $grouped[$prog->campusCollege->college->short_name][] = $prog->name;
+            }
         }
         
+        // Remove duplicates in the grouping because programs are now per-campus
+        // e.g. BSBA appears multiple times.
+        foreach ($grouped as $college => $names) {
+            $grouped[$college] = array_values(array_unique($names));
+        }
+
         return $grouped;
     }
 }

@@ -23,7 +23,7 @@
                         <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">FIRST NAME</th>
                         <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">MIDDLE NAME</th>
                         <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center w-12">SEX</th>
-                        <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">DEPARTMENT</th>
+                        <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">COLLEGE</th>
                         <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">PROGRAM</th>
                     </tr>
                 </thead>
@@ -35,7 +35,7 @@
                         <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase whitespace-nowrap">{{ $scholar['first_name'] ?? trim(explode(',', $scholar['name'] ?? '')[1] ?? '') }}</td>
                         <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase whitespace-nowrap">{{ $scholar['middle_name'] ?? '' }}</td>
                         <td class="border border-gray-400 px-1 py-1 print:py-0.5 text-center uppercase">{{ isset($scholar['sex']) ? substr($scholar['sex'], 0, 1) : '-' }}</td>
-                        <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[8px]">{{ $scholar['department'] ?: 'N/A' }}</td>
+                        <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[8px]">{{ $scholar['college'] ?: 'N/A' }}</td>
                         <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[8px]">{{ $scholar['program'] ?? '' }}</td>
                     </tr>
                     @empty

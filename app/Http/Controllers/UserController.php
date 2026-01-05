@@ -599,15 +599,21 @@ class UserController extends Controller
 
         $userId = session('user_id');
         
+        // Get Program Tracks for dropdown
+        $programTracks = \App\Models\Program::with('tracks')->get()->mapWithKeys(function ($p) {
+            return [$p->name => $p->tracks->pluck('name')];
+        });
+
         // Get the user's form (one form per user)
         $existingApplication = Form::where('user_id', $userId)
             ->latest('updated_at')
             ->first();
         
+        $campuses = Campus::all();
+
         // If scholarship_id is provided, set scholarship_applied for display
         if ($scholarship_id) {
             $scholarship = Scholarship::findOrFail($scholarship_id);
-            $campuses = Campus::all();
             
             // If form exists, ensure scholarship_applied is set correctly
             if ($existingApplication) {
@@ -618,13 +624,12 @@ class UserController extends Controller
                 $existingApplication->scholarship_applied = $scholarship->scholarship_name;
             }
             
-            return view('student.forms.sfao-application-form', compact('existingApplication', 'scholarship', 'campuses'));
+            return view('student.forms.sfao-application-form', compact('existingApplication', 'scholarship', 'campuses', 'programTracks'));
         }
         
-        $campuses = Campus::all();
-        return view('student.forms.sfao-application-form', compact('existingApplication', 'campuses'));
+        return view('student.forms.sfao-application-form', compact('existingApplication', 'campuses', 'programTracks'));
     }
-
+    
     /**
      * Show TDP application form
      */
@@ -642,7 +647,12 @@ class UserController extends Controller
             ->first();
         
         $campuses = Campus::all();
-        return view('student.forms.tdp-application-form', compact('existingApplication', 'campuses'));
+        // Get Program Tracks for dropdown
+        $programTracks = \App\Models\Program::with('tracks')->get()->mapWithKeys(function ($p) {
+            return [$p->name => $p->tracks->pluck('name')];
+        });
+
+        return view('student.forms.tdp-application-form', compact('existingApplication', 'campuses', 'programTracks'));
     }
 
     /**

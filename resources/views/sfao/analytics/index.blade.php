@@ -29,16 +29,16 @@
                     </div>
                 </div>
 
-                <!-- Department Filter (Global) -->
+                <!-- College Filter (Global) -->
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Department</label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">College</label>
                     <div class="relative">
-                        <select x-model="localFilters.department" 
+                        <select x-model="localFilters.college" 
                                 class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
                                 style="border-width: 1px;">
                             <option value="all">All</option>
-                            <template x-for="dept in availableDepartments" :key="dept.id">
-                                <option :value="dept.short_name" x-text="dept.short_name"></option>
+                            <template x-for="college in availableColleges" :key="college.id">
+                                <option :value="college.short_name" x-text="college.short_name"></option>
                             </template>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
@@ -52,12 +52,32 @@
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Program</label>
                     <div class="relative">
                     <select x-model="localFilters.program" 
-                                :key="localFilters.department"
+                                :key="localFilters.college"
                                 class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
                                 style="border-width: 1px;">
                             <option value="all">All</option>
                             <template x-for="prog in availablePrograms" :key="prog">
                                 <option :value="prog" x-text="prog"></option>
+                            </template>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Track Filter (Global) -->
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Track / Major</label>
+                    <div class="relative">
+                    <select x-model="localFilters.track" 
+                                :disabled="!availableTracks || availableTracks.length === 0"
+                                :class="{'opacity-50 cursor-not-allowed': !availableTracks || availableTracks.length === 0}"
+                                class="block w-full px-3 py-2 text-base border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none"
+                                style="border-width: 1px;">
+                            <option value="all" x-text="(!availableTracks || availableTracks.length === 0) ? 'No Tracks Available' : 'All'"></option>
+                            <template x-for="track in availableTracks" :key="track">
+                                <option :value="track" x-text="track"></option>
                             </template>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
@@ -237,11 +257,11 @@
 
             <!-- Chart Container -->
             <div class="relative h-96 w-full mb-6">
-                <div x-show="chartStatus.department" class="h-full w-full">
-                    <canvas id="sfaoDepartmentChart"></canvas>
+                <div x-show="chartStatus.college" class="h-full w-full">
+                    <canvas id="sfaoCollegeChart"></canvas>
                 </div>
                 <!-- No Data Message -->
-                <div x-show="!chartStatus.department" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div x-show="!chartStatus.college" class="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div class="text-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

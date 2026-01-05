@@ -8,23 +8,27 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * @return void
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('program_tracks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('program_id')->constrained('programs')->onDelete('cascade');
             $table->string('name');
-            $table->string('short_name');
-            $table->text('description')->nullable();
+            $table->string('track_type')->comment('major or specialization'); 
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
+     *
+     * @return void
      */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('program_tracks');
     }
 };

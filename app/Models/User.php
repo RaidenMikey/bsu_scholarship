@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'education_level',
         'college',
         'program',
+        'track',
         'year_level',
     ];
 

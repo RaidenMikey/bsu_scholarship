@@ -9,7 +9,7 @@
 @section('content')
 <div class="w-full" x-data="{ 
     studentType: '{{ $studentType }}',
-    department: 'all',
+    college: 'all',
     program: 'all',
     academicYear: 'all',
     scholarshipId: 'all',
@@ -22,13 +22,13 @@
     },
 
     updateAvailablePrograms() {
-        if (this.department === 'all') {
+        if (this.college === 'all') {
             // Flatten all programs
             this.availablePrograms = Object.values(this.programs).flat().sort();
             // Remove duplicates if any (though backend distinct handles it mostly, strict unique here is good)
             this.availablePrograms = [...new Set(this.availablePrograms)];
         } else {
-            this.availablePrograms = this.programs[this.department] || [];
+            this.availablePrograms = this.programs[this.college] || [];
         }
         
         // Reset program if not in list
@@ -43,7 +43,7 @@
         
         const url = new URL('{{ route('sfao.reports.student-summary') }}');
         url.searchParams.set('student_type', this.studentType);
-        url.searchParams.set('department', this.department);
+        url.searchParams.set('college', this.college);
         url.searchParams.set('program', this.program);
         url.searchParams.set('academic_year', this.academicYear);
         url.searchParams.set('scholarship_id', this.scholarshipId);
@@ -63,7 +63,7 @@
     exportToExcel() {
         const params = new URLSearchParams({
             student_type: this.studentType,
-            department: this.department,
+            college: this.college,
             program: this.program,
             academic_year: this.academicYear,
             scholarship_id: this.scholarshipId,
@@ -94,14 +94,14 @@
                     </div>
                 </div>
 
-                <!-- Department -->
+                <!-- College -->
                 <div class="flex-1 min-w-[200px]">
-                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Department</label>
+                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">College</label>
                      <div class="relative">
-                        <select x-model="department" @change="updateAvailablePrograms(); updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
-                            <option value="all">All Departments</option>
-                            @foreach($departments as $dept)
-                                <option value="{{ $dept->short_name }}">{{ $dept->short_name }}</option>
+                        <select x-model="college" @change="updateAvailablePrograms(); updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
+                            <option value="all">All Colleges</option>
+                            @foreach($colleges as $college)
+                                <option value="{{ $college->short_name }}">{{ $college->short_name }}</option>
                             @endforeach
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -243,7 +243,7 @@
                      Uses :value binding. 
                 -->
                 <input type="hidden" name="student_type" :value="studentType">
-                <input type="hidden" name="department" :value="department">
+                <input type="hidden" name="college" :value="college">
                 <input type="hidden" name="program" :value="program">
                 <input type="hidden" name="academic_year" :value="academicYear">
                 <input type="hidden" name="scholarship_id" :value="scholarshipId">

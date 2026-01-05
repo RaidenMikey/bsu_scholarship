@@ -837,13 +837,13 @@ class ReportController extends Controller
              $remarksData = [];
     
              foreach ($monitoredCampuses as $camp) {
-                $campusData = ['campus_name' => $camp->name, 'departments' => []];
-                $departments = $camp->departments;
+                $campusData = ['campus_name' => $camp->name, 'colleges' => []];
+                $colleges = $camp->colleges;
     
-                foreach ($departments as $dept) {
+                foreach ($colleges as $college) {
                     $students = User::where('campus_id', $camp->id)
-                        ->where(function($q) use ($dept) {
-                            $q->where('college', $dept->name)->orWhere('college', $dept->short_name);
+                        ->where(function($q) use ($college) {
+                            $q->where('college', $college->name)->orWhere('college', $college->short_name);
                         })
                         ->where('role', 'student')
                         ->with(['applications' => function($q) { $q->latest(); }, 'form'])
@@ -876,7 +876,7 @@ class ReportController extends Controller
                             ];
                         }
                     }
-                    $campusData['departments'][] = ['department_name' => $dept->name, 'students' => $processedStudents];
+                    $campusData['colleges'][] = ['college_name' => $college->name, 'students' => $processedStudents];
                 }
                 $reportData[] = $campusData;
             }
@@ -937,7 +937,7 @@ class ReportController extends Controller
                     'first_name' => $student->first_name,
                     'middle_name' => $student->middle_name,
                     'sex' => $student->sex,
-                    'department' => $student->college ?? 'N/A',
+                    'college' => $student->college ?? 'N/A',
                     'program' => $student->program ?? 'N/A',
                     'year_level' => $student->year_level ?? 'N/A',
                     'status' => ucfirst($activeScholar->type) . ' Scholar'
@@ -1036,14 +1036,14 @@ class ReportController extends Controller
             $campusIds = [$campusId];
         }
 
-        $departmentFilter = $request->get('department', 'all');
+        $collegeFilter = $request->get('college', 'all');
         $programFilter = $request->get('program', 'all');
         $academicYearFilter = $request->get('academic_year', 'all');
         $scholarshipFilter = $request->get('scholarship_id', 'all');
 
         // Fetch Filter Options (Departments, Programs, Academic Years, Scholarships)
-        // Departments
-        $departments = \App\Models\Department::select('name', 'short_name')->get();
+        // Colleges
+        $colleges = \App\Models\College::select('name', 'short_name')->get();
         
         // Programs - Grouped by Department
         $programs = User::where('role', 'student')
@@ -1083,11 +1083,11 @@ class ReportController extends Controller
 
             $query = User::where('campus_id', $camp->id)->where('role', 'student');
 
-             // Apply Department Filter
-            if ($departmentFilter !== 'all') {
-                $query->where(function($q) use ($departmentFilter) {
-                    $q->where('college', $departmentFilter)
-                      ->orWhere('college', \App\Models\Department::where('short_name', $departmentFilter)->value('name') ?? $departmentFilter);
+             // Apply College Filter
+            if ($collegeFilter !== 'all') {
+                $query->where(function($q) use ($collegeFilter) {
+                    $q->where('college', $collegeFilter)
+                      ->orWhere('college', \App\Models\College::where('short_name', $collegeFilter)->value('name') ?? $collegeFilter);
                 });
             }
              // Apply Program Filter
@@ -1196,7 +1196,7 @@ class ReportController extends Controller
                             'first_name' => $student->first_name,
                             'middle_name' => $student->middle_name,
                             'sex' => $student->sex,
-                            'department' => $student->college,
+                            'college' => $student->college,
                             'program' => $student->program,
                             'scholarship' => $scholar->scholarship ? $scholar->scholarship->scholarship_name : 'N/A',
                             'status' => ucfirst($scholar->type) . ' Scholar'
@@ -1268,6 +1268,6 @@ class ReportController extends Controller
         }
 
         return view('sfao.reports.student-summary', 
-            compact('user', 'monitoredCampuses', 'reportData', 'studentType', 'departments', 'programs', 'academicYearOptions', 'scholarships'));
+            compact('user', 'monitoredCampuses', 'reportData', 'studentType', 'colleges', 'programs', 'academicYearOptions', 'scholarships'));
     }
 }

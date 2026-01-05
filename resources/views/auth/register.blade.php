@@ -100,14 +100,14 @@
 
 
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department <span class="text-red-500">*</span></label>
-        <select name="program" required x-model="formData.program" @change="formData.college = formData.program" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white" :disabled="!formData.campus_id">
-          <option value="" disabled selected>Select Department</option>
-          <template x-for="dept in availableDepartments" :key="dept.id">
-            <option :value="dept.short_name" x-text="dept.short_name"></option>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">College <span class="text-red-500">*</span></label>
+        <select name="college" required x-model="formData.college" @change="formData.program = formData.college" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white" :disabled="!formData.campus_id">
+          <option value="" disabled selected>Select College</option>
+          <template x-for="college in availableColleges" :key="college.id">
+            <option :value="college.short_name" x-text="college.short_name"></option>
           </template>
         </select>
-        <input type="hidden" name="college" x-model="formData.college">
+        <input type="hidden" name="program" x-model="formData.program">
       </div>
 
       <div class="mb-4">
@@ -163,11 +163,19 @@
       <x-auth.password-input label="Password" name="password" placeholder="Create a strong password" autocomplete="new-password" showStrength="true" required x-model="formData.password" />
       <x-auth.password-input label="Confirm Password" name="password_confirmation" placeholder="Confirm your password" autocomplete="new-password" required x-model="formData.password_confirmation" />
       
-      <div class="mb-6 mt-4">
+      <div class="mb-4 mt-4">
         <label class="inline-flex items-start text-sm text-gray-700 dark:text-gray-300">
           <input type="checkbox" name="terms" required x-model="formData.terms" class="mt-1 rounded text-red-600 focus:ring-red-500 dark:bg-gray-700">
           <span class="ml-2">
-            I agree to the <a href="#" @click.prevent="showToSModal = true" class="text-red-600 hover:underline dark:text-red-400">Terms of Service</a> and <a href="#" @click.prevent="showPrivacyModal = true" class="text-red-600 hover:underline dark:text-red-400">Privacy Policy</a>
+            I agree to the <a href="#" @click.prevent="showToSModal = true" class="text-red-600 hover:underline dark:text-red-400">Terms of Service</a>
+          </span>
+        </label>
+      </div>
+      <div class="mb-6">
+        <label class="inline-flex items-start text-sm text-gray-700 dark:text-gray-300">
+          <input type="checkbox" name="privacy" required x-model="formData.privacy" class="mt-1 rounded text-red-600 focus:ring-red-500 dark:bg-gray-700">
+          <span class="ml-2">
+            I agree to the <a href="#" @click.prevent="showPrivacyModal = true" class="text-red-600 hover:underline dark:text-red-400">Privacy Policy</a>
           </span>
         </label>
       </div>
@@ -612,7 +620,7 @@
         <!-- Footer -->
         <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end">
             <button type="button" 
-                    @click="showPrivacyModal = false; formData.terms = true" 
+                    @click="showPrivacyModal = false; formData.privacy = true" 
                     class="px-6 py-2 bg-bsu-red hover:bg-bsu-redDark text-white rounded-lg transition-colors font-medium text-sm shadow-sm">
               I Accept
             </button>
@@ -638,7 +646,7 @@
     return {
       currentStep: 1,
       campuses: @json($campuses),
-      availableDepartments: [],
+      availableColleges: [],
       steps: ['Personal Info', 'Contact Info', 'Academic Info', 'Scholarship Verification', 'Credentials'],
       formData: {
         first_name: '',
@@ -658,7 +666,8 @@
         selected_scholarships: [],
         password: '',
         password_confirmation: '',
-        terms: false
+        terms: false,
+        privacy: false
       },
       showAgeErrorModal: false,
       showRequiredFieldsModal: false,
@@ -733,7 +742,11 @@
             return false;
           }
           if (!this.formData.terms) {
-            alert('You must agree to the terms and privacy policy.');
+            alert('You must agree to the Terms of Service.');
+            return false;
+          }
+          if (!this.formData.privacy) {
+            alert('You must agree to the Privacy Policy.');
             return false;
           }
         }
@@ -774,26 +787,26 @@
           sessionStorage.setItem('signupCurrentStep', value);
         });
 
-        // Watch for campus changes to update departments
+        // Watch for campus changes to update colleges
         this.$watch('formData.campus_id', (value) => {
             if (value) {
                 const selectedCampus = this.campuses.find(c => c.id == value);
-                this.availableDepartments = selectedCampus ? selectedCampus.departments : [];
+                this.availableColleges = selectedCampus ? selectedCampus.colleges : [];
                 // Reset college if it's not in the new list (unless it's a reload)
                 // We can just reset it to ensure validity
-                if (!this.availableDepartments.some(d => d.name === this.formData.college)) {
+                if (!this.availableColleges.some(d => d.name === this.formData.college)) {
                     this.formData.college = '';
                 }
             } else {
-                this.availableDepartments = [];
+                this.availableColleges = [];
                 this.formData.college = '';
             }
         });
 
-        // Initialize departments if campus is already selected (e.g. from session storage)
+        // Initialize colleges if campus is already selected (e.g. from session storage)
         if (this.formData.campus_id) {
              const selectedCampus = this.campuses.find(c => c.id == this.formData.campus_id);
-             this.availableDepartments = selectedCampus ? selectedCampus.departments : [];
+             this.availableColleges = selectedCampus ? selectedCampus.colleges : [];
         }
       },
 

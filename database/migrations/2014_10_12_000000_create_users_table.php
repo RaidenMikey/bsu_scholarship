@@ -34,6 +34,7 @@ return new class extends Migration
             $table->string('education_level')->nullable();
             $table->string('college')->nullable();
             $table->string('program')->nullable();
+            $table->string('track')->nullable();
             $table->string('year_level')->nullable();
 
             // 🔗 Each user belongs to one campus (nullable)

@@ -51,9 +51,10 @@ class ApplicationService
             'sr_code'         => $data['sr_code'] ?? $user->sr_code,
             'education_level' => $data['education_level'] ?? $user->education_level,
             'program'         => $data['program'] ?? $user->program,
-            'college'         => $data['college_department'] ?? $user->college,
+            'college'         => $data['college'] ?? $user->college,
             'year_level'      => $data['year_level'] ?? $user->year_level,
             'campus_id'       => $data['campus_id'] ?? $user->campus_id,
+            'track'           => $data['track'] ?? $user->track,
         ]);
         
         // Update concatenated name

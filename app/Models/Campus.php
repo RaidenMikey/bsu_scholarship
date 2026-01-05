@@ -81,13 +81,18 @@ class Campus extends Model
         return $query->where('has_sfao_admin', true);
     }
 
-    public function departments()
+    public function colleges()
     {
-        return $this->belongsToMany(Department::class, 'campus_department');
+        return $this->belongsToMany(College::class, 'campus_college');
     }
 
     public function scholars()
     {
         return $this->hasManyThrough(Scholar::class, User::class);
+    }
+
+    public function scholarships()
+    {
+        return $this->belongsToMany(Scholarship::class, 'campus_scholarship');
     }
 }
