@@ -38,12 +38,24 @@ if (!$user) {
 
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white font-sans py-10 px-4">
-  <div class="max-w-5xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-xl p-8">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white font-sans">
     
-    @include('student.partials.page-header', [
-      'title' => 'Application Form for Student Scholarship / Financial Assistance'
-    ])
+    <!-- Custom Navbar -->
+    <x-layout.navbar 
+        :user="$user" 
+        title="Scholarship Application Form"
+        :sidebar="false"
+        :logout="true"
+        :profile="false"
+        :settings="true"
+        back-url="#"
+        back-text="Back to Dashboard"
+        onclick="event.preventDefault(); showUnsavedChangesModal('{{ route('student.dashboard') }}')"
+    />
+
+  <div class="max-w-5xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-xl p-8 mt-8 mb-12">
+    
+
 
     <!-- Error Display -->
     @if ($errors->any())
@@ -249,7 +261,8 @@ if (!$user) {
 
       <!-- Stage 2: Academic Data Section -->
       <div class="form-stage hidden" data-stage="2">
-      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+      <section class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 shadow-sm"
+               x-data="academicDropdowns">
         <h2 class="text-3xl font-bold text-red-800 dark:text-red-400 mb-6 border-b-2 border-red-700 dark:border-red-500 pb-2">Academic Data</h2>
         
         <div class="space-y-5">
@@ -280,96 +293,81 @@ if (!$user) {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4"
-             x-data="{
-                selectedProgram: @json(old('program', $user->program ?? '')),
-                selectedTrack: @json(old('track', $user->track ?? '')),
-                allProgramTracks: @json($programTracks ?? []),
-                tracks: [],
-                updateTracks() {
-                    this.tracks = this.allProgramTracks[this.selectedProgram] || [];
-                    if (this.tracks.length === 0) {
-                        this.selectedTrack = ''; 
-                    }
-                }
-             }"
-             x-init="updateTracks(); $watch('selectedProgram', () => updateTracks())">
-             
-          <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Program <span class="text-red-500">*</span></label>
-            <select name="program" x-model="selectedProgram" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-                <option value="">-- Select Program --</option>
-                @foreach (['BS Computer Science', 'BS Information Technology', 'BS Computer Engineering', 'BS Electronics Engineering', 'BS Civil Engineering', 'BS Mechanical Engineering', 'BS Electrical Engineering', 'BS Industrial Engineering', 'BS Accountancy', 'BS Business Administration', 'BS Tourism Management', 'BS Hospitality Management', 'BS Psychology', 'BS Education', 'BS Nursing', 'BS Medical Technology', 'BS Pharmacy', 'BS Biology', 'BS Chemistry', 'BS Mathematics', 'BS Physics', 'BS Environmental Science', 'BS Agriculture', 'BS Fisheries', 'BS Forestry', 'BS Architecture', 'BS Interior Design', 'BS Fine Arts', 'BS Communication', 'BS Social Work', 'BS Criminology', 'BS Political Science', 'BS History', 'BS Literature', 'BS Philosophy', 'BS Economics', 'BS Sociology', 'BS Anthropology'] as $program)
-                    <option value="{{ $program }}">{{ $program }}</option>
-                @endforeach
-            </select>
-          </div>
-
-          <div>
-             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Track / Major <span x-show="tracks.length > 0" class="text-red-500">*</span></label>
-             <select name="track" x-model="selectedTrack" :required="tracks.length > 0" :disabled="tracks.length === 0" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed dark:disabled:bg-gray-800">
-                <option value="">-- Select Track --</option>
-                <template x-for="track of tracks" :key="track">
-                    <option :value="track" x-text="track"></option>
-                </template>
-                <option value="No Track Yet" x-show="tracks.length > 0">No Track Yet</option>
-             </select>
-          </div>
-
-          <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College <span class="text-red-500">*</span></label>
-            <select name="college" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-                <option value="">-- Select College --</option>
-                <option value="CICS" {{ old('college', $user->college ?? '') == 'CICS' ? 'selected' : '' }}>CICS</option>
-                <option value="CTE" {{ old('college', $user->college ?? '') == 'CTE' ? 'selected' : '' }}>CTE</option>
-                <option value="CABEIHM" {{ old('college', $user->college ?? '') == 'CABEIHM' ? 'selected' : '' }}>CABEIHM</option>
-                <option value="CAS" {{ old('college', $user->college ?? '') == 'CAS' ? 'selected' : '' }}>CAS</option>
-            </select>
-          </div>
+        <!-- Campus (Hidden) / College / Year Level Row -->
+        <input type="hidden" name="campus_id" x-model="selectedCampus">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- College -->
+            <div>
+                <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">College <span class="text-red-500">*</span></label>
+                <select name="college" x-model="selectedCollege" @change="updateCollege()" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50" :disabled="!selectedCampus">
+                    <option value="">-- Select College --</option>
+                    <template x-for="college in colleges" :key="college">
+                        <option :value="college" x-text="college"></option>
+                    </template>
+                </select>
+            </div>
+            
+            <!-- Year Level -->
+            <div>
+                <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Grade/Year Level <span class="text-red-500">*</span></label>
+                <select name="year_level" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+                    <option value="">-- Select Grade/Year Level --</option>
+                    <option value="1st Year" {{ old('year_level', $user->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
+                    <option value="2nd Year" {{ old('year_level', $user->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
+                    <option value="3rd Year" {{ old('year_level', $user->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
+                    <option value="4th Year" {{ old('year_level', $user->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
+                </select>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Grade/Year Level <span class="text-red-500">*</span></label>
-            <select name="year_level" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-                <option value="">-- Select Grade/Year Level --</option>
-                <option value="1st Year" {{ old('year_level', $user->year_level ?? '') == '1st Year' ? 'selected' : '' }}>1st Year</option>
-                <option value="2nd Year" {{ old('year_level', $user->year_level ?? '') == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
-                <option value="3rd Year" {{ old('year_level', $user->year_level ?? '') == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
-                <option value="4th Year" {{ old('year_level', $user->year_level ?? '') == '4th Year' ? 'selected' : '' }}>4th Year</option>
-            </select>
-          </div>
-          <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Campus <span class="text-red-500">*</span></label>
-            <select name="campus_id" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-              <option value="">-- Select Campus --</option>
-              @foreach($campuses as $campus)
-                <option value="{{ $campus->id }}" {{ old('campus_id', $user->campus_id) == $campus->id ? 'selected' : '' }}>
-                  {{ $campus->name }}
-                </option>
-              @endforeach
-            </select>
-          </div>
-          <div>
+        <!-- Program / Track Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Program -->
+            <div>
+                <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Program <span class="text-red-500">*</span></label>
+                <select name="program" x-model="selectedProgram" @change="updateProgram()" required class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50" :disabled="!selectedCollege">
+                    <option value="">-- Select Program --</option>
+                    <template x-for="prog in programs" :key="prog.name">
+                        <option :value="prog.name" x-text="prog.name"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Track -->
+            <div>
+                 <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Track / Major <span x-show="tracks.length > 0" class="text-red-500">*</span></label>
+                 <select name="track" x-model="selectedTrack" :required="tracks.length > 0" :disabled="!selectedProgram || tracks.length === 0" class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="">-- Select Track --</option>
+                    <template x-for="track of tracks" :key="track">
+                        <option :value="track" x-text="track"></option>
+                    </template>
+                    <option value="No Track Yet" x-show="tracks.length > 0">No Track Yet</option>
+                 </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Previous GWA <span class="text-red-500">*</span></label>
             <input type="number" name="previous_gwa" required step="0.01" min="1.00" max="5.00" 
                    placeholder="0.00"
                    value="{{ old('previous_gwa', $existingApplication->previous_gwa ?? '') }}"
                    class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-        </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Honors Received</label>
-            <input type="text" name="honors_received" placeholder="If any"
-              value="{{ old('honors_received', $existingApplication->honors_received ?? '') }}"
-              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
-          </div>
-          <div>
+           </div>
+           <div>
             <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Units Enrolled <span class="text-red-500">*</span></label>
             <input type="number" name="units_enrolled" required min="1" max="30"
               value="{{ old('units_enrolled', $existingApplication->units_enrolled ?? '') }}"
+              class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+           <div>
+            <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Honors Received</label>
+            <input type="text" name="honors_received" placeholder="If any"
+              value="{{ old('honors_received', $existingApplication->honors_received ?? '') }}"
               class="w-full border-b-2 border-gray-300 dark:border-gray-600 px-2 py-1 focus:border-red-500 dark:focus:border-red-600 focus:outline-none bg-white dark:bg-gray-700 dark:text-white transition-colors">
           </div>
         </div>
@@ -1241,6 +1239,7 @@ if (!$user) {
       
       // Auto-populate signature
       const firstNameInput = document.querySelector('input[name="first_name"]');
+      // ... (existing code for signature)
       const middleNameInput = document.querySelector('input[name="middle_name"]');
       const lastNameInput = document.querySelector('input[name="last_name"]');
       const signatureInput = document.querySelector('input[name="student_signature"]');
@@ -1271,6 +1270,42 @@ if (!$user) {
           // Initial update
           updateSignature();
       }
+    });
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('academicDropdowns', () => ({
+            campusData: @json($campusData),
+            selectedCampus: @json(old('campus_id', $user->campus_id ?? '')), 
+            selectedCollege: @json(old('college', $user->college ?? '')),
+            selectedProgram: @json(old('program', $user->program ?? '')),
+            selectedTrack: @json(old('track', $user->track ?? '')),
+            
+            get colleges() {
+                if (!this.selectedCampus || !this.campusData[this.selectedCampus]) return [];
+                return Object.keys(this.campusData[this.selectedCampus]);
+            },
+            get programs() {
+                if (!this.selectedCampus || !this.selectedCollege || !this.campusData[this.selectedCampus] || !this.campusData[this.selectedCampus][this.selectedCollege]) return [];
+                return this.campusData[this.selectedCampus][this.selectedCollege];
+            },
+            get tracks() {
+                const programObj = this.programs.find(p => p.name === this.selectedProgram);
+                return programObj ? programObj.tracks : [];
+            },
+            
+            updateCampus() {
+                this.selectedCollege = '';
+                this.selectedProgram = '';
+                this.selectedTrack = '';
+            },
+            updateCollege() {
+                this.selectedProgram = '';
+                this.selectedTrack = '';
+            },
+            updateProgram() {
+                this.selectedTrack = '';
+            }
+        }));
     });
   </script>
 </body>

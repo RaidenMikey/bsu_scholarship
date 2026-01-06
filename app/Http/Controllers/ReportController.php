@@ -1038,35 +1038,136 @@ class ReportController extends Controller
 
         $collegeFilter = $request->get('college', 'all');
         $programFilter = $request->get('program', 'all');
+        $trackFilter = $request->get('track', 'all');
         $academicYearFilter = $request->get('academic_year', 'all');
         $scholarshipFilter = $request->get('scholarship_id', 'all');
 
         // Fetch Filter Options (Departments, Programs, Academic Years, Scholarships)
-        // Colleges
-        $colleges = \App\Models\College::select('name', 'short_name')->get();
-        
-        // Programs - Grouped by Department
-        $programs = User::where('role', 'student')
-            ->whereIn('campus_id', $campus->getAllCampusesUnder()->pluck('id')) // Allow filtering across all campuses
-            ->whereNotNull('program')
-            ->select('college', 'program')
+        // Build Cascading Maps
+        $allMonitoredIds = $campus->getAllCampusesUnder()->pluck('id');
+        $mapData = User::whereIn('campus_id', $allMonitoredIds)
+            ->where('role', 'student')
+            ->select('campus_id', 'college', 'program', 'track')
             ->distinct()
-            ->get()
-            ->groupBy('college')
-             ->map(function ($items) {
-                return $items->pluck('program')->unique()->values()->all();
-            })->toArray();
+            ->get();
+            
+        $campusCollegePrograms = [];
+        $programTracks = [];
+        
+        // Fetch Colleges for normalization
+        $collegesRef = \App\Models\College::all();
+        $collegeNameMap = $collegesRef->pluck('short_name', 'name')->toArray();
+        $collegeShortMap = $collegesRef->pluck('name', 'short_name')->toArray(); // Just in case needed
 
-        // Academic Years (Logic from DashboardController)
-        $oldestReport = \App\Models\Report::orderBy('report_period_start', 'asc')->first();
-        $startYear = $oldestReport && $oldestReport->report_period_start ? $oldestReport->report_period_start->year : now()->year;
-        $currentYear = now()->year;
-        $academicYearOptions = [];
-        for ($y = $currentYear + 1; $y >= $startYear; $y--) {
-            $prev = $y - 1;
-            $academicYearOptions[] = "{$prev}-{$y}";
+        foreach ($mapData as $row) {
+            if (!$row->college) continue;
+            
+            // Normalize College Name to Short Name for the Map Key
+            $rawCol = $row->college;
+            $colName = $collegeNameMap[$rawCol] ?? $rawCol;
+            
+            // Should also check if $rawCol IS a short name already, basically we want consistent keys matching the dropdown values (which are short names)
+            // The dropdown uses $college->short_name. So we ensure this key is the short name.
+            
+            $progName = $row->program;
+            
+            if ($progName) {
+                // Initialize array structure
+                if (!isset($campusCollegePrograms[$row->campus_id][$colName])) {
+                    $campusCollegePrograms[$row->campus_id][$colName] = [];
+                }
+                if (!in_array($progName, $campusCollegePrograms[$row->campus_id][$colName])) {
+                    $campusCollegePrograms[$row->campus_id][$colName][] = $progName;
+                }
+                
+                if ($row->track) {
+                    if (!isset($programTracks[$progName])) {
+                        $programTracks[$progName] = [];
+                    }
+                    if (!in_array($row->track, $programTracks[$progName])) {
+                        $programTracks[$progName][] = $row->track;
+                    }
+                }
+            }
         }
-        $academicYearOptions = array_unique($academicYearOptions);
+        
+        // Pass colleges list for initial view (normalized unique colleges)
+        $colleges = \App\Models\College::select('name', 'short_name')->get();
+
+        // Academic Years (Dynamic Context-Aware Logic)
+        $campusAcademicYearMap = [
+            'applicants' => [],
+            'scholars' => []
+        ];
+
+        // Ensure we have 'all' keys initialized
+        $campusAcademicYearMap['applicants']['all'] = [];
+        $campusAcademicYearMap['scholars']['all'] = [];
+
+        // Helper to determine AY from date
+        $getAy = function($date) {
+            $d = \Carbon\Carbon::parse($date);
+            $y = $d->year;
+            $m = $d->month;
+            if ($m >= 8) {
+                return $y . '-' . ($y + 1);
+            } else {
+                return ($y - 1) . '-' . $y;
+            }
+        };
+
+        // 1. Fetch Applicants Dates per Campus (via User)
+        $appRaw = \Illuminate\Support\Facades\DB::table('applications')
+            ->join('users', 'applications.user_id', '=', 'users.id')
+            ->whereIn('users.campus_id', $allMonitoredIds)
+            ->selectRaw('users.campus_id, YEAR(applications.created_at) as y, MONTH(applications.created_at) as m')
+            ->distinct()
+            ->get();
+
+        foreach ($appRaw as $row) {
+             // Reconstruct a date to use helper or inline logic
+             $ay = ($row->m >= 8) ? ($row->y . '-' . ($row->y + 1)) : (($row->y - 1) . '-' . $row->y);
+             
+             // Initialize array if not present
+             if (!isset($campusAcademicYearMap['applicants'][$row->campus_id])) {
+                 $campusAcademicYearMap['applicants'][$row->campus_id] = [];
+             }
+             
+             $campusAcademicYearMap['applicants'][$row->campus_id][] = $ay;
+             $campusAcademicYearMap['applicants']['all'][] = $ay;
+        }
+
+        // 2. Fetch Scholars Dates per Campus (via User)
+        $scholarRaw = \Illuminate\Support\Facades\DB::table('scholars')
+             ->join('users', 'scholars.user_id', '=', 'users.id')
+             ->whereIn('users.campus_id', $allMonitoredIds)
+             ->selectRaw('users.campus_id, YEAR(scholars.created_at) as y, MONTH(scholars.created_at) as m')
+             ->distinct()
+             ->get();
+
+        foreach ($scholarRaw as $row) {
+             $ay = ($row->m >= 8) ? ($row->y . '-' . ($row->y + 1)) : (($row->y - 1) . '-' . $row->y);
+             
+             if (!isset($campusAcademicYearMap['scholars'][$row->campus_id])) {
+                 $campusAcademicYearMap['scholars'][$row->campus_id] = [];
+             }
+             
+             $campusAcademicYearMap['scholars'][$row->campus_id][] = $ay;
+             $campusAcademicYearMap['scholars']['all'][] = $ay;
+        }
+
+        // De-duplicate and sort
+        foreach ($campusAcademicYearMap as $type => &$campuses) {
+             foreach ($campuses as $cId => &$years) {
+                 $years = array_unique($years);
+                 rsort($years); // Latest first
+             }
+        }
+        
+        // Initial generic options (union of everything found)
+        // We can just use the 'all' key of the current type for initial render, or pass the map.
+        // We'll pass the map.
+        $academicYearOptions = $campusAcademicYearMap['applicants']['all']; // Default fallback
         
         // Scholarships
         $scholarships = \App\Models\Scholarship::where('is_active', true)->select('id', 'scholarship_name')->orderBy('scholarship_name')->get();
@@ -1074,6 +1175,9 @@ class ReportController extends Controller
 
         // Data Fetching
         $reportData = [];
+        
+        // Pre-fetch Program Short Names Map
+        $programMap = \App\Models\Program::pluck('short_name', 'name')->toArray();
 
         foreach ($monitoredCampuses as $camp) {
             $campusData = [
@@ -1094,18 +1198,28 @@ class ReportController extends Controller
             if ($programFilter !== 'all') {
                 $query->where('program', $programFilter);
             }
+            // Apply Track Filter
+            if ($trackFilter !== 'all') {
+                $query->where('track', $trackFilter);
+            }
             
             // For Applicants vs Scholars
             if ($studentType === 'applicants') {
                  // Filter by Applicant logic (Students who have applications AND are NOT scholars)
                  $query->whereDoesntHave('scholars')
-                       ->whereHas('applications', function($qApp) use ($academicYearFilter, $scholarshipFilter) {
+                       ->whereHas('applications', function($qApp) use ($academicYearFilter, $scholarshipFilter, $request) {
                      // Scholarship Filter
                      if ($scholarshipFilter !== 'all') {
                          $qApp->where('scholarship_id', $scholarshipFilter);
                      }
                      // Academic Year Filter for Applicants
-                     if ($academicYearFilter !== 'all') {
+                     if ($academicYearFilter === 'custom') {
+                         if ($request->custom_start && $request->custom_end) {
+                             $startDt = \Carbon\Carbon::parse($request->custom_start)->startOfDay();
+                             $endDt = \Carbon\Carbon::parse($request->custom_end)->endOfDay();
+                             $qApp->whereBetween('created_at', [$startDt, $endDt]);
+                         }
+                     } elseif ($academicYearFilter !== 'all') {
                          $years = explode('-', $academicYearFilter);
                          if (count($years) === 2) {
                              $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
@@ -1116,13 +1230,20 @@ class ReportController extends Controller
                  })->with(['form', 'applications.scholarship']);
             } else {
                 // Scholars
-                $query->whereHas('scholars', function($qScholar) use ($academicYearFilter, $scholarshipFilter) {
+                $query->whereHas('scholars', function($qScholar) use ($academicYearFilter, $scholarshipFilter, $request) {
                      // Scholarship Filter
                      if ($scholarshipFilter !== 'all') {
                          $qScholar->where('scholarship_id', $scholarshipFilter);
                      }
                      // Academic Year Filter for Scholars
-                      if ($academicYearFilter !== 'all') {
+                      // Academic Year Filter for Scholars
+                      if ($academicYearFilter === 'custom') {
+                         if ($request->custom_start && $request->custom_end) {
+                             $startDt = \Carbon\Carbon::parse($request->custom_start)->startOfDay();
+                             $endDt = \Carbon\Carbon::parse($request->custom_end)->endOfDay();
+                             $qScholar->whereBetween('created_at', [$startDt, $endDt]);
+                         }
+                     } elseif ($academicYearFilter !== 'all') {
                          $years = explode('-', $academicYearFilter);
                          if (count($years) === 2) {
                              $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
@@ -1144,13 +1265,19 @@ class ReportController extends Controller
                          // Apply Scholarship Filter
                          if ($scholarshipFilter !== 'all' && $app->scholarship_id != $scholarshipFilter) continue;
                         
-                         // Apply AY Filter to the specific application if needed (since has() filters students but we iterating all apps)
-                         if ($academicYearFilter !== 'all') {
+                         // Apply AY Filter to the specific application if needed
+                         if ($academicYearFilter === 'custom') {
+                             if ($request->custom_start && $request->custom_end) {
+                                 $startDt = \Carbon\Carbon::parse($request->custom_start)->startOfDay();
+                                 $endDt = \Carbon\Carbon::parse($request->custom_end)->endOfDay();
+                                 if (!\Carbon\Carbon::parse($app->created_at)->between($startDt, $endDt)) continue;
+                             }
+                         } elseif ($academicYearFilter !== 'all') {
                               $years = explode('-', $academicYearFilter);
                               if (count($years) === 2) {
                                   $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
                                   $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
-                                  if (!$app->created_at->between($startDt, $endDt)) continue;
+                                  if (!\Carbon\Carbon::parse($app->created_at)->between($startDt, $endDt)) continue;
                               }
                          }
                         
@@ -1162,7 +1289,8 @@ class ReportController extends Controller
                             'middle_name' => $student->middle_name,
                             'sex' => $student->sex,
                             'birthdate' => $student->birthdate ? $student->birthdate->format('Y-m-d') : 'N/A',
-                            'course' => $student->program ?? $student->college,
+                            'course' => $programMap[$student->program] ?? ($student->program ?? $student->college),
+                            'track' => $student->track, // Add Track
                             'year_level' => $student->year_level,
                             'units' => $student->form ? $student->form->units_enrolled : 'N/A',
                             'municipality' => $student->form ? $student->form->town_city : 'N/A',
@@ -1180,12 +1308,19 @@ class ReportController extends Controller
                         if ($scholarshipFilter !== 'all' && $scholar->scholarship_id != $scholarshipFilter) continue;
                          
                         // Apply AY filter Check
-                        if ($academicYearFilter !== 'all') {
+                        // Apply AY filter Check
+                        if ($academicYearFilter === 'custom') {
+                             if ($request->custom_start && $request->custom_end) {
+                                 $startDt = \Carbon\Carbon::parse($request->custom_start)->startOfDay();
+                                 $endDt = \Carbon\Carbon::parse($request->custom_end)->endOfDay();
+                                 if (!\Carbon\Carbon::parse($scholar->created_at)->between($startDt, $endDt)) continue;
+                             }
+                        } elseif ($academicYearFilter !== 'all') {
                               $years = explode('-', $academicYearFilter);
                               if (count($years) === 2) {
                                   $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
                                   $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
-                                  if (!$scholar->created_at->between($startDt, $endDt)) continue;
+                                  if (!\Carbon\Carbon::parse($scholar->created_at)->between($startDt, $endDt)) continue;
                               }
                         }
 
@@ -1197,7 +1332,9 @@ class ReportController extends Controller
                             'middle_name' => $student->middle_name,
                             'sex' => $student->sex,
                             'college' => $student->college,
-                            'program' => $student->program,
+                            'course' => $programMap[$student->program] ?? ($student->program ?? $student->college),
+                            'track' => $student->track, // Add Track
+                            'program' => $student->program, // Keep original for reference if needed, or rely on course
                             'scholarship' => $scholar->scholarship ? $scholar->scholarship->scholarship_name : 'N/A',
                             'status' => ucfirst($scholar->type) . ' Scholar'
                          ];
@@ -1208,13 +1345,37 @@ class ReportController extends Controller
             $reportData[] = $campusData;
         }
 
+        // Dynamic Title Generation
+        $titleParts = [];
+        // Campus
+        if ($campusId !== 'all') {
+            $c = $monitoredCampuses->where('id', $campusId)->first();
+            $titleParts[] = $c ? $c->name : 'Campus';
+        } else {
+            $titleParts[] = 'All Campuses';
+        }
+        // College
+        if ($collegeFilter !== 'all') $titleParts[] = $collegeFilter;
+        // Program
+        if ($programFilter !== 'all') $titleParts[] = $programMap[$programFilter] ?? $programFilter;
+        // Track
+        if ($trackFilter !== 'all') $titleParts[] = $trackFilter;
+        // AY
+        if ($academicYearFilter === 'custom' && $request->custom_start && $request->custom_end) {
+            $titleParts[] = 'Custom Date (' . $request->custom_start . ' to ' . $request->custom_end . ')';
+        } elseif ($academicYearFilter !== 'all') {
+            $titleParts[] = 'AY ' . $academicYearFilter;
+        }
+
+        $dynamicTitle = implode(', ', $titleParts) . ' - ' . ucfirst($studentType) . ' Summary';
+
         // Export to Excel Logic
         if ($request->get('export') === 'excel') {
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             
             // Set Headers
-            $headers = ['Seq', 'Last Name', 'First Name', 'Middle Name', 'Sex', 'Birthdate', 'Course/Program', 'Year Level', 'Units', 'Municipality', 'Province', 'PWD', 'Scholarship', 'Grant', 'Status/Remarks'];
+            $headers = ['Seq', 'Last Name', 'First Name', 'Middle Name', 'Sex', 'Birthdate', 'Course/Program', 'Track', 'Year Level', 'Units', 'Municipality', 'Province', 'PWD', 'Scholarship', 'Grant', 'Status/Remarks'];
             $sheet->fromArray($headers, NULL, 'A1');
             
             // Style Header
@@ -1225,7 +1386,7 @@ class ReportController extends Controller
                 // Campus Header Row (Optional, but good for separation if multiple campuses)
                 if (count($reportData) > 1) {
                     $sheet->setCellValue('A' . $row, $data['campus']->name);
-                    $sheet->mergeCells("A{$row}:O{$row}");
+                    $sheet->mergeCells("A{$row}:P{$row}");
                     $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setItalic(true);
                     $row++;
                 }
@@ -1239,24 +1400,26 @@ class ReportController extends Controller
                     // Check if keys exist (Applicant vs Scholar diffs)
                     $sheet->setCellValue('F' . $row, $student['birthdate'] ?? 'N/A');
                     $sheet->setCellValue('G' . $row, $student['course'] ?? ($student['program'] ?? 'N/A'));
-                    $sheet->setCellValue('H' . $row, $student['year_level'] ?? 'N/A');
-                    $sheet->setCellValue('I' . $row, $student['units'] ?? 'N/A');
-                    $sheet->setCellValue('J' . $row, $student['municipality'] ?? 'N/A');
-                    $sheet->setCellValue('K' . $row, $student['province'] ?? 'N/A');
-                    $sheet->setCellValue('L' . $row, $student['pwd'] ?? 'N/A');
-                    $sheet->setCellValue('M' . $row, $student['scholarship']);
-                    $sheet->setCellValue('N' . $row, $student['grant'] ?? 'N/A');
-                    $sheet->setCellValue('O' . $row, $student['status_remarks'] ?? ($student['status'] ?? 'N/A'));
+                    $sheet->setCellValue('H' . $row, $student['track'] ?? 'N/A');
+                    $sheet->setCellValue('I' . $row, $student['year_level'] ?? 'N/A');
+                    $sheet->setCellValue('J' . $row, $student['units'] ?? 'N/A');
+                    $sheet->setCellValue('K' . $row, $student['municipality'] ?? 'N/A');
+                    $sheet->setCellValue('L' . $row, $student['province'] ?? 'N/A');
+                    $sheet->setCellValue('M' . $row, $student['pwd'] ?? 'N/A');
+                    $sheet->setCellValue('N' . $row, $student['scholarship']);
+                    $sheet->setCellValue('O' . $row, $student['grant'] ?? 'N/A');
+                    $sheet->setCellValue('P' . $row, $student['status_remarks'] ?? ($student['status'] ?? 'N/A'));
                     $row++;
                 }
             }
 
-            foreach(range('A','O') as $columnID) {
+            foreach(range('A','P') as $columnID) {
                 $sheet->getColumnDimension($columnID)->setAutoSize(true);
             }
 
             $writer = new Xlsx($spreadsheet);
-            $fileName = "Student_Summary_Report_" . date('Y-m-d_His') . ".xlsx";
+            $safeTitle = preg_replace('/[^A-Za-z0-9_\-]/', '_', $dynamicTitle);
+            $fileName = "Student_Summary_" . $safeTitle . "_" . date('Y-m-d_His') . ".xlsx";
 
             return response()->streamDownload(function() use ($writer) {
                 $writer->save('php://output');
@@ -1267,7 +1430,11 @@ class ReportController extends Controller
             return view('sfao.reports.partials.student-summary-table', compact('reportData', 'studentType'));
         }
 
+        if ($request->ajax()) {
+            return view('sfao.reports.partials.student-summary-table', compact('reportData', 'studentType', 'dynamicTitle'));
+        }
+
         return view('sfao.reports.student-summary', 
-            compact('user', 'monitoredCampuses', 'reportData', 'studentType', 'colleges', 'programs', 'academicYearOptions', 'scholarships'));
+            compact('user', 'monitoredCampuses', 'reportData', 'studentType', 'colleges', 'campusCollegePrograms', 'programTracks', 'academicYearOptions', 'scholarships', 'dynamicTitle', 'campusAcademicYearMap'));
     }
 }

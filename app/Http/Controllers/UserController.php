@@ -599,35 +599,64 @@ class UserController extends Controller
 
         $userId = session('user_id');
         
-        // Get Program Tracks for dropdown
-        $programTracks = \App\Models\Program::with('tracks')->get()->mapWithKeys(function ($p) {
-            return [$p->name => $p->tracks->pluck('name')];
-        });
+    // Get Program Tracks for dropdown (Legacy support - can be removed if view is fully updated)
+    // $programTracks = ... 
+    // New Hierarchy Data
+    $campusData = $this->getAcademicHierarchy();
 
-        // Get the user's form (one form per user)
-        $existingApplication = Form::where('user_id', $userId)
-            ->latest('updated_at')
-            ->first();
+    // Get the user's form (one form per user)
+    $existingApplication = Form::where('user_id', $userId)
+        ->latest('updated_at')
+        ->first();
+    
+    $campuses = Campus::all();
+
+    // If scholarship_id is provided, set scholarship_applied for display
+    if ($scholarship_id) {
+        $scholarship = Scholarship::findOrFail($scholarship_id);
         
-        $campuses = Campus::all();
-
-        // If scholarship_id is provided, set scholarship_applied for display
-        if ($scholarship_id) {
-            $scholarship = Scholarship::findOrFail($scholarship_id);
-            
-            // If form exists, ensure scholarship_applied is set correctly
-            if ($existingApplication) {
-                $existingApplication->scholarship_applied = $scholarship->scholarship_name;
-            } else {
-                // Create a new empty form object with just the scholarship_applied pre-filled
-                $existingApplication = new \App\Models\Form();
-                $existingApplication->scholarship_applied = $scholarship->scholarship_name;
-            }
-            
-            return view('student.forms.sfao-application-form', compact('existingApplication', 'scholarship', 'campuses', 'programTracks'));
+        // If form exists, ensure scholarship_applied is set correctly
+        if ($existingApplication) {
+            $existingApplication->scholarship_applied = $scholarship->scholarship_name;
+        } else {
+            // Create a new empty form object with just the scholarship_applied pre-filled
+            $existingApplication = new \App\Models\Form();
+            $existingApplication->scholarship_applied = $scholarship->scholarship_name;
         }
         
-        return view('student.forms.sfao-application-form', compact('existingApplication', 'campuses', 'programTracks'));
+        return view('student.forms.sfao-application-form', compact('existingApplication', 'scholarship', 'campuses', 'campusData'));
+    }
+    
+    return view('student.forms.sfao-application-form', compact('existingApplication', 'campuses', 'campusData'));
+    }
+
+    private function getAcademicHierarchy()
+    {
+        // Fetch all CampusCollege entries with relations
+        $campusColleges = \App\Models\CampusCollege::with(['campus', 'college', 'programs.tracks'])->get();
+        
+        // Structure: CampusID -> [Colleges] -> [Programs] -> [Tracks]
+        $hierarchy = [];
+        
+        foreach ($campusColleges as $cc) {
+            $campusId = $cc->campus_id;
+            $collegeName = $cc->college->name; // Using name as value based on form
+            
+            if (!isset($hierarchy[$campusId])) {
+                $hierarchy[$campusId] = [];
+            }
+            
+            $programs = $cc->programs->map(function($program) {
+                return [
+                    'name' => $program->name,
+                    'tracks' => $program->tracks->pluck('name')->toArray()
+                ];
+            })->toArray();
+            
+            $hierarchy[$campusId][$collegeName] = $programs;
+        }
+        
+        return $hierarchy; 
     }
     
     /**
@@ -967,12 +996,8 @@ class UserController extends Controller
             if ($application && !$isResubmitting) {
                 $currentStage = 3; // Application already submitted and not explicitly resubmitting
             } else if ($isResubmitting) {
-                // If resubmitting, start at stage 1 to allow reviewing/updating documents
-                 $currentStage = 1;
-
-                 // Logic to skip stages if they are fully approved could be added here, 
-                 // but typically users might want to review everything.
-                 // For now, let's default to Stage 1.
+                // If resubmitting, force start at stage 1 to allow reviewing/updating documents
+                $currentStage = 1;
             }
         }
 
@@ -1148,7 +1173,12 @@ class UserController extends Controller
             }
         }
 
-        return redirect()->route('student.dashboard')
+        // Check if scholarship has stage 2 requirements to decide redirect
+        $scholarship = Scholarship::with('requiredDocuments')->findOrFail($scholarship_id);
+        $hasStage2 = $scholarship->requiredDocuments->count() > 0;
+        $nextStage = $hasStage2 ? 2 : 3;
+
+        return redirect()->route('student.apply', ['scholarship_id' => $scholarship_id, 'stage' => $nextStage])
             ->with('success', 'SFAO required documents uploaded successfully!');
     }
 
@@ -1235,7 +1265,7 @@ class UserController extends Controller
             }
         }
 
-        return redirect()->route('student.dashboard')
+        return redirect()->route('student.apply', ['scholarship_id' => $scholarship_id, 'stage' => 3])
             ->with('success', 'Scholarship required documents uploaded successfully!');
     }
 
@@ -1697,51 +1727,62 @@ class UserController extends Controller
         $filePath = Storage::disk('public')->path($document->file_path);
         $fileType = strtolower($document->file_type);
         
-        // For DOCX files, use viewer with multiple options
+        // Generate file URL (accessible via browser)
+        $fileUrl = asset('storage/' . ltrim($document->file_path, '/'));
+        
+        $viewers = [];
+        $viewerType = 'fallback'; // default
+
+        // Handle specific file types
         if ($fileType === 'docx') {
-            $fileUrl = asset('storage/' . ltrim($document->file_path, '/'));
+            $viewerType = 'office';
             $encodedUrl = urlencode($fileUrl);
             
             // Check if we're on localhost
-            // If in production, force isLocalhost to false to allow viewers to try loading
             $isLocalhost = !app()->isProduction() && (
                 in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']) || 
                 str_contains(request()->getHost(), '.local')
             );
             
-            // Try multiple viewer options
-            $viewers = [];
-            
-            // Option 1: Google Docs Viewer (works with public URLs)
             if (!$isLocalhost) {
+                // Option 1: Google Docs Viewer
                 $viewers[] = [
                     'name' => 'Google Docs Viewer',
                     'url' => "https://docs.google.com/viewer?url=" . $encodedUrl . "&embedded=true"
                 ];
-            }
-            
-            // Option 2: Microsoft Office Online Viewer (works with public URLs)
-            if (!$isLocalhost) {
+                // Option 2: Microsoft Office Viewer
                 $viewers[] = [
                     'name' => 'Microsoft Office Viewer',
                     'url' => "https://view.officeapps.live.com/op/view.aspx?src=" . $encodedUrl
                 ];
             }
-            
-            // Direct download URL as fallback
-            $downloadUrl = asset('storage/' . ltrim($document->file_path, '/'));
-            
-            return view('components.document-viewer', [
-                'document' => $document,
-                'viewers' => $viewers,
-                'downloadUrl' => $downloadUrl,
-                'isLocalhost' => $isLocalhost
-            ]);
+        } elseif ($fileType === 'pdf') {
+            $viewerType = 'pdf';
+            // PDF can be viewed directly in iframe (except on mobile sometimes, but usually fine)
+             $viewers[] = [
+                'name' => 'Native PDF Viewer',
+                'url' => $fileUrl
+            ];
+            $isLocalhost = false; 
+        } elseif (in_array($fileType, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+            $viewerType = 'image';
+             $viewers[] = [
+                'name' => 'Image Viewer',
+                'url' => $fileUrl
+            ];
+            $isLocalhost = false;
+        } else {
+             // Other files or unknown types
+             $isLocalhost = false;
         }
-        
-        // For PDF and images, serve directly
-        return response()->file($filePath, [
-            'Content-Type' => Storage::disk('public')->mimeType($document->file_path),
+
+        return view('components.document-viewer', [
+            'document' => $document,
+            'viewers' => $viewers,
+            'viewerType' => $viewerType,
+            'fileUrl' => $fileUrl, // For direct access
+            'downloadUrl' => $fileUrl,
+            'isLocalhost' => $isLocalhost ?? false
         ]);
     }
 

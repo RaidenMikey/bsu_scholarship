@@ -340,4 +340,87 @@
 </div>
 @endif
 
+{{-- Withdraw Confirmation Modal --}}
+<div x-data="{ showModal: false, scholarshipId: null }"
+     x-init="
+        $watch('showModal', value => {
+            if (!value) setTimeout(() => scholarshipId = null, 300);
+        })
+     "
+     x-on:open-withdraw-modal.window="
+        scholarshipId = $event.detail;
+        showModal = true;
+     "
+     x-show="showModal"
+     x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     aria-labelledby="modal-title"
+     role="dialog"
+     aria-modal="true">
+
+    {{-- Background Overlay --}}
+    <div x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+         @click="showModal = false"></div>
+
+    {{-- Modal Content --}}
+    <div x-show="showModal"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
+
+        {{-- Icon --}}
+        <div class="flex justify-center mb-6">
+            <div class="flex items-center justify-center h-20 w-20 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                <svg class="h-10 w-10 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+        </div>
+
+        {{-- Title and Message --}}
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3" id="modal-title">
+                Withdraw Application?
+            </h3>
+            <p class="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                Are you sure you want to withdraw your application? This action cannot be undone.
+            </p>
+        </div>
+
+        {{-- Action Buttons --}}
+        <div class="flex gap-4">
+            <button type="button"
+                    @click="showModal = false"
+                    class="flex-1 px-4 py-3 bg-white text-gray-700 font-semibold rounded-xl border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all">
+                Cancel
+            </button>
+            <form method="POST" action="{{ route('student.withdraw') }}" class="flex-1">
+                @csrf
+                <input type="hidden" name="scholarship_id" :value="scholarshipId">
+                <button type="submit"
+                        class="w-full px-4 py-3 bg-red-600 text-white font-semibold rounded-xl shadow-lg hover:bg-red-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all">
+                    Withdraw
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openWithdrawModal(scholarshipId) {
+        window.dispatchEvent(new CustomEvent('open-withdraw-modal', { detail: scholarshipId }));
+    }
+</script>
+
 @endsection

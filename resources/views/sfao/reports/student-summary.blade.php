@@ -7,143 +7,15 @@
 @section('content-width', 'max-w-[95%] 2xl:max-w-full')
 
 @section('content')
-<div class="w-full" x-data="{ 
-    studentType: '{{ $studentType }}',
-    college: 'all',
-    program: 'all',
-    academicYear: 'all',
-    scholarshipId: 'all',
-    campusId: '{{ request('campus_id', 'all') }}',
-    programs: {{ json_encode($programs) }},
-    availablePrograms: [],
-    
-    init() {
-        this.updateAvailablePrograms();
-    },
-
-    updateAvailablePrograms() {
-        if (this.college === 'all') {
-            // Flatten all programs
-            this.availablePrograms = Object.values(this.programs).flat().sort();
-            // Remove duplicates if any (though backend distinct handles it mostly, strict unique here is good)
-            this.availablePrograms = [...new Set(this.availablePrograms)];
-        } else {
-            this.availablePrograms = this.programs[this.college] || [];
-        }
-        
-        // Reset program if not in list
-        if (this.program !== 'all' && !this.availablePrograms.includes(this.program)) {
-            this.program = 'all';
-        }
-    },
-
-    updateReport() {
-        const container = document.getElementById('report-content-container');
-        container.style.opacity = '0.5';
-        
-        const url = new URL('{{ route('sfao.reports.student-summary') }}');
-        url.searchParams.set('student_type', this.studentType);
-        url.searchParams.set('college', this.college);
-        url.searchParams.set('program', this.program);
-        url.searchParams.set('academic_year', this.academicYear);
-        url.searchParams.set('scholarship_id', this.scholarshipId);
-        url.searchParams.set('campus_id', this.campusId);
-
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(res => res.text())
-        .then(html => {
-            container.innerHTML = html;
-            container.style.opacity = '1';
-        });
-    },
-    
-    printReport() {
-        window.print();
-    },
-    exportToExcel() {
-        const params = new URLSearchParams({
-            student_type: this.studentType,
-            college: this.college,
-            program: this.program,
-            academic_year: this.academicYear,
-            scholarship_id: this.scholarshipId,
-            campus_id: '{{ request()->get('campus_id', 'all') }}',
-            export: 'excel'
-        });
-        window.location.href = `{{ route('sfao.reports.student-summary') }}?${params.toString()}`;
-    }
-}">
+<div class="w-full" x-data="studentSummaryReport()">
 
     <!-- Actions / Filter Bar (No-Print) -->
     <div class="mb-8 print:hidden">
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Report Filters</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                
-                <!-- Student Type -->
-                <div class="flex-1 min-w-[200px]">
-                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Student Type</label>
-                     <div class="relative">
-                        <select x-model="studentType" @change="updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
-                            <option value="applicants">Applicants</option>
-                            <option value="scholars">Scholars</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- College -->
-                <div class="flex-1 min-w-[200px]">
-                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">College</label>
-                     <div class="relative">
-                        <select x-model="college" @change="updateAvailablePrograms(); updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
-                            <option value="all">All Colleges</option>
-                            @foreach($colleges as $college)
-                                <option value="{{ $college->short_name }}">{{ $college->short_name }}</option>
-                            @endforeach
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Program -->
-                <div class="flex-1 min-w-[200px]">
-                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Program</label>
-                     <div class="relative">
-                        <select x-model="program" @change="updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
-                            <option value="all">All Programs</option>
-                            <template x-for="prog in availablePrograms" :key="prog">
-                                <option :value="prog" x-text="prog"></option>
-                            </template>
-                        </select>
-                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-                
-                 <!-- Academic Year -->
-                <div class="flex-1 min-w-[200px]">
-                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Academic Year</label>
-                     <div class="relative">
-                        <select x-model="academicYear" @change="updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
-                            <option value="all">All Academic Years</option>
-                            @foreach($academicYearOptions as $ay)
-                                <option value="{{ $ay }}">{{ $ay }}</option>
-                            @endforeach
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="flex flex-wrap items-end gap-4">
                 <!-- Scholarship -->
-                <div class="flex-1 min-w-[200px]">
+                <div class="flex-1 min-w-[150px]">
                      <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Scholarship</label>
                      <div class="relative">
                         <select x-model="scholarshipId" @change="updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
@@ -157,6 +29,97 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Student Type -->
+                <div class="flex-1 min-w-[150px]">
+                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Student Type</label>
+                     <div class="relative">
+                        <select x-model="studentType" @change="updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
+                            <option value="applicants">Applicants</option>
+                            <option value="scholars">Scholars</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- College -->
+                <div class="flex-1 min-w-[150px]">
+                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">College</label>
+                     <div class="relative">
+                        <select x-model="college" @change="updateAvailablePrograms(); updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
+                            <option value="all">All Colleges</option>
+                            <template x-for="col in availableColleges" :key="col.short_name">
+                                <option :value="col.short_name" x-text="col.short_name"></option>
+                            </template>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Program -->
+                <div class="flex-1 min-w-[150px]">
+                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Program</label>
+                     <div class="relative">
+                        <select x-model="program" @change="updateAvailableTracks(); updateReport()" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
+                            <option value="all">All Programs</option>
+                            <template x-for="prog in availablePrograms" :key="prog">
+                                <option :value="prog" x-text="prog"></option>
+                            </template>
+                        </select>
+                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Track -->
+                <div class="flex-1 min-w-[150px]">
+                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Track</label>
+                     <div class="relative">
+                        <select x-model="track" @change="updateReport()" :disabled="availableTracks.length === 0" :class="{'opacity-50 cursor-not-allowed': availableTracks.length === 0}" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
+                            <option value="all">All Tracks</option>
+                            <template x-for="trk in availableTracks" :key="trk">
+                                <option :value="trk" x-text="trk"></option>
+                            </template>
+                        </select>
+                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                
+                 <!-- Academic Year -->
+                <div class="flex-1 min-w-[150px]">
+                     <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider text-center">Academic Year</label>
+                     <div class="relative">
+                        <select x-model="academicYear" class="block w-full px-3 py-2 text-base border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full text-center appearance-none" style="border-width: 1px;">
+                            <option value="all">All Academic Years</option>
+                            <template x-for="ay in availableAcademicYears" :key="ay">
+                                <option :value="ay" x-text="ay"></option>
+                            </template>
+                            <option value="custom">Custom Date Range</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Date Display -->
+            <div x-show="academicYear === 'custom' && customStart && customEnd" class="mt-2 text-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-bsu-red">
+                    Custom Range: <span x-text="customStart"></span> to <span x-text="customEnd"></span>
+                    <button @click="openDateModal()" class="ml-2 text-bsu-red hover:text-red-900 focus:outline-none">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                    </button>
+                </span>
             </div>
 
             <!-- Export Button (Centered) -->
@@ -183,9 +146,7 @@
                 <h2 class="text-xl font-bold uppercase tracking-wider">Batangas State University</h2>
                 <h3 class="text-lg font-semibold text-bsu-red uppercase">The National Engineering University</h3>
             </div>
-            <div class="mt-6 mb-4">
-                <h1 class="text-2xl font-bold uppercase underline decoration-2 underline-offset-4">Student Summary Report</h1>
-            </div>
+            
             
             <div class="text-sm space-y-1">
                 <p><span class="font-semibold">Campus:</span> {{ $monitoredCampuses->count() > 1 && request('campus_id', 'all') == 'all' ? 'All Campuses' : $monitoredCampuses->first()->name }}</p>
@@ -245,6 +206,7 @@
                 <input type="hidden" name="student_type" :value="studentType">
                 <input type="hidden" name="college" :value="college">
                 <input type="hidden" name="program" :value="program">
+                <input type="hidden" name="track" :value="track">
                 <input type="hidden" name="academic_year" :value="academicYear">
                 <input type="hidden" name="scholarship_id" :value="scholarshipId">
 
@@ -273,6 +235,51 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Custom Date Modal -->
+    <!-- Custom Date Modal -->
+    <div x-show="showDateModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="closeDateModal()">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full border border-gray-200" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                <div class="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-800" id="modal-title">
+                        Custom Date Range
+                    </h3>
+                    <button @click="closeDateModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="bg-white px-4 pt-5 pb-6 sm:p-6">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
+                            <input type="date" x-model="tempStart" class="focus:ring-bsu-red focus:border-bsu-red block w-full sm:text-sm border-gray-300 rounded-md py-2 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">End Date</label>
+                            <input type="date" x-model="tempEnd" class="focus:ring-bsu-red focus:border-bsu-red block w-full sm:text-sm border-gray-300 rounded-md py-2 shadow-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-2">
+                    <button type="button" @click="applyCustomDate()" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-bsu-red text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bsu-red sm:w-auto sm:text-sm">
+                        Apply Filter
+                    </button>
+                    <button type="button" @click="closeDateModal()" class="w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -309,4 +316,264 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('studentSummaryReport', () => ({
+            studentType: @json($studentType),
+            college: @json(request('college', 'all')),
+            program: @json(request('program', 'all')),
+            track: @json(request('track', 'all')),
+            academicYear: @json(request('academic_year', 'all')),
+            scholarshipId: @json(request('scholarship_id', 'all')),
+            campusId: @json(request('campus_id', 'all')),
+            
+            // Custom Date
+            customStart: @json(request('custom_start')),
+            customEnd: @json(request('custom_end')),
+            showDateModal: false,
+            tempStart: '',
+            tempEnd: '',
+            
+            campusCollegePrograms: @json($campusCollegePrograms),
+            programTracks: @json($programTracks),
+            routeUrl: @json(route('sfao.reports.student-summary')),
+
+            availablePrograms: [],
+            availableTracks: [],
+            availableColleges: [],
+            allColleges: @json($colleges),
+            
+            campusAcademicYearMap: @json($campusAcademicYearMap),
+            availableAcademicYears: [],
+
+            init() {
+                this.updateAvailableColleges(false);
+                this.updateAvailablePrograms(false);
+                this.updateAvailableTracks(false);
+                this.updateAvailableAcademicYears();
+
+                // Watchers
+                this.$watch('campusId', () => {
+                    this.updateAvailableColleges(); // Update colleges first
+                    this.updateAvailablePrograms();
+                    this.updateAvailableAcademicYears();
+                    this.updateReport();
+                });
+                
+                this.$watch('studentType', () => {
+                    this.updateAvailableAcademicYears();
+                    this.updateReport();
+                });
+                
+                this.$watch('college', () => {
+                    this.updateAvailablePrograms();
+                    this.updateReport();
+                });
+
+                this.$watch('program', () => {
+                   this.updateAvailableTracks();
+                   this.updateReport();
+                });
+                
+                this.$watch('track', () => this.updateReport());
+                this.$watch('scholarshipId', () => this.updateReport());
+
+                // Watch for Academic Year Change to Custom
+                this.$watch('academicYear', value => {
+                    if (value === 'custom') {
+                        // If no dates set yet, open modal
+                        if (!this.customStart || !this.customEnd) {
+                             this.openDateModal();
+                        } else {
+                            this.updateReport();
+                        }
+                    } else {
+                        this.updateReport();
+                    }
+                });
+            },
+
+            updateAvailableColleges(reset = true) {
+                if (reset) { this.college = 'all'; }
+                
+                let collegeShortNames = new Set();
+                
+                // If specific campus, get its colleges from map
+                if (this.campusId !== 'all') {
+                     const collegesInCampus = this.campusCollegePrograms[this.campusId] || {};
+                     Object.keys(collegesInCampus).forEach(cName => collegeShortNames.add(cName));
+                } else {
+                     // If all campuses, flatten all colleges from the map
+                     Object.values(this.campusCollegePrograms).forEach(campusData => {
+                         Object.keys(campusData).forEach(cName => collegeShortNames.add(cName));
+                     });
+                }
+                
+                // Now match these short names to the allColleges objects to preserve info if needed, 
+                // or just use the short names directly. Current loop uses full object.
+                // We'll filter this.allColleges based on the Set.
+                
+                this.availableColleges = this.allColleges.filter(c => collegeShortNames.has(c.short_name));
+                // Sort by name?
+                this.availableColleges.sort((a,b) => a.short_name.localeCompare(b.short_name));
+            },
+
+            updateAvailableAcademicYears() {
+                // Determine which years to show based on campusId and studentType
+                const typeData = this.campusAcademicYearMap[this.studentType] || {};
+                let years = [];
+                
+                if (this.campusId === 'all') {
+                    years = typeData['all'] || [];
+                } else if (typeData[this.campusId]) {
+                    years = typeData[this.campusId];
+                }
+                
+                this.availableAcademicYears = years;
+                
+                // If current academicYear is not in list (and not 'all' or 'custom'), reset to 'all'
+                if (this.academicYear !== 'all' && this.academicYear !== 'custom' && !years.includes(this.academicYear)) {
+                    this.academicYear = 'all';
+                }
+            },
+
+            openDateModal() {
+                this.tempStart = this.customStart || new Date().toISOString().split('T')[0];
+                this.tempEnd = this.customEnd || new Date().toISOString().split('T')[0];
+                this.showDateModal = true;
+            },
+
+            closeDateModal() {
+                this.showDateModal = false;
+                // If cancelled and no date set, revert to 'all' or previous? 
+                if (!this.customStart) {
+                    this.academicYear = 'all'; 
+                }
+            },
+
+            applyCustomDate() {
+                if (this.tempStart && this.tempEnd) {
+                    this.customStart = this.tempStart;
+                    this.customEnd = this.tempEnd;
+                    this.showDateModal = false;
+                    this.updateReport();
+                } else {
+                    alert('Please select both start and end dates.');
+                }
+            },
+
+            updateAvailablePrograms(reset = true) {
+                if (reset) { this.program = 'all'; this.track = 'all'; }
+                
+                let programs = [];
+                
+                // Helper to collect programs
+                const collectPrograms = (cId) => {
+                     const campusData = this.campusCollegePrograms[cId] || {};
+                     // Use the 'college' property which holds the selected short_name
+                     // If 'all', collect all programs from this campus
+                     if (this.college === 'all') {
+                         Object.values(campusData).forEach(progs => programs.push(...progs));
+                     } else if (campusData[this.college]) {
+                         // Only collect from selected college
+                         programs.push(...campusData[this.college]);
+                     }
+                };
+        
+                if (this.campusId === 'all') {
+                    Object.keys(this.campusCollegePrograms).forEach(cId => collectPrograms(cId));
+                } else {
+                    collectPrograms(this.campusId);
+                }
+                
+                this.availablePrograms = [...new Set(programs)].sort();
+            },
+        
+            updateAvailableTracks(reset = true) {
+                if (reset) { this.track = 'all'; }
+                
+                if (this.program === 'all') {
+                     this.availableTracks = [];
+                } else {
+                     this.availableTracks = this.programTracks[this.program] || [];
+                }
+            },
+        
+            updateReport() {
+                const container = document.getElementById('report-content-container');
+                if (container) container.style.opacity = '0.5';
+                
+                const url = new URL(this.routeUrl);
+                url.searchParams.set('student_type', this.studentType);
+                url.searchParams.set('college', this.college);
+                url.searchParams.set('program', this.program);
+                url.searchParams.set('track', this.track);
+                url.searchParams.set('academic_year', this.academicYear);
+                url.searchParams.set('scholarship_id', this.scholarshipId);
+                url.searchParams.set('campus_id', this.campusId);
+                
+                if (this.academicYear === 'custom') {
+                    url.searchParams.set('custom_start', this.customStart);
+                    url.searchParams.set('custom_end', this.customEnd);
+                }
+
+                url.searchParams.set('_t', new Date().getTime());
+        
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(res => {
+                     if (!res.ok) throw new Error('Network response not ok');
+                     return res.text();
+                })
+                .then(html => {
+                    if (container) container.innerHTML = html;
+                    // Also update title if returned in response? 
+                    // The whole page isn't reloading, just the container. 
+                    // The title is outside the container.
+                    // We might need to return the title in the HTML or a JSON response. 
+                    // For now, let's just live with title not updating on AJAX unless we wrap it.
+                    
+                    // Actually, let's reload the page for 'Custom' to be safe? No, AJAX is better.
+                    // To update title, we can parse it from response or move title INSIDE the container.
+                    // Let's move the title inside report-content-container in the partial? 
+                    // Or parsing it. 
+                    
+                    // QUICK FIX: Reload page to update Title properly if we want to be lazy, 
+                    // OR move the header into the partial.
+                    // Moving header to partial is best.
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (container) container.innerHTML = '<p class=\'text-center text-red-500 py-4\'>Error loading report.</p>';
+                })
+                .finally(() => {
+                    if (container) container.style.opacity = '1';
+                });
+            },
+            
+            printReport() {
+                window.print();
+            },
+            exportToExcel() {
+                const params = new URLSearchParams({
+                    student_type: this.studentType,
+                    college: this.college,
+                    program: this.program,
+                    track: this.track,
+                    academic_year: this.academicYear,
+                    scholarship_id: this.scholarshipId,
+                    campus_id: this.campusId,
+                    export: 'excel'
+                });
+                
+                if (this.academicYear === 'custom') {
+                    params.set('custom_start', this.customStart);
+                    params.set('custom_end', this.customEnd);
+                }
+                
+                window.location.href = `${this.routeUrl}?${params.toString()}`;
+            }
+        }));
+    });
+</script>
 @endsection

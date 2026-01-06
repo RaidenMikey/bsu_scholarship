@@ -182,11 +182,55 @@ class DashboardController extends Controller
                     });
                 }
                 
+                // College Filter
+                $collegeFilter = $request->get('college_filter', 'all');
+                if ($collegeFilter !== 'all') {
+                     $variations = explode('|', $collegeFilter);
+                     if (in_array('CABE', $variations) || in_array('CABEIHM', $variations)) {
+                          $variations = array_merge($variations, [
+                              'CABE', 'CABEIHM', 
+                              'College of Accountancy, Business, Economics, International Hospitality Management'
+                          ]);
+                     }
+                     $query->whereHas('user', function($q) use ($variations) {
+                         $q->whereIn('college', array_unique($variations));
+                     });
+                }
+
+                // Program Filter
+                $programFilter = $request->get('program_filter', 'all');
+                if ($programFilter !== 'all') {
+                     $query->whereHas('user', function($q) use ($programFilter) {
+                         $q->where('program', $programFilter);
+                     });
+                }
+
+                // Track Filter
+                $trackFilter = $request->get('track_filter', 'all');
+                if ($trackFilter !== 'all') {
+                     $query->whereHas('user', function($q) use ($trackFilter) {
+                         $q->where('track', $trackFilter);
+                     });
+                }
+
+                // Academic Year Filter
+                $academicYearFilter = $request->get('academic_year_filter', 'all');
+                if ($academicYearFilter !== 'all') {
+                     $parts = explode('-', $academicYearFilter);
+                     if (count($parts) === 2) {
+                         $startYear = (int)$parts[0];
+                         $endYear = (int)$parts[1];
+                         $startDate = "$startYear-08-01";
+                         $endDate = "$endYear-07-31";
+                         $query->whereBetween('created_at', [$startDate, $endDate]);
+                     }
+                }
+                
                 if ($request->get('scholarship_filter') && $request->get('scholarship_filter') !== 'all') {
                     $query->where('scholarship_id', $request->get('scholarship_filter'));
                 }
                 
-                 if ($request->get('type_filter') && $request->get('type_filter') !== 'all') {
+                if ($request->get('type_filter') && $request->get('type_filter') !== 'all') {
                     $query->where('type', $request->get('type_filter'));
                 }
 
@@ -219,6 +263,60 @@ class DashboardController extends Controller
         }
 
 
+
+        // Fetch Filter Options with Normalization
+        $rawColleges = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds)
+            ->whereNotNull('college')
+            ->distinct()
+            ->pluck('college');
+
+        $mergedColleges = [];
+        foreach ($rawColleges as $c) {
+            $label = $c;
+            // Normalize CABEIHM variations
+            if ($c === 'College of Accountancy, Business, Economics, International Hospitality Management' || 
+                $c === 'CABE' || 
+                $c === 'CABEIHM') {
+                $label = 'CABEIHM';
+            }
+            
+            if (!isset($mergedColleges[$label])) {
+                $mergedColleges[$label] = [];
+            }
+            $mergedColleges[$label][] = $c;
+        }
+
+        $colleges = collect($mergedColleges)->map(function($values, $label) {
+            return ['name' => $label, 'value' => implode('|', array_unique($values))];
+        })->sortBy('name')->values();
+
+        // Get Programs and Tracks directly (assuming they are cleaner, or handle later)
+        $filterOptions = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds)
+            ->select('program', 'track')
+            ->distinct()
+            ->get();
+
+        $programs = $filterOptions->pluck('program')->filter()->unique()->values();
+        $tracks = $filterOptions->pluck('track')->filter()->unique()->values();
+        
+        // Academic Years (from Applications)
+        $academicYears = Application::whereHas('user', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            })
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month')
+            ->distinct()
+            ->get()
+            ->map(function($app) {
+                // Assumption: AY starts in August
+                $startYear = $app->month >= 8 ? $app->year : $app->year - 1;
+                return $startYear . '-' . ($startYear + 1);
+            })
+            ->unique()
+            ->sortDesc()
+            ->values();
+
         // 5. Application Forms
         $forms = \App\Models\ApplicationForm::with(['campus', 'uploader'])
             ->whereIn('campus_id', $campusIds)
@@ -239,7 +337,12 @@ class DashboardController extends Controller
             'reports' => $reports,
             'forms' => $forms,
             'activeTab' => $activeTab,
+            'activeTab' => $activeTab,
             'campusOptions' => $campusOptions,
+            'colleges' => $colleges,
+            'programs' => $programs,
+            'tracks' => $tracks,
+            'academicYears' => $academicYears,
             'sortBy' => 'name', 'sortOrder' => 'asc', 'campusFilter' => 'all', 'statusFilter' => 'all',
             'scholarsSortBy' => 'name', 'scholarsSortOrder' => 'asc'
         ], $applicantData));
@@ -767,6 +870,112 @@ class DashboardController extends Controller
 
         // Generate comprehensive analytics data
         $analytics = $this->generateAnalyticsData(['campus' => $campusFilter]);
+
+        // START: Enrich Analytics for SFAO-style Charts
+        $allCampusIds = \App\Models\Campus::pluck('id')->toArray();
+        
+        // Campus Colleges Map
+        $campusColleges = [];
+        foreach ($campuses as $camp) {
+            $campusColleges[$camp->id] = $camp->colleges->pluck('short_name')->toArray();
+        }
+        $analytics['campus_colleges'] = $campusColleges;
+        
+        // All Colleges
+        $analytics['all_colleges'] = \App\Models\College::select('id', 'name', 'short_name')->get()->toArray();
+
+        // Programs Logic
+        $dbProgramsData = \App\Models\User::where('role', 'student')
+            ->whereNotNull('program')
+            ->select('college', 'program')
+            ->distinct()
+            ->get()
+            ->groupBy('college')
+            ->map(function ($items) {
+                return $items->pluck('program')->unique()->values()->all();
+            })->toArray();
+            
+        $standardPrograms = $this->getStandardPrograms();
+        $mergedPrograms = $standardPrograms;
+        foreach ($dbProgramsData as $college => $programs) {
+            if (isset($mergedPrograms[$college])) {
+                $mergedPrograms[$college] = array_unique(array_merge($mergedPrograms[$college], $programs));
+                sort($mergedPrograms[$college]);
+            } else {
+                $mergedPrograms[$college] = $programs;
+            }
+        }
+        $analytics['college_programs'] = $mergedPrograms;
+
+        // Campus College Programs
+        $rawPrograms = \App\Models\Program::with(['campusCollege.campus', 'campusCollege.college'])->get();
+        $campusCollegePrograms = [];
+        foreach ($rawPrograms as $prog) {
+            if ($prog->campusCollege && $prog->campusCollege->campus && $prog->campusCollege->college) {
+                $cId = $prog->campusCollege->campus_id;
+                $colName = $prog->campusCollege->college->short_name;
+                $pName = $prog->name;
+                $campusCollegePrograms[$cId][$colName][] = $pName;
+            }
+        }
+        foreach ($campusCollegePrograms as $cId => $cols) {
+            foreach ($cols as $colName => $progs) {
+                $uniqueProgs = array_unique($progs);
+                sort($uniqueProgs);
+                $campusCollegePrograms[$cId][$colName] = $uniqueProgs;
+            }
+        }
+        $analytics['campus_college_programs'] = $campusCollegePrograms;
+
+        // Program Tracks
+        $programTracks = [];
+        $programsWithTracks = \App\Models\Program::with('tracks')->get();
+        foreach ($programsWithTracks as $p) {
+             if ($p->tracks->isNotEmpty()) {
+                 if (!isset($programTracks[$p->name])) {
+                     $programTracks[$p->name] = [];
+                 }
+                 $programTracks[$p->name] = array_unique(array_merge($programTracks[$p->name], $p->tracks->pluck('name')->toArray()));
+             }
+        }
+        foreach ($programTracks as $name => $tracks) {
+             $programTracks[$name] = array_values($tracks);
+             sort($programTracks[$name]);
+        }
+        $analytics['program_tracks'] = $programTracks;
+
+        // Available Scholarships
+        $analytics['available_scholarships'] = \App\Models\Scholarship::select('id', 'scholarship_name')->get()->toArray();
+
+        // All Applications Data (Heavy Query - strictly needed for JS filtering)
+        $allApplicationsData = \App\Models\Application::join('users', 'applications.user_id', '=', 'users.id')
+            ->join('scholarships', 'applications.scholarship_id', '=', 'scholarships.id')
+            ->leftJoin('scholars', function($join) {
+                $join->on('users.id', '=', 'scholars.user_id')
+                     ->on('scholarships.id', '=', 'scholars.scholarship_id');
+            })
+            ->where('users.role', 'student')
+            ->select(
+                'users.id as user_id', 
+                'users.sex', 
+                'users.campus_id', 
+                'users.college', 
+                'users.program', 
+                'users.track', 
+                'scholarships.scholarship_type', 
+                'scholarships.scholarship_name as scholarship_name', 
+                'applications.status', 
+                'applications.created_at', 
+                'scholars.id as scholar_id', 
+                'scholars.status as scholar_status', 
+                'scholars.type as scholar_type',
+                \Illuminate\Support\Facades\DB::raw('(SELECT COUNT(*) FROM scholars as s WHERE s.user_id = users.id) as is_global_scholar')
+            )
+            ->distinct()
+            ->get();
+            
+        $analytics['all_applications_data'] = $allApplicationsData;
+        // END: Enrich Analytics
 
         // Get all campuses for filter (Moved to top)
         // $campuses = \App\Models\Campus::all();

@@ -1017,6 +1017,20 @@ window.sfaoStatisticsTab = function (config = {}) {
             }
 
             // Define Datasets based on View Mode
+
+            // Calculate Visible Count for Shading logic
+            let visibleCount = 0;
+            if (this.viewMode === 'applicants') {
+                if (this.chartLegend.approved) visibleCount++;
+                if (this.chartLegend.rejected) visibleCount++;
+                if (this.chartLegend.pending) visibleCount++;
+                if (this.chartLegend.inProgress) visibleCount++;
+            } else {
+                if (this.chartLegend.oldScholars) visibleCount++;
+                if (this.chartLegend.newScholars) visibleCount++;
+            }
+            const shouldFill = (visibleCount === 1);
+
             let datasets = [];
 
             if (this.viewMode === 'applicants') {
@@ -1025,7 +1039,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                         label: 'Approved',
                         data: timeKeys.map(k => groupedData[k].approved),
                         borderColor: '#10B981', // Green
-                        backgroundColor: '#10B981',
+                        backgroundColor: shouldFill ? 'rgba(16, 185, 129, 0.2)' : '#10B981',
+                        fill: shouldFill ? 'origin' : false,
                         tension: 0.3,
                         hidden: !this.chartLegend.approved
                     },
@@ -1033,7 +1048,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                         label: 'Rejected',
                         data: timeKeys.map(k => groupedData[k].rejected),
                         borderColor: '#EF4444', // Red
-                        backgroundColor: '#EF4444',
+                        backgroundColor: shouldFill ? 'rgba(239, 68, 68, 0.2)' : '#EF4444',
+                        fill: shouldFill ? 'origin' : false,
                         tension: 0.3,
                         hidden: !this.chartLegend.rejected
                     },
@@ -1041,7 +1057,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                         label: 'Pending',
                         data: timeKeys.map(k => groupedData[k].pending),
                         borderColor: '#F59E0B', // Orange
-                        backgroundColor: '#F59E0B',
+                        backgroundColor: shouldFill ? 'rgba(245, 158, 11, 0.2)' : '#F59E0B',
+                        fill: shouldFill ? 'origin' : false,
                         tension: 0.3,
                         hidden: !this.chartLegend.pending
                     },
@@ -1049,7 +1066,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                         label: 'In Progress',
                         data: timeKeys.map(k => groupedData[k].in_progress),
                         borderColor: '#3B82F6', // Blue
-                        backgroundColor: '#3B82F6',
+                        backgroundColor: shouldFill ? 'rgba(59, 130, 246, 0.2)' : '#3B82F6',
+                        fill: shouldFill ? 'origin' : false,
                         tension: 0.3,
                         hidden: !this.chartLegend.inProgress
                     }
@@ -1061,7 +1079,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                         label: 'Old Scholars',
                         data: timeKeys.map(k => groupedData[k].old),
                         borderColor: '#10B981',
-                        backgroundColor: '#10B981',
+                        backgroundColor: shouldFill ? 'rgba(16, 185, 129, 0.2)' : '#10B981',
+                        fill: shouldFill ? 'origin' : false,
                         tension: 0.3,
                         hidden: !this.chartLegend.oldScholars
                     },
@@ -1069,7 +1088,8 @@ window.sfaoStatisticsTab = function (config = {}) {
                         label: 'New Scholars',
                         data: timeKeys.map(k => groupedData[k].new),
                         borderColor: '#3B82F6',
-                        backgroundColor: '#3B82F6',
+                        backgroundColor: shouldFill ? 'rgba(59, 130, 246, 0.2)' : '#3B82F6',
+                        fill: shouldFill ? 'origin' : false,
                         tension: 0.3,
                         hidden: !this.chartLegend.newScholars
                     }
@@ -1678,15 +1698,27 @@ window.sfaoApplicantsFilter = function (config) {
             sort_by: localStorage.getItem('sfaoApplicantsSortBy') || 'name',
             sort_order: localStorage.getItem('sfaoApplicantsSortOrder') || 'asc',
             campus: localStorage.getItem('sfaoApplicantsCampus') || 'all',
+            college: localStorage.getItem('sfaoApplicantsCollege') || 'all',
+            program: localStorage.getItem('sfaoApplicantsProgram') || 'all',
+            track: localStorage.getItem('sfaoApplicantsTrack') || 'all',
+            academic_year: localStorage.getItem('sfaoApplicantsAcademicYear') || 'all',
+            scholarship: localStorage.getItem('sfaoApplicantsScholarship') || 'all',
             status: 'all'
         },
         counts: config.counts || {},
         campusOptions: config.campusOptions || [],
+        colleges: config.colleges || [],
+        programs: config.programs || [],
+        tracks: config.tracks || [],
+        academicYears: config.academicYears || [],
+        campusCollegePrograms: config.campusCollegePrograms || {},
+        programTracks: config.programTracks || {},
         sfaoCampusName: config.sfaoCampusName || '',
         extensionCampuses: config.extensionCampuses || [],
         currentTab: 'applicants',
         showModal: false,
         selectedApplicant: null,
+        loading: false,
 
         init() {
             this.$watch('filters.sort_by', (value) => {
@@ -1699,6 +1731,29 @@ window.sfaoApplicantsFilter = function (config) {
             });
             this.$watch('filters.campus', (value) => {
                 localStorage.setItem('sfaoApplicantsCampus', value);
+                this.updateColleges();
+                this.fetchApplicants();
+            });
+            this.$watch('filters.college', (value) => {
+                localStorage.setItem('sfaoApplicantsCollege', value);
+                this.updatePrograms();
+                this.fetchApplicants();
+            });
+            this.$watch('filters.program', (value) => {
+                localStorage.setItem('sfaoApplicantsProgram', value);
+                this.updateTracks();
+                this.fetchApplicants();
+            });
+            this.$watch('filters.track', (value) => {
+                localStorage.setItem('sfaoApplicantsTrack', value);
+                this.fetchApplicants();
+            });
+            this.$watch('filters.academic_year', (value) => {
+                localStorage.setItem('sfaoApplicantsAcademicYear', value);
+                this.fetchApplicants();
+            });
+            this.$watch('filters.scholarship', (value) => {
+                localStorage.setItem('sfaoApplicantsScholarship', value);
                 this.fetchApplicants();
             });
             this.$watch('filters.status', (value) => {
@@ -1710,6 +1765,82 @@ window.sfaoApplicantsFilter = function (config) {
             document.addEventListener('open-applicant-modal', (e) => {
                 this.openModal(e.detail);
             });
+
+            // Initial Sync if values present
+            if (this.filters.campus !== 'all') this.updateColleges(false);
+            if (this.filters.college !== 'all') this.updatePrograms(false);
+            if (this.filters.program !== 'all') this.updateTracks(false);
+        },
+
+        updateColleges(reset = true) {
+            if (reset) {
+                this.filters.college = 'all';
+                this.filters.program = 'all';
+                this.filters.track = 'all';
+            }
+
+            if (this.filters.campus === 'all') {
+                // Collect all colleges from all campuses
+                let allCols = new Set();
+                Object.values(this.campusCollegePrograms).forEach(campusCols => {
+                    Object.keys(campusCols).forEach(c => allCols.add(c));
+                });
+                this.colleges = Array.from(allCols).sort().map(c => ({ name: c, value: c }));
+            } else {
+                const campusCols = this.campusCollegePrograms[this.filters.campus] || {};
+                this.colleges = Object.keys(campusCols).sort().map(c => ({ name: c, value: c }));
+            }
+            this.updatePrograms(reset);
+        },
+
+        updatePrograms(reset = true) {
+            if (reset) {
+                this.filters.program = 'all';
+                this.filters.track = 'all';
+            }
+
+            let availablePrograms = new Set();
+
+            if (this.filters.college === 'all') {
+                // Context: Current Campus(es)
+                const campuses = (this.filters.campus === 'all')
+                    ? Object.values(this.campusCollegePrograms)
+                    : [this.campusCollegePrograms[this.filters.campus] || {}];
+
+                campuses.forEach(cols => {
+                    Object.values(cols).forEach(progs => {
+                        if (Array.isArray(progs)) progs.forEach(p => availablePrograms.add(p));
+                    });
+                });
+            } else {
+                // Context: Current Campus -> Selected College
+                const campuses = (this.filters.campus === 'all')
+                    ? Object.values(this.campusCollegePrograms)
+                    : [this.campusCollegePrograms[this.filters.campus] || {}];
+
+                campuses.forEach(cols => {
+                    const progs = cols[this.filters.college];
+                    if (progs) progs.forEach(p => availablePrograms.add(p));
+                });
+            }
+
+            this.programs = Array.from(availablePrograms).sort();
+            this.updateTracks(reset);
+        },
+
+        updateTracks(reset = true) {
+            if (reset) {
+                this.filters.track = 'all';
+            }
+
+            if (this.filters.program === 'all') {
+                this.tracks = []; // Or all tracks? Usually logic suggests clearing.
+                // Or collect all tracks?
+                // For simplified UX, let's keep empty or fetch all if needed.
+                // Analytics logic usually keeps it specific.
+            } else {
+                this.tracks = this.programTracks[this.filters.program] || [];
+            }
         },
 
         openModal(applicant) {
@@ -1731,11 +1862,17 @@ window.sfaoApplicantsFilter = function (config) {
         },
 
         fetchApplicants(page = 1) {
+            this.loading = true;
             const params = new URLSearchParams({
                 tab: this.currentTab,
                 sort_by: this.filters.sort_by,
                 sort_order: this.filters.sort_order,
                 campus_filter: this.filters.campus,
+                college_filter: this.filters.college,
+                program_filter: this.filters.program,
+                track_filter: this.filters.track,
+                academic_year_filter: this.filters.academic_year,
+                scholarship_filter: this.filters.scholarship,
                 status_filter: this.filters.status,
                 page_applicants: page
             });
@@ -1753,8 +1890,13 @@ window.sfaoApplicantsFilter = function (config) {
                         this.counts = data.counts;
                     }
                     this.updatePaginationLinks();
+                    // Small delay to ensure smooth transition perception
+                    setTimeout(() => { this.loading = false; }, 300);
                 })
-                .catch(error => console.error('Error fetching applicants:', error));
+                .catch(error => {
+                    console.error('Error fetching applicants:', error);
+                    this.loading = false;
+                });
         },
 
         updatePaginationLinks() {
@@ -1776,6 +1918,10 @@ window.sfaoApplicantsFilter = function (config) {
             this.filters.sort_by = 'name';
             this.filters.sort_order = 'asc';
             this.filters.campus = 'all';
+            this.filters.college = 'all';
+            this.filters.program = 'all';
+            this.filters.track = 'all';
+            this.filters.academic_year = 'all';
             this.filters.status = 'all';
         },
 
@@ -1841,11 +1987,21 @@ window.sfaoScholarsFilter = function (config) {
             sort_by: localStorage.getItem('sfaoScholarsSortBy') || 'created_at',
             sort_order: localStorage.getItem('sfaoScholarsSortOrder') || 'desc',
             campus: localStorage.getItem('sfaoScholarsCampus') || 'all',
+            college: localStorage.getItem('sfaoScholarsCollege') || 'all',
+            program: localStorage.getItem('sfaoScholarsProgram') || 'all',
+            track: localStorage.getItem('sfaoScholarsTrack') || 'all',
+            academic_year: localStorage.getItem('sfaoScholarsAcademicYear') || 'all',
             scholarship: localStorage.getItem('sfaoScholarsScholarship') || 'all',
             type: localStorage.getItem('sfaoScholarsType') || 'all'
         },
         counts: config.counts || {},
         campusOptions: config.campusOptions || [],
+        colleges: config.colleges || [],
+        programs: config.programs || [],
+        tracks: config.tracks || [],
+        academicYears: config.academicYears || [],
+        campusCollegePrograms: config.campusCollegePrograms || {},
+        programTracks: config.programTracks || {},
         sfaoCampusName: config.sfaoCampusName || '',
         extensionCampuses: config.extensionCampuses || [],
         selectedScholars: [],
@@ -1853,6 +2009,7 @@ window.sfaoScholarsFilter = function (config) {
         showMarkAsModal: false,
         selectedScholarId: null,
         selectedScholarName: '',
+        loading: false,
 
         init() {
             this.$watch('filters.sort_by', (value) => {
@@ -1865,6 +2022,25 @@ window.sfaoScholarsFilter = function (config) {
             });
             this.$watch('filters.campus', (value) => {
                 localStorage.setItem('sfaoScholarsCampus', value);
+                this.updateColleges();
+                this.fetchScholars();
+            });
+            this.$watch('filters.college', (value) => {
+                localStorage.setItem('sfaoScholarsCollege', value);
+                this.updatePrograms();
+                this.fetchScholars();
+            });
+            this.$watch('filters.program', (value) => {
+                localStorage.setItem('sfaoScholarsProgram', value);
+                this.updateTracks();
+                this.fetchScholars();
+            });
+            this.$watch('filters.track', (value) => {
+                localStorage.setItem('sfaoScholarsTrack', value);
+                this.fetchScholars();
+            });
+            this.$watch('filters.academic_year', (value) => {
+                localStorage.setItem('sfaoScholarsAcademicYear', value);
                 this.fetchScholars();
             });
             this.$watch('filters.scholarship', (value) => {
@@ -1876,19 +2052,35 @@ window.sfaoScholarsFilter = function (config) {
                 this.fetchScholars();
             });
 
-            if (this.filters.scholarship !== 'all' || this.filters.campus !== 'all' || this.filters.type !== 'all') {
+            // Initial Sync
+            if (this.filters.campus !== 'all') this.updateColleges(false);
+            if (this.filters.college !== 'all') this.updatePrograms(false);
+            if (this.filters.program !== 'all') this.updateTracks(false);
+
+            // Initial fetch if filters are active (or always fetch? usually Dashboard loads data initially via blade)
+            // But if filters exist in localStorage, we might need to fetch if default view is unfiltered.
+            // Dashboard Controller usually loads default.
+            // Let's safe-check: if filters are NOT default, fetch.
+            // Actually, keep original logic.
+            if (Object.values(this.filters).some(v => v !== 'all' && v !== 'created_at' && v !== 'desc')) {
                 this.fetchScholars();
             }
         },
 
-        fetchScholars() {
+        fetchScholars(page = 1) {
+            this.loading = true;
             const params = new URLSearchParams({
                 tab: 'scholars',
                 scholars_sort_by: this.filters.sort_by,
                 scholars_sort_order: this.filters.sort_order,
                 campus_filter: this.filters.campus,
+                college_filter: this.filters.college,
+                program_filter: this.filters.program,
+                track_filter: this.filters.track,
+                academic_year_filter: this.filters.academic_year,
                 scholarship_filter: this.filters.scholarship,
-                type_filter: this.filters.type
+                type_filter: this.filters.type,
+                page_scholarships: page
             });
 
             fetch(`${config.routeUrl}?${params.toString()}`, {
@@ -1899,8 +2091,93 @@ window.sfaoScholarsFilter = function (config) {
                     const container = document.getElementById('scholars-list-container');
                     if (container) container.innerHTML = data.html;
                     if (data.counts) this.counts = data.counts;
+                    this.updatePaginationLinks();
+                    setTimeout(() => { this.loading = false; }, 300);
                 })
-                .catch(error => console.error('Error fetching scholars:', error));
+                .catch(error => {
+                    console.error('Error fetching scholars:', error);
+                    this.loading = false;
+                });
+        },
+
+        updateColleges(reset = true) {
+            if (reset) {
+                this.filters.college = 'all';
+                this.filters.program = 'all';
+                this.filters.track = 'all';
+            }
+
+            if (this.filters.campus === 'all') {
+                let allCols = new Set();
+                Object.values(this.campusCollegePrograms).forEach(campusCols => {
+                    Object.keys(campusCols).forEach(c => allCols.add(c));
+                });
+                this.colleges = Array.from(allCols).sort().map(c => ({ name: c, value: c }));
+            } else {
+                const campusCols = this.campusCollegePrograms[this.filters.campus] || {};
+                this.colleges = Object.keys(campusCols).sort().map(c => ({ name: c, value: c }));
+            }
+            this.updatePrograms(reset);
+        },
+
+        updatePrograms(reset = true) {
+            if (reset) {
+                this.filters.program = 'all';
+                this.filters.track = 'all';
+            }
+
+            let availablePrograms = new Set();
+
+            if (this.filters.college === 'all') {
+                const campuses = (this.filters.campus === 'all')
+                    ? Object.values(this.campusCollegePrograms)
+                    : [this.campusCollegePrograms[this.filters.campus] || {}];
+
+                campuses.forEach(cols => {
+                    Object.values(cols).forEach(progs => {
+                        if (Array.isArray(progs)) progs.forEach(p => availablePrograms.add(p));
+                    });
+                });
+            } else {
+                const campuses = (this.filters.campus === 'all')
+                    ? Object.values(this.campusCollegePrograms)
+                    : [this.campusCollegePrograms[this.filters.campus] || {}];
+
+                campuses.forEach(cols => {
+                    const progs = cols[this.filters.college];
+                    if (progs) progs.forEach(p => availablePrograms.add(p));
+                });
+            }
+
+            this.programs = Array.from(availablePrograms).sort();
+            this.updateTracks(reset);
+        },
+
+        updateTracks(reset = true) {
+            if (reset) {
+                this.filters.track = 'all';
+            }
+
+            if (this.filters.program === 'all') {
+                this.tracks = [];
+            } else {
+                this.tracks = this.programTracks[this.filters.program] || [];
+            }
+        },
+
+        updatePaginationLinks() {
+            const container = document.getElementById('scholars-list-container');
+            if (!container) return;
+
+            const links = container.querySelectorAll('a.page-link');
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const url = new URL(link.href);
+                    const page = url.searchParams.get('page_scholarships') || 1;
+                    this.fetchScholars(page);
+                });
+            });
         },
 
         resetFilters() {
@@ -2078,6 +2355,124 @@ window.sfaoScholarsFilter = function (config) {
                     this.filters.type = type;
                 }
             }
+        }
+    };
+};
+
+
+// SFAO Student Summary Report Component
+window.sfaoStudentSummaryReport = function (config) {
+    return {
+        studentType: config.studentType || 'applicants',
+        college: config.college || 'all',
+        program: config.program || 'all',
+        track: config.track || 'all',
+        academicYear: config.academicYear || 'all',
+        scholarshipId: config.scholarshipId || 'all',
+        campusId: config.campusId || 'all',
+
+        campusCollegePrograms: config.campusCollegePrograms || {},
+        programTracks: config.programTracks || {},
+
+        availablePrograms: [],
+        availableTracks: [],
+
+        init() {
+            this.updateAvailablePrograms(false);
+            this.updateAvailableTracks(false);
+        },
+
+        updateAvailablePrograms(reset = true) {
+            if (reset) { this.program = 'all'; this.track = 'all'; }
+
+            let programs = [];
+
+            const collectPrograms = (cId) => {
+                const campusData = this.campusCollegePrograms[cId] || {};
+                if (this.college === 'all') {
+                    Object.values(campusData).forEach(progs => programs.push(...progs));
+                } else if (campusData[this.college]) {
+                    programs.push(...campusData[this.college]);
+                }
+            };
+
+            if (this.campusId === 'all') {
+                Object.keys(this.campusCollegePrograms).forEach(cId => collectPrograms(cId));
+            } else {
+                collectPrograms(this.campusId);
+            }
+
+            this.availablePrograms = [...new Set(programs)].sort();
+        },
+
+        updateAvailableTracks(reset = true) {
+            if (reset) { this.track = 'all'; }
+
+            if (this.program === 'all') {
+                this.availableTracks = [];
+            } else {
+                this.availableTracks = this.programTracks[this.program] || [];
+            }
+        },
+
+        updateReport() {
+            const container = document.getElementById('report-content-container');
+            if (container) container.style.opacity = '0.5';
+
+            try {
+                const url = new URL(config.routeUrl);
+                url.searchParams.set('student_type', this.studentType);
+                url.searchParams.set('college', this.college);
+                url.searchParams.set('program', this.program);
+                url.searchParams.set('track', this.track);
+                url.searchParams.set('academic_year', this.academicYear);
+                url.searchParams.set('scholarship_id', this.scholarshipId);
+                url.searchParams.set('campus_id', this.campusId);
+                url.searchParams.set('_t', new Date().getTime()); // Prevent caching
+
+                console.log('Fetching Report:', url.toString());
+
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Network response was not ok');
+                        return res.text();
+                    })
+                    .then(html => {
+                        if (container) {
+                            container.innerHTML = html;
+                            // Optional: Re-initialize plugins if used (not needed here)
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching report:', err);
+                        // Minimal feedback to user
+                        if (container) container.innerHTML = '<p class="text-red-500 text-center py-4">Error loading report data. Please try again.</p>';
+                    })
+                    .finally(() => {
+                        if (container) container.style.opacity = '1';
+                    });
+            } catch (e) {
+                console.error('Error constructing report URL:', e);
+                if (container) container.style.opacity = '1';
+            }
+        },
+
+        printReport() {
+            window.print();
+        },
+
+        exportToExcel() {
+            const params = new URLSearchParams({
+                student_type: this.studentType,
+                college: this.college,
+                program: this.program,
+                track: this.track,
+                academic_year: this.academicYear,
+                scholarship_id: this.scholarshipId,
+                campus_id: this.campusId,
+                export: 'excel'
+            });
+            window.location.href = config.routeUrl + '?' + params.toString();
         }
     };
 };

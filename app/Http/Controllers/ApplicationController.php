@@ -180,7 +180,64 @@ class ApplicationController extends Controller
             $query->where('campus_id', $campusFilter);
         }
 
+        // Apply Scholarship Filter
+        $scholarshipFilter = $request->get('scholarship_filter', 'all');
+        if ($scholarshipFilter !== 'all') {
+             $query->whereHas('applications', function($q) use ($scholarshipFilter) {
+                 $q->where('scholarship_id', $scholarshipFilter);
+             });
+        }
+
+        // Apply College Filter
+        $collegeFilter = $request->get('college_filter', 'all');
+        if ($collegeFilter !== 'all') {
+             $variations = explode('|', $collegeFilter);
+             
+             // Expand known aliases to ensure coverage regardless of selection
+             if (in_array('CABE', $variations) || in_array('CABEIHM', $variations)) {
+                  $variations = array_merge($variations, [
+                      'CABE', 
+                      'CABEIHM', 
+                      'College of Accountancy, Business, Economics, International Hospitality Management'
+                  ]);
+             }
+             
+             $query->whereIn('college', array_unique($variations));
+        }
+
+        // Apply Program Filter
+        $programFilter = $request->get('program_filter', 'all');
+        if ($programFilter !== 'all') {
+             $query->where('program', $programFilter);
+        }
+
+        // Apply Track Filter
+        $trackFilter = $request->get('track_filter', 'all');
+        if ($trackFilter !== 'all') {
+             $query->where('track', $trackFilter);
+        }
+
+        // Apply Academic Year Filter
+        // Filter students who have an application in the given AY
+        $academicYearFilter = $request->get('academic_year_filter', 'all');
+        if ($academicYearFilter !== 'all') {
+             $parts = explode('-', $academicYearFilter);
+             if (count($parts) === 2) {
+                 $startYear = (int)$parts[0];
+                 $endYear = (int)$parts[1];
+                 // Range: Aug 1 of Start Year to July 31 of End Year
+                 $startDate = "$startYear-08-01";
+                 $endDate = "$endYear-07-31";
+                 $query->whereHas('applications', function($q) use ($startDate, $endDate) {
+                     $q->whereBetween('created_at', [$startDate, $endDate]);
+                 });
+             }
+        }
+
         // 5. Apply Status/Tab Filter
+        // Capture query state with all common filters applied for accurate counts
+        $countsQuery = clone $query;
+
         // Determine the effective status constraint
         $effectiveStatus = 'all';
 
@@ -310,21 +367,16 @@ class ApplicationController extends Controller
         });
 
         // 11. Counts
-        $baseCountQuery = User::where('role', 'student')
-            ->whereIn('campus_id', $campusIds)
-            ->whereDoesntHave('scholars');
-
-        if ($campusFilter !== 'all') {
-            $baseCountQuery->where('campus_id', $campusFilter);
-        }
+        // Use the captured $countsQuery which implies: Role=Student, Campus Filtered, No Scholars, College/Program/Track/AY Filtered
+        // Note: $countsQuery does NOT have the 'status' filter applied yet.
             
         $counts = [
-            'total' => (clone $baseCountQuery)->whereHas('applications')->count(),
-            'not_applied' => (clone $baseCountQuery)->doesntHave('applications')->count(),
-            'in_progress' => (clone $baseCountQuery)->whereHas('applications', fn($q) => $q->where('status', 'in_progress'))->count(),
-            'pending' => (clone $baseCountQuery)->whereHas('applications', fn($q) => $q->where('status', 'pending'))->count(),
-            'approved' => (clone $baseCountQuery)->whereHas('applications', fn($q) => $q->where('status', 'approved'))->count(),
-            'rejected' => (clone $baseCountQuery)->whereHas('applications', fn($q) => $q->where('status', 'rejected'))->count(),
+            'total' => (clone $countsQuery)->whereHas('applications')->count(),
+            'not_applied' => (clone $countsQuery)->doesntHave('applications')->count(),
+            'in_progress' => (clone $countsQuery)->whereHas('applications', fn($q) => $q->where('status', 'in_progress'))->count(),
+            'pending' => (clone $countsQuery)->whereHas('applications', fn($q) => $q->where('status', 'pending'))->count(),
+            'approved' => (clone $countsQuery)->whereHas('applications', fn($q) => $q->where('status', 'approved'))->count(),
+            'rejected' => (clone $countsQuery)->whereHas('applications', fn($q) => $q->where('status', 'rejected'))->count(),
         ];        
 
         return response()->json([
@@ -894,6 +946,57 @@ class ApplicationController extends Controller
 
 
 
+
+        // Fetch Filter Options for Applicants Tab
+        $rawColleges = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds)
+            ->whereNotNull('college')
+            ->distinct()
+            ->pluck('college');
+
+        $mergedColleges = [];
+        foreach ($rawColleges as $c) {
+            $label = $c;
+            if ($c === 'College of Accountancy, Business, Economics, International Hospitality Management' || 
+                $c === 'CABE' || 
+                $c === 'CABEIHM') {
+                $label = 'CABEIHM';
+            }
+            if (!isset($mergedColleges[$label])) {
+                $mergedColleges[$label] = [];
+            }
+            $mergedColleges[$label][] = $c;
+        }
+
+        $colleges = collect($mergedColleges)->map(function($values, $label) {
+            return ['name' => $label, 'value' => implode('|', array_unique($values))];
+        })->sortBy('name')->values();
+
+        $filterOptions = User::where('role', 'student')
+            ->whereIn('campus_id', $campusIds)
+            ->select('program', 'track')
+            ->distinct()
+            ->get();
+            
+        $programs = $filterOptions->pluck('program')->filter()->unique()->values();
+        $tracks = $filterOptions->pluck('track')->filter()->unique()->values();
+        
+        // Academic Years (from Applications)
+        $academicYears = Application::whereHas('user', function($q) use ($campusIds) {
+                $q->whereIn('campus_id', $campusIds);
+            })
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month')
+            ->distinct()
+            ->get()
+            ->map(function($app) {
+                // Assumption: AY starts in August
+                $startYear = $app->month >= 8 ? $app->year : $app->year - 1;
+                return $startYear . '-' . ($startYear + 1);
+            })
+            ->unique()
+            ->sortDesc()
+            ->values();
+
         return view('sfao.dashboard', compact(
             'user', 
             'students', 
@@ -919,7 +1022,11 @@ class ApplicationController extends Controller
             'scholars', 
             'scholarsSortBy', 
             'scholarsSortOrder', 
-            'analytics'
+            'analytics',
+            'colleges',
+            'programs',
+            'tracks',
+            'academicYears'
         ));
     }
 

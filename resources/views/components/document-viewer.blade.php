@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Document - {{ $document->document_name }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/lugo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
@@ -30,11 +31,29 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            background: #f3f4f6; /* Gray background for image viewer */
+            position: relative;
         }
         iframe {
             width: 100%;
+            height: 100%;
             flex: 1;
             border: none;
+        }
+        .image-viewer {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+        .image-viewer img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .fallback-message {
             padding: 2rem;
@@ -69,7 +88,13 @@
         </div>
         
         <div class="viewer-content">
-            @if($isLocalhost || empty($viewers))
+            @if(isset($viewerType) && $viewerType === 'image')
+                <div class="image-viewer">
+                    <img src="{{ $fileUrl }}" alt="{{ $document->document_name }}">
+                </div>
+            @elseif(isset($viewerType) && $viewerType === 'pdf')
+                 <iframe src="{{ $fileUrl }}" type="application/pdf"></iframe>
+            @elseif($isLocalhost || empty($viewers))
                 <!-- Localhost or no viewers available - show download option -->
                 <div class="fallback-message">
                     <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,14 +115,12 @@
                     </a>
                 </div>
             @else
-                <!-- Try viewers in order -->
+                <!-- Try viewers in order (iframe-based viewers like Google/Office) -->
                 @foreach($viewers as $index => $viewer)
                     <iframe src="{{ $viewer['url'] }}" 
                             id="docViewer{{ $index }}" 
                             class="viewer-iframe {{ $index > 0 ? 'hidden' : '' }}"></iframe>
                 @endforeach
-                
-                
             @endif
         </div>
     </div>

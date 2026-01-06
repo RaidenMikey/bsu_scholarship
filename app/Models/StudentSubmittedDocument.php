@@ -130,16 +130,8 @@ class StudentSubmittedDocument extends Model
 
     public function getViewUrl()
     {
-        $fileType = strtolower($this->file_type);
-        
-        // For DOCX files, use custom viewer route
-        if ($fileType === 'docx') {
-            return route('document.view', ['id' => $this->id]);
-        }
-        
-        // For PDF and images, return direct URL
-        $fileUrl = asset('storage/' . ltrim($this->file_path, '/'));
-        return $fileUrl;
+        // Use custom viewer route for all files to support favicon and better UX
+        return route('document.view', ['id' => $this->id]);
     }
 
     public function getMandatoryStatusDisplayName()

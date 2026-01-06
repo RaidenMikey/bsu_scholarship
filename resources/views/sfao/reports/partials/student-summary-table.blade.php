@@ -19,7 +19,10 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
+        <div class="mt-6 mb-4">
+    <h1 class="text-2xl font-bold uppercase underline decoration-2 underline-offset-4">{{ $dynamicTitle ?? 'Student Summary Report' }}</h1>
+</div>
+<div class="overflow-x-auto">
             <table class="min-w-full border-collapse border border-gray-400 text-[10px] print:text-[8px] leading-tight">
                 <thead>
                     <tr class="bg-gray-100">
@@ -41,6 +44,7 @@
                         @endif
 
                         <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">COURSE/PROGRAM @if($studentType === 'applicants') ENROLLED @endif</th>
+                        <th class="border border-gray-400 px-1 py-1 print:py-0.5 font-bold text-center">TRACK</th>
                         
                         @if($studentType === 'applicants')
                             <th class="border border-gray-400 px-0.5 py-1 print:py-0.5 font-bold text-center w-8">YEAR</th>
@@ -86,6 +90,7 @@
                         @endif
 
                         <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[7px] leading-none">{{ $student['course'] ?? $student['program'] ?? '' }}</td>
+                        <td class="border border-gray-400 px-1 py-1 print:py-0.5 uppercase text-[9px] print:text-[7px] leading-none">{{ $student['track'] ?? 'N/A' }}</td>
 
                         @if($studentType === 'applicants')
                             <td class="border border-gray-400 px-0.5 py-1 print:py-0.5 text-center">{{ preg_replace('/[^0-9]/', '', $student['year_level'] ?? '') }}</td>
@@ -108,7 +113,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="16" class="border border-gray-400 px-4 py-8 text-center text-gray-500 italic">
+                        <td colspan="17" class="border border-gray-400 px-4 py-8 text-center text-gray-500 italic">
                             No records found for this criteria.
                         </td>
                     </tr>

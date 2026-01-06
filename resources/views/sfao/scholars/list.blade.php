@@ -93,7 +93,7 @@
                                         Claimed
                                     </button>
                                 @else
-                                    <button @click="openMarkAsModal({{ $scholar->id }}, '{{ $scholar->user->name ?? 'Scholar' }}')" 
+                                    <button @click="openMarkAsModal({{ $scholar->id }}, '{{ addslashes($scholar->user->name ?? 'Scholar') }}')" 
                                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg">
                                         Mark as
                                     </button>

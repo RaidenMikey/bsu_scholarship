@@ -1,4 +1,4 @@
-@props(['title', 'subtitle', 'user', 'settings' => false, 'logout' => false, 'profile' => false, 'sidebar' => true, 'backUrl' => null, 'backText' => null, 'settingsClick' => null])
+@props(['title', 'subtitle', 'user', 'settings' => false, 'logout' => false, 'profile' => false, 'sidebar' => true, 'backUrl' => null, 'backText' => null, 'settingsClick' => null, 'onclick' => null])
 
 <!-- Main Header -->
 <header class="flex items-center justify-between px-8 py-4 bg-[#2f2f2f] dark:bg-gray-800 shadow-sm sticky top-0 z-30 border-b border-gray-700 transition-all duration-300 print:hidden"
@@ -8,7 +8,10 @@
       
       <!-- Back Button Mode -->
       @if($backUrl)
-          <a href="{{ $backUrl }}" class="flex items-center text-white hover:text-bsu-red transition-colors mr-2 md:mr-4 group" title="{{ $backText ?? 'Go Back' }}">
+          <a href="{{ $backUrl }}" 
+             @if($onclick) onclick="{{ $onclick }}" @endif
+             class="flex items-center text-white hover:text-bsu-red transition-colors mr-2 md:mr-4 group" 
+             title="{{ $backText ?? 'Go Back' }}">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
