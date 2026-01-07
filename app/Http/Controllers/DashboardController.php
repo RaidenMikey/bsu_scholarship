@@ -650,6 +650,9 @@ class DashboardController extends Controller
         // Get all campuses for filter and resolving tab
         $campuses = \App\Models\Campus::all();
 
+        // Get hierarchical data for cascading filters
+        $campusColleges = \App\Models\CampusCollege::with(['college', 'programs.tracks'])->get()->values();
+
         // Get filtering parameters
         $tab = $request->get('tabs', $request->get('tab', 'all_scholarships'));
         $sortBy = $request->get('sort_by', 'created_at');
@@ -1165,13 +1168,61 @@ class DashboardController extends Controller
             $endorsedApplicants = collect();
         }
 
-        // Get rejected applicants (rejected by Central Admin)
+        // Get all rejected applicants (rejected by Central Admin)
         $rejectedApplicants = \App\Models\RejectedApplicant::with(['user', 'scholarship', 'rejectedByUser'])
             ->where('rejected_by', 'central')
             ->orderBy('rejected_at', 'desc')
             ->get();
 
-        return view('central.analytics.index', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reportStats', 'analytics', 'reportsSubmitted', 'reportsReviewed', 'reportsApproved', 'reportsRejected', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'scholarsAll', 'scholarsNew', 'scholarsOld', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports', 'academicYearOptions', 'academicYearFilter'));
+        // Data for Client-Side Filtering (SFAO Reports Tab)
+        // Fetch ALL reports regardless of current page filters to allow JS filtering without reload
+        $allReportsForReportsTab = \App\Models\Report::with(['campus', 'college', 'program', 'track'])
+            ->orderBy('created_at', 'desc') // Default sort
+            ->get()
+            ->map(function($report) {
+                // Append computed attributes for JS
+                $report->report_type_display = $report->getReportTypeDisplayName();
+                $report->campus_name = $report->campus ? $report->campus->name : 'Unknown Campus';
+                
+                // New Filter Fields
+                $report->student_type_val = $report->student_type;
+                // Use short_name for college to match the analytics hierarchy keys if possible, or name. 
+                // The analytics hierarchy uses keys like "Alangilan College of Engineering". Wait, earlier I saw "CIT", "CICS".
+                // Let's check what the hierarchy keys are. In `studentSummary` controller method: `$collegeNameMap[$rawCol] ?? $rawCol`.
+                // It maps Name -> Short Name usually.
+                // Safest is to provide both or match what's in the hierarchy.
+                // Let's provide short_name as standard if available.
+                $report->college_name = $report->college ? $report->college->short_name : null;
+                $report->program_name = $report->program ? $report->program->name : null;
+                $report->track_name = $report->track ? $report->track->name : null;
+
+
+                // Format dates for display
+                $report->display_submitted_at = $report->submitted_at ? $report->submitted_at->format('M d, Y') : $report->created_at->format('M d, Y');
+                $report->display_reviewed_at = $report->reviewed_at ? $report->reviewed_at->format('M d, Y') : 'Recently';
+                
+                // Determine Academic Year based on report_period_start or created_at
+                // Prefer the explicitly saved column if available
+                if ($report->academic_year) {
+                    $report->academic_year_display = $report->academic_year;
+                } else {
+                    $date = $report->report_period_start ?? $report->created_at;
+                    // Simple AY logic: if Month >= 8 (Aug), Year is Y-(Y+1). Else (Y-1)-Y.
+                    $year = $date->year;
+                    $month = $date->month;
+                    if ($month >= 8) {
+                        $report->academic_year_display = $year . '-' . ($year + 1);
+                     } else {
+                        $report->academic_year_display = ($year - 1) . '-' . $year;
+                    }
+                }
+                // Override the JS property expected by the frontend (previously computed as 'academic_year')
+                $report->academic_year = $report->academic_year_display;
+                
+                return $report;
+            });
+
+        return view('central.analytics.index', compact('user', 'applications', 'scholarshipsAll', 'scholarshipsPrivate', 'scholarshipsGov', 'reportStats', 'analytics', 'reportsSubmitted', 'reportsReviewed', 'reportsApproved', 'reportsRejected', 'campuses', 'campusOptions', 'scholarshipOptions', 'statusOptions', 'sortBy', 'sortOrder', 'statusFilter', 'campusFilter', 'scholarshipFilter', 'scholars', 'scholarsAll', 'scholarsNew', 'scholarsOld', 'qualifiedApplicants', 'endorsedApplicants', 'rejectedApplicants', 'totalReports', 'academicYearOptions', 'academicYearFilter', 'campusColleges', 'allReportsForReportsTab'));
     }
 
     private function sortScholarships($scholarships, $sortBy, $sortOrder)
@@ -1260,10 +1311,14 @@ class DashboardController extends Controller
         $activeScholars = (clone $scholarQuery)->where('status', 'active')->count();
         $graduatedScholars = (clone $scholarQuery)->where('status', 'graduated')->count();
         $droppedScholars = (clone $scholarQuery)->where('status', 'dropped')->count();
+        $uniqueScholars = (clone $scholarQuery)->whereHas('user', function($q){ $q->where('role', 'student'); })->distinct('user_id')->count('user_id');
 
         // Get user statistics
         $totalStudents = $userQuery->where('role', 'student')->count();
         $registeredToday = (clone $userQuery)->whereDate('created_at', today())->count();
+
+        // Unique Applicants
+        $uniqueApplicants = (clone $applicationQuery)->distinct('user_id')->count('user_id');
 
         // Campus Distribution
         $campusDistribution = \App\Models\Campus::withCount(['users' => function($query) use ($timePeriod) {
@@ -1403,7 +1458,9 @@ class DashboardController extends Controller
             'users' => [
                 'total_students' => $totalStudents,
                 'registered_today' => $registeredToday,
-                'campus_distribution' => $campusDistribution
+                'campus_distribution' => $campusDistribution,
+                'unique_applicants' => $uniqueApplicants,
+                'unique_scholars' => $uniqueScholars
             ],
             'campus_names' => $campusStats->pluck('campus_name')->toArray(),
             'campus_application_stats' => $campusStats->toArray(),

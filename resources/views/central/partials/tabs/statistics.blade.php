@@ -280,21 +280,35 @@
 
         </div>
 
-        <!-- Scholarship Comparison Graph (Outside Main Container) -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mt-6 mb-6">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 text-center">Scholarship Comparison (All Programs)</h3>
-            <div class="relative h-96 w-full mb-6">
-                 <div x-show="chartStatus.comparison" class="h-full w-full">
-                    <canvas id="sfaoComparisonChart"></canvas>
+        <!-- Comparison Charts Layout -->
+        <div class="flex flex-col lg:flex-row gap-6 mt-6 mb-6">
+            
+            <!-- Scholarship Comparison Graph (Flex Grow - Maximized Width) -->
+            <div class="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 text-center">Scholarship Comparison (All Programs)</h3>
+                <!-- Scroll Container -->
+                <div class="overflow-x-auto w-full">
+                    <div class="relative" :style="'height: 600px; min-width: ' + Math.max(100, (chartStatus.comparisonCount || 1) * 15) + '%'">
+                            <div x-show="chartStatus.comparison" class="h-full w-full">
+                            <canvas id="sfaoComparisonChart"></canvas>
+                        </div>
+                            <!-- No Data Message -->
+                            <div x-show="!chartStatus.comparison" class="absolute inset-0 flex items-center justify-center pointer-events-none" style="left: 0; right: 0;">
+                            <div class="text-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Comparison Data</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your filters.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                 <!-- No Data Message -->
-                 <div x-show="!chartStatus.comparison" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div class="text-center p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Comparison Data</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your filters.</p>
+            </div>
+
+            <!-- Student Comparison Graph (Fixed Width: 15rem/240px) -->
+            <div class="lg:w-60 flex-none bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 text-center">Student Ratio</h3>
+                <div class="relative w-full flex items-center justify-center" style="height: 600px;">
+                     <div class="h-full w-full">
+                        <canvas id="sfaoStudentComparisonChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -314,6 +328,7 @@
                 gender: null,
                 scholarshipType: null,
                 comparison: null,
+                studentComparison: null,
                 trend: null
             };
 
@@ -346,6 +361,7 @@
                 chartStatus: { // Track if charts have data
                     college: true,
                     comparison: true,
+                    comparisonCount: 0,
                     trend: true
                 },
                 availablePrograms: [],
@@ -471,6 +487,67 @@
                             }, 100);
                         });
                     }
+                },
+
+                createStudentComparisonChart() {
+                    const ctx = document.getElementById('sfaoStudentComparisonChart');
+                    if (!ctx) return;
+                    if (chartInstances.studentComparison) chartInstances.studentComparison.destroy();
+
+                    const applicantsCount = this.analyticsData.users?.unique_applicants || 0;
+                    const scholarsCount = this.analyticsData.users?.unique_scholars || 0;
+
+                    chartInstances.studentComparison = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Total'],
+                            datasets: [
+                                {
+                                    label: 'Applicants',
+                                    data: [applicantsCount],
+                                    backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue
+                                    borderColor: 'rgba(59, 130, 246, 1)',
+                                    borderWidth: 1,
+                                    barThickness: 60
+                                },
+                                {
+                                    label: 'Scholars',
+                                    data: [scholarsCount],
+                                    backgroundColor: 'rgba(16, 185, 129, 0.7)', // Green
+                                    borderColor: 'rgba(16, 185, 129, 1)',
+                                    borderWidth: 1,
+                                    barThickness: 60
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.raw.toLocaleString();
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    stacked: true,
+                                    beginAtZero: true,
+                                    grid: { display: true, color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
+                                    ticks: { color: this.getTextColor(), precision: 0 }
+                                },
+                                x: {
+                                    stacked: true,
+                                    grid: { display: false },
+                                    ticks: { display: false } // Hide 'Total' label for cleaner look
+                                }
+                            }
+                        }
+                    });
                 },
 
                 getTextColor() {
@@ -760,13 +837,16 @@
                     ro.observe(container);
 
                     this.createCollegeChart();
+                    this.createCollegeChart();
                     this.createComparisonChart();
+                    this.createStudentComparisonChart();
                     this.createTrendChart();
                 },
 
                 updateCharts() {
                     this.createCollegeChart();
                     this.createComparisonChart();
+                    this.createStudentComparisonChart();
                     this.createTrendChart();
                 },
 
@@ -988,24 +1068,14 @@
                     });
 
                     // Process labels for multi-line display
-                    const processedLabels = labels.map(label => {
-                        const words = label.split(' ');
-                        const lines = [];
-                        let currentLine = [];
-
-                        words.forEach(word => {
-                            if (currentLine.length >= 2 || (currentLine.join(' ').length + word.length > 20)) {
-                                lines.push(currentLine.join(' '));
-                                currentLine = [];
-                            }
-                            currentLine.push(word);
-                        });
-                        if (currentLine.length > 0) lines.push(currentLine.join(' '));
-                        return lines;
-                    });
+                    const processedLabels = labels.map(l => l.length > 20 ? l.substring(0, 20) + '...' : l);
 
                     // Update Chart Status
                     this.chartStatus.comparison = labels.length > 0;
+                    this.chartStatus.comparisonCount = labels.length;
+
+                    // Destroy old chart first
+                    if (chartInstances.comparison) chartInstances.comparison.destroy();
 
                     if (labels.length === 0) {
                         return;

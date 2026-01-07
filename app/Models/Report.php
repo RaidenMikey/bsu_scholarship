@@ -15,6 +15,11 @@ class Report extends Model
         'campus_id',
         'original_campus_selection',
         'report_type',
+        'student_type', // New
+        'college_id',   // New
+        'program_id',   // New
+        'track_id',     // New
+        'academic_year', // New
         'title',
         'description',
         'report_period_start',
@@ -45,6 +50,21 @@ class Report extends Model
     public function campus()
     {
         return $this->belongsTo(Campus::class);
+    }
+    
+    public function college()
+    {
+        return $this->belongsTo(College::class);
+    }
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    public function track()
+    {
+        return $this->belongsTo(ProgramTrack::class, 'track_id');
     }
 
     public function reviewer()

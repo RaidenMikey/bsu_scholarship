@@ -65,14 +65,21 @@
                 @endphp
                 @include('sfao.reports.partials.scholar-summary-table', ['reportData' => $reportDetails, 'selectedScholarship' => $selectedScholarship])
             
-            @elseif(\Illuminate\Support\Str::startsWith($report->report_type, 'student_summary'))
+             @elseif(\Illuminate\Support\Str::startsWith($report->report_type, 'student_summary'))
                  @php
                     $reportDataRaw = $report->report_data;
                     $reportDetails = $reportDataRaw['details'] ?? [];
+                    // Extract subtype (applicants or scholars)
+                    $studentType = \Illuminate\Support\Str::contains($report->report_type, 'scholars') ? 'scholars' : 'applicants';
                  @endphp
-                 <pre class="bg-gray-100 p-4 rounded overflow-auto text-xs">{{ json_encode($reportDataRaw, JSON_PRETTY_PRINT) }}</pre>
-    
-            @else
+                 
+                 @include('sfao.reports.partials.student-summary-table', [
+                     'reportData' => $reportDetails, 
+                     'studentType' => $studentType,
+                     'dynamicTitle' => 'Student Summary Report - ' . ucfirst($studentType)
+                 ])
+                 
+             @else
                 <!-- Fallback for other report types -->
                 <div class="p-4 border border-gray-200 rounded">
                     <h3 class="text-lg font-bold mb-2">Report Data</h3>

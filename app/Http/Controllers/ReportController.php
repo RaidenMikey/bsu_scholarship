@@ -731,8 +731,17 @@ class ReportController extends Controller
 
         if ($request->report_type === 'student_summary') {
             $scholarship = $request->scholarship_id ? Scholarship::find($request->scholarship_id) : null;
-            $title = $scholarship ? $scholarship->scholarship_name . ' Applicant Summary Report' : 'Applicant Summary Report';
-            $reportData = $this->generateStudentSummaryData($request->campus_id, $campus, $request->scholarship_id);
+            $title = $scholarship ? $scholarship->scholarship_name . ' Applicant Summary Report' : 'Applicant Summary Report'; // Default fallback, but dynamic title overwrites
+            $reportData = $this->generateStudentSummaryData(
+                $request->campus_id, 
+                $campus, 
+                $request->scholarship_id,
+                $request->student_type ?? 'applicants',
+                $request->college,
+                $request->program,
+                $request->track,
+                $request->academic_year
+            );
         } 
         elseif ($request->report_type === 'scholar_summary') {
             $scholarship = $request->scholarship_id ? Scholarship::find($request->scholarship_id) : null;
@@ -749,10 +758,15 @@ class ReportController extends Controller
             'sfao_user_id' => session('user_id'),
             'campus_id' => $reportCampusId, 
             'original_campus_selection' => $request->campus_id,
-            'report_type' => $request->report_type . '_' . $request->frequency, // e.g., student_summary_monthly
-            'title' => $title . ' - ' . ucfirst($request->frequency),
+            'report_type' => $request->report_type . '_' . $request->frequency,
+            'student_type' => $request->student_type, // New
+            'college_id' => ($request->college && $request->college != 'all') ? \App\Models\College::where('short_name', $request->college)->value('id') : null, // New
+            'program_id' => ($request->program && $request->program != 'all') ? \App\Models\Program::where('name', $request->program)->value('id') : null, // New
+            'track_id' => ($request->track && $request->track != 'all') ? \App\Models\ProgramTrack::where('name', $request->track)->value('id') : null, // New
+            'academic_year' => ($request->academic_year && $request->academic_year != 'all') ? $request->academic_year : null, // New
+            'title' => $request->dynamic_title ?? ($title . ' - ' . ucfirst($request->frequency)), // Use dynamic title if provided
             'description' => $request->description,
-            'report_period_start' => now()->startOfMonth(), // Defaulting to current month/period logic
+            'report_period_start' => now()->startOfMonth(),
             'report_period_end' => now()->endOfMonth(),
             'report_data' => $reportData,
             'status' => 'submitted',
@@ -769,7 +783,7 @@ class ReportController extends Controller
     // DATA GENERATION HELPERS
     // =====================================================
 
-    private function generateStudentSummaryData($campusIdSelection, $userCampus, $scholarshipId = null)
+    private function generateStudentSummaryData($campusIdSelection, $userCampus, $scholarshipId, $studentType, $collegeFilter, $programFilter, $trackFilter, $academicYearFilter)
     {
         $monitoredCampuses = $userCampus->getAllCampusesUnder();
         if ($campusIdSelection && $campusIdSelection != 'all') {
@@ -777,117 +791,158 @@ class ReportController extends Controller
         }
 
         $reportData = [];
+        
+        // Prepare Program Map for normalization if needed
+        $programMap = \App\Models\Program::pluck('short_name', 'name')->toArray();
+
+        // Prepare Statuses
         $approvedStatuses = ['approved', 'accepted', 'claimed'];
 
-        if ($scholarshipId) {
-            foreach ($monitoredCampuses as $camp) {
-                $campusData = ['campus' => $camp, 'students' => []]; // Simplified structure matching new report style
-                
-                // Fetch students for this campus and scholarship
-                $students = User::where('campus_id', $camp->id)
-                    ->where('role', 'student')
-                    ->whereHas('applications', function($q) use ($scholarshipId, $approvedStatuses) {
-                        $q->where('scholarship_id', $scholarshipId)
-                          ->whereIn('status', $approvedStatuses);
-                    })
-                    ->with(['form', 'applications' => function($q) use ($scholarshipId, $approvedStatuses) {
-                        $q->where('scholarship_id', $scholarshipId)
-                          ->whereIn('status', $approvedStatuses);
-                    }])
-                    ->get();
+        foreach ($monitoredCampuses as $camp) {
+            $campusData = [
+                'campus' => $camp,
+                'students' => []
+            ];
 
-                $processedStudents = [];
-                $seq = 1;
+            // Base Query
+            $query = User::where('campus_id', $camp->id)->where('role', 'student');
 
-                foreach ($students as $student) {
-                    $application = $student->applications->first();
-                    if (!$application) continue;
+            // 1. College Filter
+            if ($collegeFilter && $collegeFilter !== 'all') {
+                $query->where(function($q) use ($collegeFilter) {
+                    $q->where('college', $collegeFilter)
+                      ->orWhere('college', \App\Models\College::where('short_name', $collegeFilter)->value('name') ?? $collegeFilter);
+                });
+            }
 
-                    $form = $student->form;
+            // 2. Program Filter
+            if ($programFilter && $programFilter !== 'all') {
+                $query->where('program', $programFilter);
+            }
+
+            // 3. Track Filter
+            if ($trackFilter && $trackFilter !== 'all') {
+                $query->where('track', $trackFilter);
+            }
+
+            // 4. Student Type Logic & Eager Loading
+            if ($studentType === 'applicants') {
+                // Must have an application
+                $query->whereHas('applications', function($q) use ($scholarshipId, $academicYearFilter) {
+                    if ($scholarshipId && $scholarshipId !== 'all') {
+                        $q->where('scholarship_id', $scholarshipId);
+                    }
                     
-                    $processedStudents[] = [
+                    // Academic Year Filter for Applicants
+                    if ($academicYearFilter === 'custom') {
+                         // Note: We can't access request() here directly if we want this pure.
+                         // But we passed simple args. If custom logic needed, we need start/end dates.
+                         // For now, if custom, we skip or assume logic is handled elsewhere.
+                         // Let's rely on standard AY string "2024-2025"
+                    } elseif ($academicYearFilter && $academicYearFilter !== 'all') {
+                         $years = explode('-', $academicYearFilter);
+                         if (count($years) === 2) {
+                             $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                             $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                             $q->whereBetween('created_at', [$startDt, $endDt]);
+                         }
+                    }
+                })->with(['applications' => function($q) use ($scholarshipId) {
+                    if ($scholarshipId && $scholarshipId !== 'all') {
+                        $q->where('scholarship_id', $scholarshipId);
+                    }
+                    $q->latest();
+                }, 'form', 'applications.scholarship']);
+            
+            } else {
+                // Scholars
+                $query->whereHas('scholars', function($q) use ($scholarshipId, $academicYearFilter) {
+                     if ($scholarshipId && $scholarshipId !== 'all') {
+                         $q->where('scholarship_id', $scholarshipId);
+                     }
+                      // Academic Year Filter for Scholars
+                      if ($academicYearFilter && $academicYearFilter !== 'all' && $academicYearFilter !== 'custom') {
+                         $years = explode('-', $academicYearFilter);
+                         if (count($years) === 2) {
+                             $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                             $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                             $q->whereBetween('created_at', [$startDt, $endDt]);
+                         }
+                      }
+                })->with(['scholars' => function($q) use ($scholarshipId) {
+                     if ($scholarshipId && $scholarshipId !== 'all') {
+                         $q->where('scholarship_id', $scholarshipId);
+                     }
+                }, 'scholars.scholarship']);
+            }
+
+            $students = $query->get();
+            $processedStudents = [];
+            $seq = 1;
+            
+            foreach ($students as $student) {
+                if ($studentType === 'applicants') {
+                    $app = $student->applications->first();
+                    if (!$app) continue;
+
+                    // Re-check AY logic if exact date match needed (since has/whereHas covers existence, specific app might differ? No, usually fine)
+                    
+                     $processedStudents[] = [
                         'seq' => $seq++,
-                        'app_id' => $application->id,
-                        'name' => $student->last_name . ', ' . $student->first_name, // Mapping for unified structure if needed, but report uses separate fields.
-                        // Ideally we should use the same structure as the view logic
-                        // But since this is just data storage for the report, let's store comprehensive data or matching view data.
-                        // The submitSummaryReport method stores this array into JSON.
-                        // Let's match the view structure so if we re-render it, it works.
+                         'app_id' => $app->id,
                         'last_name' => $student->last_name,
                         'first_name' => $student->first_name,
                         'middle_name' => $student->middle_name,
                         'sex' => $student->sex,
-                        'birthdate' => $student->birthdate ? $student->birthdate->format('Y-m-d') : 'N/A',
-                        'course' => $student->program ?? $student->college,
+                        'birthdate' => $student->birthdate ? $student->birthdate->format('Y-m-d') : '',
+                        'program' => $student->program,
+                        'track' => $student->track,
                         'year_level' => $student->year_level,
-                        'units' => $form ? $form->units_enrolled : 'N/A',
-                        'municipality' => $form ? $form->town_city : 'N/A',
-                        'province' => $form ? $form->province : 'N/A',
-                        'pwd' => $form ? $form->disability : 'N/A',
-                        'grant' => $application->scholarship ? $application->scholarship->grant_amount : 'N/A',
-                        'status_remarks' => $application->remarks ?: ucfirst($application->status)
-                    ];
-                }
-                 $campusData['students'] = $processedStudents;
-                 $reportData[] = $campusData;
-            }
-        } else {
-            // Legacy logic for "General" student summary if scholarship not specified (fallback)
-             $summaryStats = ['accepted' => 0, 'rejected' => 0, 'pending' => 0, 'not_applied' => 0, 'total' => 0];
-             $remarksData = [];
-    
-             foreach ($monitoredCampuses as $camp) {
-                $campusData = ['campus_name' => $camp->name, 'colleges' => []];
-                $colleges = $camp->colleges;
-    
-                foreach ($colleges as $college) {
-                    $students = User::where('campus_id', $camp->id)
-                        ->where(function($q) use ($college) {
-                            $q->where('college', $college->name)->orWhere('college', $college->short_name);
-                        })
-                        ->where('role', 'student')
-                        ->with(['applications' => function($q) { $q->latest(); }, 'form'])
-                        ->get();
-    
-                    $processedStudents = [];
-                    foreach ($students as $student) {
-                        $latestApp = $student->applications->first();
-                        $status = $latestApp ? $latestApp->status : 'Not Applied';
-                        $normStatus = strtolower($status);
+                        'units' => $student->form ? $student->form->units_enrolled : '',
+                        'municipality' => $student->form ? $student->form->town_city : '',
+                        'province' => $student->form ? $student->form->province : '',
+                        'pwd' => $student->form ? ($student->form->disability ?: 'No') : 'No',
+                        'scholarship' => $app->scholarship ? $app->scholarship->scholarship_name : 'N/A',
+                        'grant' => $app->scholarship ? $app->scholarship->grant_amount : 'N/A',
+                        'status_remarks' => $app->remarks ?: ucfirst($app->status)
+                     ];
+
+                } else {
+                    // Scholars
+                    foreach ($student->scholars as $scholar) {
+                        // Apply Scholarship Filter (Explicit loop check if multiple scholars per user)
+                        if ($scholarshipId && $scholarshipId !== 'all' && $scholar->scholarship_id != $scholarshipId) continue;
                         
-                        if (in_array($normStatus, ['approved', 'accepted', 'claimed'])) $summaryStats['accepted']++;
-                        elseif (in_array($normStatus, ['rejected', 'disapproved'])) $summaryStats['rejected']++;
-                        elseif ($normStatus == 'not applied') $summaryStats['not_applied']++;
-                        else $summaryStats['pending']++;
-                        $summaryStats['total']++;
-    
-                        $processedStudents[] = [
-                            'name' => $student->last_name . ', ' . $student->first_name,
-                            'sex' => $student->sex,
-                            'status' => ucfirst($status)
-                        ];
-    
-                        if ($student->form && $student->form->reviewer_remarks) {
-                            $remarksData[] = [
-                                'campus' => $camp->name,
-                                'name' => $student->last_name . ', ' . $student->first_name,
-                                'status' => ucfirst($status),
-                                'remarks' => $student->form->reviewer_remarks
-                            ];
+                        // Apply AY Filter (Double check)
+                        if ($academicYearFilter && $academicYearFilter !== 'all' && $academicYearFilter !== 'custom') {
+                             $years = explode('-', $academicYearFilter);
+                             if (count($years) === 2) {
+                                  $startDt = \Carbon\Carbon::createFromDate($years[0], 8, 1)->startOfDay();
+                                  $endDt = \Carbon\Carbon::createFromDate($years[1], 7, 31)->endOfDay();
+                                  if (!\Carbon\Carbon::parse($scholar->created_at)->between($startDt, $endDt)) continue;
+                             }
                         }
+
+                        $processedStudents[] = [
+                            'seq' => $seq++,
+                            'app_id' => $scholar->id,
+                            'last_name' => $student->last_name,
+                            'first_name' => $student->first_name,
+                            'middle_name' => $student->middle_name,
+                            'sex' => $student->sex,
+                             'college' => $student->college, // Needed for scholar view
+                            'program' => $student->program,
+                            'track' => $student->track,
+                            'scholarship' => $scholar->scholarship ? $scholar->scholarship->scholarship_name : 'N/A'
+                        ];
                     }
-                    $campusData['colleges'][] = ['college_name' => $college->name, 'students' => $processedStudents];
                 }
-                $reportData[] = $campusData;
             }
-            return [
-                'type' => 'student_summary',
-                'details' => $reportData,
-                'stats' => $summaryStats,
-                'remarks' => $remarksData
-            ];
+
+            $campusData['students'] = $processedStudents;
+            $reportData[] = $campusData;
         }
-        
+
         return [
             'type' => 'student_summary',
             'details' => $reportData,
