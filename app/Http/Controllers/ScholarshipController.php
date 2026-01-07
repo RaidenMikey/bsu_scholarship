@@ -153,11 +153,12 @@ class ScholarshipController extends Controller
         }
 
         // Create notifications for all students
-        NotificationService::notifyScholarshipCreated($scholarship);
+        // Create notifications for all students
+        $emailCount = NotificationService::notifyScholarshipCreated($scholarship);
 
         return redirect()
             ->route('central.dashboard')
-            ->with('success', 'Scholarship added successfully! You can view it in the scholarships section.');
+            ->with('success', "Scholarship added successfully! Sent notifications to {$emailCount} eligible student(s).");
     }
 
     /**

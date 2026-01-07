@@ -828,17 +828,17 @@ class ReportController extends Controller
             // 4. Student Type Logic & Eager Loading
             if ($studentType === 'applicants') {
                 // Must have an application
-                $query->whereHas('applications', function($q) use ($scholarshipId, $academicYearFilter) {
+                $query->whereHas('applications', function($q) use ($scholarshipId, $academicYearFilter, $approvedStatuses) {
                     if ($scholarshipId && $scholarshipId !== 'all') {
                         $q->where('scholarship_id', $scholarshipId);
                     }
                     
+                    // Exclude approved/claimed applications (they belong in Scholar report)
+                    $q->whereNotIn('status', $approvedStatuses);
+
                     // Academic Year Filter for Applicants
                     if ($academicYearFilter === 'custom') {
-                         // Note: We can't access request() here directly if we want this pure.
-                         // But we passed simple args. If custom logic needed, we need start/end dates.
-                         // For now, if custom, we skip or assume logic is handled elsewhere.
-                         // Let's rely on standard AY string "2024-2025"
+                         // Skip custom logic for now
                     } elseif ($academicYearFilter && $academicYearFilter !== 'all') {
                          $years = explode('-', $academicYearFilter);
                          if (count($years) === 2) {

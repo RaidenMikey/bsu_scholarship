@@ -11,8 +11,10 @@
                 CERTIFIED LIST OF 
                 @if($studentType === 'applicants')
                     NEW APPLICANTS
-                @else
+                @elseif($studentType === 'scholars')
                     SCHOLARS
+                @else
+                    STUDENTS ({{ $studentType }})
                 @endif
             </h4>
             <p class="text-sm font-medium uppercase mt-1">Academic Year {{ now()->year }}-{{ now()->addYear()->year }}</p>

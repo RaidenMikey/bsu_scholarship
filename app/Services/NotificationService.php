@@ -23,7 +23,12 @@ class NotificationService
         $query = User::where('role', 'student');
 
         // 1. Filter by Campus
-        if ($scholarship->campus_id) {
+        // 1. Filter by Campus (Support Multiple Campuses via Relation)
+        $scholarship->load('campuses');
+        if ($scholarship->campuses->isNotEmpty()) {
+            $query->whereIn('campus_id', $scholarship->campuses->pluck('id'));
+        } elseif ($scholarship->campus_id) {
+            // Fallback for legacy single-campus structure
             $query->where('campus_id', $scholarship->campus_id);
         }
 
@@ -74,6 +79,7 @@ class NotificationService
         }
 
         $students = $query->get();
+        $emailCount = 0;
         
         foreach ($students as $student) {
             // Create Database Notification
@@ -89,16 +95,19 @@ class NotificationService
                 ]
             ]);
 
-            // Send Email Notification (DRY RUN MODE)
+            // Send Email Notification
             if ($student->email) {
                 try {
-                    Log::info("DRY RUN: Targeted for email: " . $student->email . " [Campus: " . $student->campus_id . "]");
-                    // Mail::to($student->email)->send(new NewScholarshipAnnouncement($scholarship));
+                    Log::info("Sending email to: " . $student->email . " [Campus: " . $student->campus_id . "]");
+                    Mail::to($student->email)->send(new NewScholarshipAnnouncement($scholarship));
+                    $emailCount++;
                 } catch (\Exception $e) {
-                    Log::error('Failed to log email target: ' . $e->getMessage());
+                    Log::error('Failed to send email: ' . $e->getMessage());
                 }
             }
         }
+        
+        return $emailCount;
     }
 
     /**

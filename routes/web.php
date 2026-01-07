@@ -57,6 +57,18 @@ Route::get('/dev/migrate-fresh-seed', function() {
     }
 });
 
+// SAFE MIGRATION (Update Structure Only)
+Route::get('/dev/migrate', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', [
+            '--force' => true
+        ]);
+        return "Migration (Structure Update) Completed!<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 // TEMPORARY: View Logs
 Route::get('/dev/logs', function() {
     $path = storage_path('logs/laravel.log');

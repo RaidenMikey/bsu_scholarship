@@ -69,8 +69,8 @@
                  @php
                     $reportDataRaw = $report->report_data;
                     $reportDetails = $reportDataRaw['details'] ?? [];
-                    // Extract subtype (applicants or scholars)
-                    $studentType = \Illuminate\Support\Str::contains($report->report_type, 'scholars') ? 'scholars' : 'applicants';
+                    // Extract subtype (applicants or scholars) from column or fallback
+                    $studentType = $report->student_type ?? (\Illuminate\Support\Str::contains($report->report_type, 'scholars') ? 'scholars' : 'applicants');
                  @endphp
                  
                  @include('sfao.reports.partials.student-summary-table', [
