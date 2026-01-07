@@ -6,47 +6,86 @@
     'disableModal' => false
 ])
 
+@php
+    $isStudent = ($role === 'student');
+    $isScholar = $isStudent && ($scholarship->is_scholar ?? false);
+    $isApplied = $isStudent && $scholarship->applied && !$isScholar;
+
+    $cardBaseClass = 'rounded-xl shadow-lg border-2 p-6 hover:shadow-xl transition-all duration-300 group relative overflow-hidden mb-8 cursor-pointer';
+    
+    if ($isScholar) {
+        $cardClass = $cardBaseClass . ' bg-green-50 dark:bg-green-900/20 border-green-500 hover:border-green-600 hover:shadow-green-500/20';
+        $gradientColors = 'rgba(240, 253, 244, 0.95), rgba(240, 253, 244, 0.95)'; // Green tint
+    } elseif ($isApplied) {
+        $cardClass = $cardBaseClass . ' bg-blue-50 dark:bg-blue-900/20 border-blue-500 hover:border-blue-600 hover:shadow-blue-500/20';
+        $gradientColors = 'rgba(239, 246, 255, 0.95), rgba(239, 246, 255, 0.95)'; // Blue tint
+    } else {
+        $cardClass = $cardBaseClass . ' bg-white dark:bg-gray-800 border-bsu-red hover:border-bsu-redDark hover:shadow-bsu-red/20';
+        $gradientColors = 'rgba(255,255,255,0.7), rgba(255,255,255,0.7)';
+    }
+@endphp
+
 <div x-data="{ open: false, showReleaseModal: false, disableModal: @json($disableModal) }" 
-     class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-bsu-red p-6 hover:shadow-xl hover:border-bsu-redDark hover:shadow-bsu-red/20 transition-all duration-300 group relative overflow-hidden mb-8 cursor-pointer"
+     class="{{ $cardClass }}"
      @click="if(!disableModal) open = true"
      @if($scholarship->background_image)
-     style="background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
+     style="background-image: linear-gradient({{ $gradientColors }}), url('{{ $scholarship->getBackgroundImageUrl() }}'); background-size: cover; background-position: center;"
      @endif>
 
+    @if($isScholar)
+        <!-- Green Overlay -->
+        <div class="absolute inset-0 bg-green-500/10 pointer-events-none z-0"></div>
+        <!-- Scholar Text -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <span class="text-5xl font-extrabold text-green-600/30 uppercase tracking-widest transform -rotate-12 border-4 border-green-600/30 px-10 py-4 rounded-2xl backdrop-blur-sm">Scholar</span>
+        </div>
+    @elseif($isApplied)
+        <!-- Blue Overlay -->
+        <div class="absolute inset-0 bg-blue-500/10 pointer-events-none z-0"></div>
+        <!-- Applied Text -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <span class="text-5xl font-extrabold text-blue-600/30 uppercase tracking-widest transform -rotate-12 border-4 border-blue-600/30 px-10 py-4 rounded-2xl backdrop-blur-sm">Applied</span>
+        </div>
+    @endif
+
         <!-- Scholarship Content -->
-        <div class="flex flex-col lg:flex-row lg:items-center gap-4 {{ $scholarship->applied ? 'opacity-75' : '' }}">
-            <!-- Main Content -->
-            <div class="flex-1">
-                <!-- Header -->
-                <div class="flex justify-between items-start mb-3">
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-bsu-red dark:text-white group-hover:text-bsu-redDark dark:group-hover:text-bsu-red transition-colors duration-200">
-                            {{ $scholarship->scholarship_name }}
-                        </h3>
-                        <div class="flex items-center gap-2 mt-2">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getScholarshipTypeBadgeColor() }} shadow-sm">
-                              {{ ucfirst($scholarship->scholarship_type) }}
-                            </span>
-                        </div>
+        <!-- Header (Top Left) -->
+        <!-- Scholarship Content -->
+        <div class="flex flex-col lg:flex-row lg:items-start gap-4">
+            <!-- Left Column: Title, Type, Description -->
+            <div class="flex-1 min-w-0">
+                <!-- Title & Type -->
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold text-bsu-red dark:text-white group-hover:text-bsu-redDark dark:group-hover:text-bsu-red transition-colors duration-200">
+                        {{ $scholarship->scholarship_name }}
+                    </h3>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $scholarship->getScholarshipTypeBadgeColor() }} shadow-sm">
+                        {{ ucfirst($scholarship->scholarship_type) }}
+                        </span>
                     </div>
                 </div>
-
+                
+                <!-- Description Preview -->
                 <!-- Description Preview -->
                 <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
                     {{ \Illuminate\Support\Str::limit($scholarship->description, 150) }}
                 </p>
             </div>
 
-            <!-- Quick Info & Actions -->
-            <div class="flex flex-col sm:flex-row lg:flex-col gap-4 lg:min-w-[200px]">
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 text-sm">
-                    <div>
-                        <span class="text-gray-500 dark:text-gray-400">Submission Deadline:</span>
-                        <div class="font-semibold {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
-                            {{ $scholarship->submission_deadline?->format('M d, Y') }}
-                        </div>
+            <!-- Right Column: Deadline, Quick Info & Actions -->
+            <div class="flex flex-col gap-4 lg:min-w-[200px]">
+                 <!-- Submission Deadline -->
+                 <div>
+                    <span class="block text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">Submission Deadline</span>
+                    <div class="font-bold text-lg {{ $scholarship->getDaysUntilDeadline() <= 7 ? 'text-red-600' : 'text-gray-900 dark:text-white' }}">
+                        {{ $scholarship->submission_deadline?->format('M d, Y') }}
                     </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 lg:grid-cols-1 gap-3 text-sm">
+
                     <div>
                         <span class="text-gray-500 dark:text-gray-400">Amount:</span>
                         <div class="font-semibold text-green-600">
@@ -98,22 +137,11 @@
                 </div>
                 @endif
 
-                <!-- Application Status (Student Only) -->
                 @if($role === 'student')
                     @if($scholarship->is_scholar ?? false)
-                      <div class="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg mt-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="text-sm font-medium">Scholar</span>
-                      </div>
+                        <!-- Scholar status is handled by overlay -->
                     @elseif($scholarship->applied)
-                      <div class="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg mt-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="text-sm font-medium">Applied</span>
-                      </div>
+                      <!-- Applied status is handled by overlay -->
                     @endif
                 @endif
             </div>
@@ -363,14 +391,9 @@
                             </button>
 
                             @if($scholarship->is_scholar ?? false)
-                                <div class="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-lg shadow-lg flex items-center gap-2 cursor-default">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Scholar
-                                </div>
+                                <!-- Scholar badge removed from here as per overlay design -->
                             @elseif($scholarship->applied)
-                                <div class="flex gap-2">
+                                <div class="flex gap-2 relative z-20">
                                     <button type="button" 
                                             onclick="openWithdrawModal('{{ $scholarship->id }}')"
                                             class="px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2">

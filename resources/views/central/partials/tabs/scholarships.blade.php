@@ -17,19 +17,19 @@
                           <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                         </svg>
-                        All Scholarships
+                        All
                     </span>
                     <span x-show="tab === 'private_scholarships'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
-                        Private Scholarships
+                        Private
                     </span>
                     <span x-show="tab === 'government_scholarships'" class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
                         </svg>
-                        Government Scholarships
+                        Government
                     </span>
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">
@@ -44,6 +44,23 @@
     <!-- Sorting and Filtering Controls (SFAO Style) -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <div class="flex flex-wrap gap-4 items-end">
+            <!-- Eligibility (Type) -->
+            <div class="flex-1 min-w-[140px]">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Eligibility</label>
+                <div class="relative">
+                    <select x-model="filters.type" class="block w-full px-3 py-2 text-base border border-red-500 dark:border-red-500 focus:outline-none focus:ring-bsu-red focus:border-bsu-red sm:text-sm rounded-full dark:bg-gray-700 dark:text-white text-center appearance-none">
+                        <option value="all">All</option>
+                        <option value="gwa">GWA Requirement</option>
+                        <option value="year_level">Year Level</option>
+                        <option value="income">Income Bracket</option>
+                        <option value="disability">Disability Status</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </div>
+
             <!-- Sort By -->
             <div class="flex-1 min-w-[140px]">
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider text-center">Sort By</label>
@@ -106,6 +123,7 @@
     <div>
         <!-- All Scholarships -->
         <div x-show="tab === 'all_scholarships'">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @forelse($scholarshipsAll as $scholarship)
                 @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
             @empty
@@ -113,6 +131,7 @@
                     No scholarships available.
                 </p>
             @endforelse
+            </div>
             <div class="mt-8">
                 {{ $scholarshipsAll->appends(request()->query())->links('vendor.pagination.custom') }}
             </div>
@@ -120,6 +139,7 @@
 
         <!-- Private Scholarships -->
         <div x-show="tab === 'private_scholarships'">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @forelse($scholarshipsPrivate as $scholarship)
                 @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
             @empty
@@ -133,6 +153,7 @@
                     <p class="text-gray-500 dark:text-gray-500">There are currently no private scholarship programs available.</p>
                 </div>
             @endforelse
+            </div>
             <div class="mt-8">
                 {{ $scholarshipsPrivate->appends(request()->query())->links('vendor.pagination.custom') }}
             </div>
@@ -140,6 +161,7 @@
 
         <!-- Government Scholarships -->
         <div x-show="tab === 'government_scholarships'">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @forelse($scholarshipsGov as $scholarship)
                 @include('central.partials.components.scholarship-card', ['scholarship' => $scholarship])
             @empty
@@ -153,6 +175,7 @@
                     <p class="text-gray-500 dark:text-gray-500">There are currently no government scholarship programs available.</p>
                 </div>
             @endforelse
+            </div>
             <div class="mt-8">
                 {{ $scholarshipsGov->appends(request()->query())->links('vendor.pagination.custom') }}
             </div>
@@ -164,20 +187,24 @@
         document.addEventListener('alpine:init', () => {
              Alpine.data('centralScholarshipsFilter', () => ({
                 filters: {
+                    type: '{{ request('type', 'all') }}',
                     sort_by: '{{ request('sort_by', 'name') }}',
                     sort_order: '{{ request('sort_order', 'asc') }}'
                 },
                 init() {
+                    this.$watch('filters.type', () => this.applyFilters());
                     this.$watch('filters.sort_by', () => this.applyFilters());
                     this.$watch('filters.sort_order', () => this.applyFilters());
                 },
                 applyFilters() {
                     const params = new URLSearchParams(window.location.search);
+                    params.set('type', this.filters.type);
                     params.set('sort_by', this.filters.sort_by);
                     params.set('sort_order', this.filters.sort_order);
                     window.location.search = params.toString();
                 },
                 resetFilters() {
+                    this.filters.type = 'all';
                     this.filters.sort_by = 'name';
                     this.filters.sort_order = 'asc';
                 }

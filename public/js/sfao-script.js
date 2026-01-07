@@ -1660,11 +1660,11 @@ window.sfaoScholarshipsFilter = function (routeUrl) {
 
         getHeaderTitle() {
             if (this.filters.type === 'private') {
-                return 'Private Scholarships';
+                return 'Private';
             } else if (this.filters.type === 'government') {
-                return 'Government Scholarships';
+                return 'Government';
             }
-            return 'All Scholarships';
+            return 'All';
         },
 
         getHeaderDescription() {

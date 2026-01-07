@@ -251,7 +251,7 @@ class AuthController extends Controller
 
         $user->sendEmailVerificationNotification();
 
-        return redirect('/login')->with('status', 'Account created! Please verify your email before logging in.');
+        return redirect()->route('register.wait')->with('email', $request->email);
     }
 
     /**
@@ -332,6 +332,74 @@ class AuthController extends Controller
         }
 
         return back()->with('status', 'Verification link sent!');
+    }
+
+    
+    /**
+     * Show the waiting for verification page
+     */
+    public function showWaitingPage()
+    {
+        if (!session()->has('email')) {
+            return redirect('/login');
+        }
+        return view('auth.waiting-for-verification');
+    }
+
+    /**
+     * Check if the user in the waiting session has verified their email
+     */
+    public function checkVerificationStatus()
+    {
+        if (!session()->has('email')) {
+            return response()->json(['verified' => false]);
+        }
+        
+        $user = User::where('email', session('email'))->first();
+        
+        // If user is not found, or not verified, return false
+        if (!$user || !$user->hasVerifiedEmail()) {
+            return response()->json(['verified' => false]);
+        }
+        
+        return response()->json(['verified' => true]);
+    }
+
+    /**
+     * Resend verification email with a limit of 3 attempts
+     */
+    public function resendRegistrationVerification(Request $request)
+    {
+        if (!session()->has('email')) {
+            return response()->json(['success' => false, 'message' => 'Session expired. Please login manually.']);
+        }
+
+        $count = session('resend_count', 0);
+        
+        if ($count >= 3) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Maximum resend attempts reached.', 
+                'resend_count' => $count
+            ]);
+        }
+
+        $user = User::where('email', session('email'))->first();
+
+        if ($user && !$user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+            
+            // Increment count
+            $newCount = $count + 1;
+            session(['resend_count' => $newCount]);
+            
+            return response()->json([
+                'success' => true, 
+                'resend_count' => $newCount
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'User not found or already verified.']);
     }
 }
 

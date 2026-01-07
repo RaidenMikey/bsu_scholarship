@@ -172,7 +172,7 @@ class ApplicationController extends Controller
         // 3. Base Query (Students in jurisdiction, not scholars)
         $query = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
-            ->whereDoesntHave('scholars')
+            // Removed: whereDoesntHave('scholars') to allow existing scholars to appear if they have new applications
             ->with(['applications.scholarship', 'form', 'campus']);
 
         // 4. Apply Campus Filter
@@ -422,9 +422,10 @@ class ApplicationController extends Controller
 
         // Build the query - SFAO sees all students in their domain
         // Exclude students who are already scholars (they will be shown in Scholars tab)
+        // Build the query - SFAO sees all students in their domain
         $query = User::where('role', 'student')
             ->whereIn('campus_id', $campusIds)
-            ->whereDoesntHave('scholars') // Exclude scholars from applicants tab
+            // Removed: whereDoesntHave('scholars') to allow existing scholars to appear if they have new applications
             ->with(['applications.scholarship', 'form', 'campus'])
             ->leftJoin('student_submitted_documents', function($join) {
                 $join->on('users.id', '=', 'student_submitted_documents.user_id')

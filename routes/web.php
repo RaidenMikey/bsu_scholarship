@@ -139,6 +139,11 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])-
 Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->name('verification.send');
 Route::post('/email/resend', [AuthController::class, 'resendVerificationByEmail'])->name('verification.resend');
 
+// Registration Waiting Flow
+Route::get('/register/wait', [AuthController::class, 'showWaitingPage'])->name('register.wait');
+Route::get('/register/check-status', [AuthController::class, 'checkVerificationStatus'])->name('verification.check');
+Route::post('/register/resend', [AuthController::class, 'resendRegistrationVerification'])->name('verification.resend.post');
+
 // --------------------------------------------------
 // SHARED ROUTES
 // --------------------------------------------------

@@ -11,9 +11,10 @@
         <p class="text-gray-500 dark:text-gray-500">There are currently no scholarships to display.</p>
     </div>
 @else
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     @foreach($scholarships as $scholarship)
-        <div x-data="{ showDetails_{{ $scholarship->id }}: false, showReleaseGrant_{{ $scholarship->id }}: false }">
-            <div @click="showDetails_{{ $scholarship->id }} = true">
+        <div x-data="{ showDetails_{{ $scholarship->id }}: false, showReleaseModal: false }">
+            <div @click="showDetails_{{ $scholarship->id }} = true" class="h-full">
                 @include('central.partials.components.scholarship-card', [
                     'scholarship' => $scholarship,
                     'role' => 'sfao',
@@ -25,6 +26,7 @@
 
         </div>
     @endforeach
+    </div>
 
     <!-- Pagination Links -->
     <div class="mt-8 col-span-full">

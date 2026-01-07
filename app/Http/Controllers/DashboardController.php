@@ -145,7 +145,16 @@ class DashboardController extends Controller
                 }
                  
                 if ($request->get('type_filter') && $request->get('type_filter') !== 'all') {
-                    $query->where('scholarship_type', $request->get('type_filter'));
+                    $eligibility = $request->get('type_filter');
+                    // Check if filter is Government/Private (Legacy/Fallback) or Condition
+                    if (in_array($eligibility, ['private', 'government'])) {
+                        $query->where('scholarship_type', $eligibility);
+                    } else {
+                        // Filter by eligibility condition
+                        $query->whereHas('conditions', function($q) use ($eligibility) {
+                            $q->where('name', $eligibility);
+                        });
+                    }
                 }
                 
                 $sort = $request->get('sort_by', 'name');
@@ -309,13 +318,23 @@ class DashboardController extends Controller
             ->distinct()
             ->get()
             ->map(function($app) {
-                // Assumption: AY starts in August
+                // Assumption: AY starts in August (Month 8)
                 $startYear = $app->month >= 8 ? $app->year : $app->year - 1;
                 return $startYear . '-' . ($startYear + 1);
             })
             ->unique()
             ->sortDesc()
             ->values();
+
+        // Ensure Current AY is present
+        $currentMonth = date('n');
+        $currentYear = date('Y');
+        $currentAYStart = $currentMonth >= 8 ? $currentYear : $currentYear - 1;
+        $currentAY = $currentAYStart . '-' . ($currentAYStart + 1);
+        
+        if (!$academicYears->contains($currentAY)) {
+            $academicYears->prepend($currentAY);
+        }
 
         // 5. Application Forms
         $forms = \App\Models\ApplicationForm::with(['campus', 'uploader'])
@@ -587,7 +606,7 @@ class DashboardController extends Controller
         // 2. Not Applied
         $studentsNotApplied = (clone $baseQuery)->whereDoesntHave('applications');
 
-        // 3. In Progress (Assuming 'in_progress' status exists or strictly partial)
+        // 3. In Progress
         $studentsInProgress = (clone $baseQuery)->whereHas('applications', function($q) {
             $q->where('status', 'in_progress');
         });
@@ -731,12 +750,38 @@ class DashboardController extends Controller
         $sortBy = $request->get('sort_by', 'name');
         $sortOrder = $request->get('sort_order', 'asc');
         
-        // Clone query for different tabs
+        // Apply sorting
         $queryAll = clone $scholarshipsQuery;
         $queryPrivate = clone $scholarshipsQuery;
         $queryGov = clone $scholarshipsQuery;
+        
+        // Apply type/eligibility filter to all lists if present
+        if ($request->filled('type') && $request->type !== 'all') {
+            $type = $request->type;
+             // Define filter closure
+             $filterClosure = function($q) use ($type) {
+                $q->whereHas('conditions', function($sq) use ($type) {
+                    $sq->where('name', $type);
+                });
+             };
 
-        // Apply sorting
+            if (in_array($type, ['private', 'government'])) {
+                // If the filter itself IS private/gov, we apply it to queryAll
+                // For queryPrivate/Gov, they are naturally filtered by type later, so we just need to ensure consistency?
+                // Actually, if filter is 'private', queryAll becomes private. queryGov becomes empty.
+                $queryAll->where('scholarship_type', $type);
+                
+                if ($type === 'private') $queryGov->where('id', -1); // Force empty
+                if ($type === 'government') $queryPrivate->where('id', -1); // Force empty
+            } else {
+                 // It's a condition (GWA, etc). Apply to ALL queries.
+                 $queryAll->whereHas('conditions', function($sq) use ($type) { $sq->where('name', $type); });
+                 $queryPrivate->whereHas('conditions', function($sq) use ($type) { $sq->where('name', $type); });
+                 $queryGov->whereHas('conditions', function($sq) use ($type) { $sq->where('name', $type); });
+            }
+        }
+
+        // Apply sorting (and type restrictions for tabs)
         $queryAll = $this->sortScholarships($queryAll->get(), $sortBy, $sortOrder);
         $queryPrivate = $this->sortScholarships($queryPrivate->where('scholarship_type', 'private')->get(), $sortBy, $sortOrder);
         $queryGov = $this->sortScholarships($queryGov->where('scholarship_type', 'government')->get(), $sortBy, $sortOrder);
@@ -1509,14 +1554,49 @@ class DashboardController extends Controller
             ->get();
 
         // 2. Fetch Scholarships
-        // 2. Fetch Scholarships
-        $scholarships = \App\Models\Scholarship::where('is_active', true)
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $type = $request->get('type', 'all');
+
+        $scholarshipsQuery = \App\Models\Scholarship::where('is_active', true)
             ->whereHas('campuses', function($query) use ($user) {
                 $query->where('campus_id', $user->campus_id);
             })
-            ->withCount('applications')
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
+            ->withCount('applications');
+
+        if ($type !== 'all') {
+            if (in_array($type, ['private', 'government'])) {
+                $scholarshipsQuery->where('scholarship_type', $type);
+            } else {
+                 $scholarshipsQuery->whereHas('conditions', function($q) use ($type) {
+                    $q->where('name', $type);
+                });
+            }
+        }
+
+        // Apply Sorting
+        switch ($sortBy) {
+            case 'name':
+                $scholarshipsQuery->orderBy('scholarship_name', $sortOrder);
+                break;
+            case 'submission_deadline':
+                $scholarshipsQuery->orderBy('submission_deadline', $sortOrder);
+                break;
+            case 'grant_amount':
+                $scholarshipsQuery->orderBy('grant_amount', $sortOrder);
+                break;
+            case 'slots_available':
+                $scholarshipsQuery->orderBy('slots_available', $sortOrder);
+                break;
+            case 'applications_count':
+                $scholarshipsQuery->orderBy('applications_count', $sortOrder);
+                break;
+            default: // created_at
+                $scholarshipsQuery->orderBy('created_at', $sortOrder);
+                break;
+        }
+
+        $scholarships = $scholarshipsQuery->paginate(12)->withQueryString();
             
         // Append user-specific status to scholarships
         foreach($scholarships as $scholarship) {
